@@ -6,3 +6,9 @@
 	path = ocanrenflat
 	url = https://github.com/Kakadu/OCanren.git
 	branch = fancy
+[submodule "microKanren"]
+	path = microKanren
+	url = https://github.com/jasonhemann/microKanren.git
+[submodule "faster-miniKanren"]
+	path = faster-miniKanren
+	url = https://github.com/Kakadu/faster-miniKanren.git
