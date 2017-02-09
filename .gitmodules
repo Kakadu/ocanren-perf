@@ -1,0 +1,8 @@
+[submodule "ocanrendefault"]
+	path = ocanrendefault
+	url = https://github.com/dboulytchev/OCanren.git
+	branch = master
+[submodule "ocanrenflat"]
+	path = ocanrenflat
+	url = https://github.com/Kakadu/OCanren.git
+	branch = fancy
