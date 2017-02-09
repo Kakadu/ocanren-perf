@@ -1,7 +1,3 @@
-[submodule "ocanrendefault"]
-	path = ocanrendefault
-	url = https://github.com/dboulytchev/OCanren.git
-	branch = master
 [submodule "ocanrenflat"]
 	path = ocanrenflat
 	url = https://github.com/Kakadu/OCanren.git
@@ -12,3 +8,7 @@
 [submodule "faster-miniKanren"]
 	path = faster-miniKanren
 	url = https://github.com/Kakadu/faster-miniKanren.git
+[submodule "ocanrendefault"]
+	path = ocanrendefault
+	url = https://github.com/Kakadu/OCanren.git
+	branch = master
