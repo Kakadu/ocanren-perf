@@ -1,0 +1,3 @@
+true: rectypes
+<*.ml>: syntax(camlp5o), package(logger.syntax,GT.syntax.all,ocanren.tester,ocanren.syntax)
+<*.native>: package(GT,ocanren.tester)

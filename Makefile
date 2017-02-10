@@ -6,7 +6,7 @@ TESTS=001 002 004 003 005 006 007
 EXPRTESTS=$(addprefix expr, $(TESTS))
 CTESTS=$(addprefix c, $(TESTS))
 MEASURE=/usr/bin/time -f "%U"
-DUMMY_MEASURE=echo " -0.1"
+DUMMY_MEASURE=echo " 0.01"
 
 .DEFAULT_GOAL := all
 ML_TESTS_TO_COMPILE :=
@@ -14,26 +14,34 @@ ML_TESTS_TO_COMPILE :=
 	measure_rkt measure_ml measure_scm measure_muscm
 
 define XXX
-#ocanren
-MLFILE_$(1) = $$(wildcard test$(1)*.ml)
-ML_NATIVE_$(1) := regression/performance/$$(MLFILE_$(1):.ml=.native)
+#ocanrendefault
+MLOD_NATIVE_$(1) := $$(wildcard src_ocanrendefault/test$(1)*.native)
 ML_TESTS_TO_COMPILE += $$(ML_NATIVE_$(1))
-TEST$(1)_NAME = $$(MLFILE_$(1):test$(1)_%.ml=%)
-
-compile$(1)_ml:
-ifneq ($$(MLFILE_$(1)),)
-	cd ../.. && $(OB) -Is src,regression $$(ML_NATIVE_$(1))
-endif
-measure$(1)_ml:
-ifneq ($$(MLFILE_$(1)),)
-	$(MEASURE) --append -o .$(1).data ../../$$(MLFILE_$(1):.ml=.native)
+TEST$(1)_NAME = $$(MLOD_NATIVE_$(1):src_ocanrendefault/test$(1)_%.native=%)
+#$$(info TEST$(1)_NAME = $$(TEST$(1)_NAME) )
+#compile$(1)_ml:
+#ifneq ($$(MLFILE_$(1)),)
+#	cd ../.. && $(OB) -Is src,regression $$(ML_NATIVE_$(1))
+#endif
+measure$(1)_MLOD:
+ifneq ($$(MLOD_NATIVE_$(1)),)
+	$(MEASURE) --append -o .$(1).data $$(MLOD_NATIVE_$(1))
 else
 	$(DUMMY_MEASURE) >> .$(1).data
 endif
-perf: perf$(1)_ml
+#perf: perf$(1)_ml
+
+MLOF_NATIVE_$(1) := $$(wildcard src_ocanrenfancy/test$(1)*.native)
+measure$(1)_MLOF:
+ifneq ($$(MLOF_NATIVE_$(1)),)
+	$(MEASURE) --append -o .$(1).data $$(MLOF_NATIVE_$(1))
+else
+	$(DUMMY_MEASURE) >> .$(1).data
+endif
+#perf: perf$(1)_ml
 
 #racket
-RKT_FILE_$(1) = $$(wildcard test$(1)*.rkt)
+RKT_FILE_$(1) = $$(wildcard src_lisps/test$(1)*.rkt)
 RKT_NATIVE_$(1) = $$(RKT_FILE_$(1)).native
 #$$(warning RKTFILE_$(1) = $$(RKT_FILE_$(1)))
 .PHONY: compile$(1)_rkt
@@ -98,7 +106,7 @@ endif
 .PHONY: measure$(1) measure$(1)_prepare
 measure$(1)_prepare:
 	$(RM) .$(1).data .$(1).name
-measure$(1): measure$(1)_prepare measure$(1)_ml measure$(1)_rkt measure$(1)_scm \
+measure$(1): measure$(1)_prepare measure$(1)_MLOD measure$(1)_rkt measure$(1)_scm \
 							measure$(1)_muscm
 	@printf "$$(TEST$(1)_NAME) " >> $(DATAFILE)
 	@tr '\n' ' ' < .$(1).data >> $(DATAFILE)
@@ -111,26 +119,34 @@ endef
 prepare_header:
 	echo "x     OCanren Racket Scheme uKanren/Scheme" > data.gnuplot
 
-compile_ocanren_default:
-	$(MAKE) -C ocanrendefault -f Makefile.ob all bundle
+prepare_ocanren_default:
+	$(MAKE) -C ocanrendefault -f Makefile.ob all compile_tests bundle
+	$(MAKE) -C ocanrendefault -f Makefile.ob bundle
 	#$(OB) -Is src,regression $(ML_TESTS_TO_COMPILE)
 
-compile_ocanren_flat:
-	$(MAKE) -C ocanrenflat -f Makefile.ob all bundle
+prepare_ocanren_flat:
+	$(MAKE) -C ocanrenflat -f Makefile.ob all compile_tests bundle
+	$(MAKE) -C ocanrenflat -f Makefile.ob bundle
 	#$(OB) -Is src,regression $(ML_TESTS_TO_COMPILE)
 
-.PHONY: compile_ocanren_flat compile_ocanren_default compile_ocanren
-compile_ocanren:  compile_ocanren_default compile_ocanren_flat
+.PHONY: prepare_ocanren_flat prepare_ocanren_default prepare_ocanren
+prepare_ocanren: prepare_ocanren_default prepare_ocanren_flat
+
+.PHONY: compile_ocanrendef_tests compile_ocanrenfancy_tests
+compile_ocanrendef_tests:
+	$(MAKE) -C src_ocanrendefault
+compile_ocanrenfancy_tests:
+	$(MAKE) -C src_ocanrenfancy
 
 .PHONY: check_submodules
 check_submodules:
-	if [ -d "faster-miniKanren" ]; then (git submodule init && git submodule update); fi
-	if [ -d "faster-miniKanren" ]; then (git submodule init && git submodule update); fi
-	if [ -d "faster-miniKanren" ]; then (git submodule init && git submodule update); fi
-	if [ -d "faster-miniKanren" ]; then (git submodule init && git submodule update); fi
+#	if [ -d "faster-miniKanren" ]; then (git submodule init && git submodule update --remote); fi
+#	if [ -d "microKanren" ];       then (git submodule init && git submodule update --remote); fi
+#	if [ -d "ocanrendefault" ];    then (git submodule init && git submodule update --remote); fi
+#	if [ -d "ocanrenflat" ];       then (git submodule init && git submodule update --remote); fi
 
 compile: check_submodules
-compile: compile_ocanren compile_rkt compile_scm compile_muscm
+compile: prepare_ocanren compile_ocanrendef_tests compile_ocanrenfancy_tests compile_rkt #compile_scm compile_muscm
 measure: prepare_header do_measure
 #$(info $(call XXX,002))
 #$(eval $(call XXX,001))

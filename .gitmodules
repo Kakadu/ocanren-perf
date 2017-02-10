@@ -12,3 +12,5 @@
 	path = ocanrendefault
 	url = https://github.com/Kakadu/OCanren.git
 	branch = master
+[submodule "ocanrendefault.path"]
+	branch = master
