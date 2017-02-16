@@ -24,14 +24,15 @@ module Gterm = struct
   type lterm = (string logic, lterm List.logic) X.t logic
   type fterm = (rterm, lterm) fancy
 
-  let rec show_rterm = GT.(show X.t (fun s -> s) (show List.ground show_rterm))
-  let rec show_lterm = show_logic GT.(show X.t (show_logic (fun s -> s)) (show List.logic show_lterm) )
+  let rec show_rterm : rterm -> string = fun t -> GT.(show X.t (fun s -> s) (show List.ground show_rterm)) t
+  let rec show_lterm : lterm -> string = fun x -> show_logic GT.(show X.t (show_logic (fun s -> s)) (show List.logic show_lterm) ) x
 
   let symb s : fterm = inj @@ distrib @@ Symb s
   let seq xs : fterm = inj @@ distrib @@ Seq xs
 end
 
-let rec gterm_reifier c x = Gterm.reifier ManualReifiers.string_reifier gterm_reifier c x
+let rec gterm_reifier c : Gterm.fterm -> Gterm.lterm =
+  Gterm.reifier ManualReifiers.string_reifier (List.reifier gterm_reifier) c
 
 let list_combine3 xs ys zs =
   let rec helper acc = function
@@ -41,6 +42,7 @@ let list_combine3 xs ys zs =
   in
   helper [] (xs,ys,zs)
 
+
 let rec lookupo x env r =
   fresh (y t env')
     (env === (inj_pair y t) % env')
@@ -48,6 +50,8 @@ let rec lookupo x env r =
         (y === x) &&& (r === t);
         (y =/= x) &&& (lookupo x env' r)
       ])
+
+let (_: ('a,'b) fancy -> (('a * 'c) List.ground, ('b * 'd) logic List.logic) fancy -> ('c,'d) fancy -> goal) = lookupo
 
 let rec not_in_envo x env =
   conde [
@@ -57,7 +61,6 @@ let rec not_in_envo x env =
       (y =/= x)
       (not_in_envo x env')
   ]
-;;
 
 module Gresult = struct
   module X = struct
@@ -75,7 +78,7 @@ module Gresult = struct
   include Fmap3(X)
 
   type rresult = (string, Gterm.rterm, (string * rresult) List.ground) X.t
-  type lresult = (string logic, Gterm.lterm, (string logic * lresult logic) logic List.logic) X.t logic
+  type lresult = (string logic, Gterm.lterm, (string logic * lresult) logic List.logic) X.t logic
   type fresult = (rresult, lresult) fancy
 
   let closure s t xs = inj @@ distrib @@ X.Closure (s,t,xs)
@@ -84,44 +87,28 @@ module Gresult = struct
   let show_string = GT.(show string)
   let show_stringl = show_logic show_string
 
-  let rec show_rresult r = GT.(show X.t show_string Gterm.show_rterm (show pair show_string show_rresult)) r
+  let rec show_rresult r = GT.(show X.t show_string Gterm.show_rterm
+      @@ show List.ground (show pair show_string show_rresult)) r
   let rec show_lresult r = show_logic GT.(show X.t show_stringl Gterm.show_lterm
-    (show_logic @@ show pair show_stringl show_lresult)) r
+    @@ show List.logic (show_logic @@ show pair show_stringl show_lresult)) r
+
 end
 
-let rec gresult_reifier c x =
+
+let rec gresult_reifier c : Gresult.fresult -> Gresult.lresult =
   let open ManualReifiers in
   Gresult.reifier string_reifier gterm_reifier
-    (pair_reifier string_reifier gresult_reifier)
-    c x
+    (List.reifier (pair_reifier string_reifier gresult_reifier))
+    c
 
-
-(* type fresult = Fresult.t *)
-(*
-let rec show_fresult (x: fresult) =
-  let open GT in
-  let show_pair: (string * _) -> string = show pair (show_fancy (show string)) show_fresult in
-  and helper x = GT.(show Gresult.t (show string)) show_term (List.show show_pair)) x in
-  show_fancy helper x
-
-let (_: fresult -> string) = show_fresult
-
-type lresult = (string logic, lterm logic, (string logic * lresult) logic List.logic) Gresult.t logic
-let rec show_lresult (x: lresult) =
-  let p : (string logic * lresult) logic -> _ = show_logic GT.(show pair (show_logic (fun s -> s)) show_lresult) in
-  show_logic GT.(show Gresult.t (show_logic (show string)) show_lterm (show List.logic p)) x
-
-let (_: lresult -> string) = show_lresult *)
-(* type result =
-  | Closure of string logic * term logic * (string logic * result logic) logic List.logic
-  | Val     of term   logic *)
-
-(* let (_: fterm fancy) = symb @@injlift "" *)
+let (_: var_checker -> Gresult.fresult -> Gresult.lresult) = gresult_reifier
 
 let (!!) x = inj @@ lift x
 
 open Gterm
 open Gresult
+
+type fenv = ( (string * rresult) List.ground, (string logic * lresult) logic List.logic) fancy
 
 let rec map_evalo es env rs =
   conde [
@@ -132,7 +119,7 @@ let rec map_evalo es env rs =
       (evalo e env (val_ r))
       (map_evalo es' env rs')
   ]
-and evalo (term: fterm) env r =
+and evalo (term: fterm) (env: fenv) (r: fresult) =
   conde [
     fresh (t)
       (term === seq ((symb !!"quote") %< t))
@@ -145,7 +132,7 @@ and evalo (term: fterm) env r =
       (term === seq ( (symb !!"lambda") %
                       (seq (!< (symb x)) %< body)
                     ) )
-      (r === closure x body env)
+      (r === (closure x body env))
       (not_in_envo !!"lambda" env);
     fresh (es rs)
       (term === seq ((symb !!"list") % es) )
@@ -159,7 +146,7 @@ and evalo (term: fterm) env r =
       (evalo body ((inj_pair x arg) % env') r)
   ]
 
-let ( ~~ ) s  = symb s
+let ( ~~ ) s  = symb @@ inj @@ lift s
 let s      tl = seq (inj_list tl)
 
 let nil = nil ()
@@ -176,18 +163,40 @@ let thrineso q p r =
   (evalo q nil (val_ r)) &&&
   (evalo r nil (val_ p))
 
-
-let run_term t = printf "> %s\n%s\n\n" (Gterm.show_term t) @@
+let run_term (text,t) = printf "> %s\n%!%s\n\n%!" text @@
   run q (fun q -> evalo t nil (val_ q)) (fun qs -> if Stream.is_empty qs
-                                           then "fail"
-                                           else show_term @@ Stream.hd qs)
+                                          then "fail"
+                                          else match Stream.hd qs with
+                                          | Final x -> show_rterm @@ Obj.magic x
+                                          | HasFreeVars (f,x) ->
+                                            let c = (object method isVar: 'a . 'a -> bool = fun x -> f @@ Obj.repr x end) in
+                                            show_lresult @@ gresult_reifier c (Obj.magic x)
+                                        )
 
+let (_: string * fterm -> unit) = run_term
+
+let () =
+  printf "Evaluate:\n\n%!";
+  run_term (REPR( ~~"x" ));
+  run_term (REPR( (s[s[~~"quote"; ~~"x"]; s[~~"quote"; ~~"y"]]) ));
+  (* run_term @@ REPR(s[~~"quote"; ~~"x"; ~~"y"];
+  run_term @@ REPR(s[~~"quote"; ~~"x"];
+  run_term @@ REPR(s[~~"list"];
+  run_term @@ REPR(s[~~"list"; s[~~"quote"; ~~"x"]; s[~~"quote"; ~~"y"]];
+  run_term @@ REPR(s[s[~~"lambda"; s[~~"x"]; ~~"x"]; s[~~"list"]];
+  run_term @@ REPR(s[s[s[~~"lambda"; s[~~"x"]; s[~~"lambda"; s[~~"y"]; s[~~"list"; ~~"x"; ~~"y"]]]; s[~~"quote"; ~~"1"]]; s[~~"quote"; ~~"2"]];
+  run_term @@ REPR(s[s[~~"lambda"; s[~~"lambda"]; s[~~"lambda"; s[~~"list"]]]; s[~~"lambda"; s[~~"x"]; ~~"x"]];
+  run_term @@ REPR(s[~~"quote"; ~~"list"];
+  run_term @@ REPR(quine_c; *)
+  ()
+
+(*
 let gen_terms n r = printf "> %s\n" (show_term r);
   run q (fun q -> evalo q nil (val_ r))
     (fun qs -> List.iter (fun t -> printf "%s\n" @@ show_term t) @@
       Stream.take ~n:n qs);
   Printf.printf "\n"
-
+*)
 let find_quines n = run q quineo
     (fun qs -> List.iter (fun t -> printf "%s\n\n" @@ show_term t) @@
       Stream.take ~n qs)
@@ -203,7 +212,7 @@ let find_thrines n =
     (fun qs rs ss ->
       List.iter (fun (q,r,s) -> printf "%s,\n\t%s,\n\t%s\n\n" (show_term q) (show_term r) (show_term s))
       @@ list_combine3 (Stream.take ~n qs) (Stream.take ~n rs) (Stream.take ~n ss))
-
+(*
 let quine_c =
   s[s[~~"lambda"; s[~~"x"];
       s[~~"list"; ~~"x"; s[~~"list"; s[~~"quote"; ~~"quote"]; ~~"x"]]];
@@ -235,4 +244,4 @@ let _ =
 
   Printf.printf "%!Twines:\n\n%!";
   find_twines ()
-  *)
+  *) *)
