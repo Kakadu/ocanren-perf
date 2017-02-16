@@ -63,7 +63,7 @@ else
 endif
 
 # miniKanren in Scheme
-SCM_FILE_$(1) = $(wildcard test$(1)*.chez)
+SCM_FILE_$(1) = $(wildcard src_lisps/test$(1)*.chez)
 SCM_NATIVE_$(1) = $$(SCM_FILE_$(1):.chez=).so
 
 ifneq ("$$(SCM_FILE_$(1))","")
@@ -84,7 +84,7 @@ else
 endif
 
 # muKanren in Scheme
-MUSCM_FILE_$(1) = $(wildcard test$(1)*.mu.scm)
+MUSCM_FILE_$(1) = $(wildcard src_lisps/test$(1)*.mu.scm)
 MUSCM_NATIVE_$(1) = $$(MUSCM_FILE_$(1):.scm=).so
 ifneq ("$$(MUSCM_FILE_$(1))","")
 .PHONY: compile$(1)_muscm
@@ -106,8 +106,9 @@ endif
 .PHONY: measure$(1) measure$(1)_prepare
 measure$(1)_prepare:
 	$(RM) .$(1).data .$(1).name
-measure$(1): measure$(1)_prepare measure$(1)_MLOD measure$(1)_rkt measure$(1)_scm \
-							measure$(1)_muscm
+measure$(1): measure$(1)_prepare \
+							measure$(1)_MLOD measure$(1)_MLOF \
+							measure$(1)_rkt measure$(1)_scm measure$(1)_muscm
 	@printf "$$(TEST$(1)_NAME) " >> $(DATAFILE)
 	@tr '\n' ' ' < .$(1).data >> $(DATAFILE)
 	@printf "\n" >> $(DATAFILE)
@@ -117,7 +118,7 @@ endef
 
 .PHONY: prepare_header do_measure
 prepare_header:
-	echo "x     OCanren Racket Scheme uKanren/Scheme" > data.gnuplot
+	echo "x     OCanren OCanrenFancy Racket Scheme uKanren/Scheme" > data.gnuplot
 
 prepare_ocanren_default:
 	$(MAKE) -C ocanrendefault -f Makefile.ob all compile_tests bundle
@@ -146,7 +147,7 @@ check_submodules:
 #	if [ -d "ocanrenflat" ];       then (git submodule init && git submodule update --remote); fi
 
 compile: check_submodules
-compile: prepare_ocanren compile_ocanrendef_tests compile_ocanrenfancy_tests compile_rkt #compile_scm compile_muscm
+compile: prepare_ocanren compile_ocanrendef_tests compile_ocanrenfancy_tests compile_rkt compile_scm compile_muscm
 measure: prepare_header do_measure
 #$(info $(call XXX,002))
 #$(eval $(call XXX,001))

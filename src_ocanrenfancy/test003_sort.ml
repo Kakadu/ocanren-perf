@@ -14,7 +14,7 @@ let rec smallesto l s l' = conde [
   (l === !< s) &&& (l' === nil());
   fresh (h t s' t' max)
     (l' === max % t')
-    (l === h % t)
+    (l === h % t) 
     (minmaxo h s' s max)
     (smallesto t s' t')
 ]
