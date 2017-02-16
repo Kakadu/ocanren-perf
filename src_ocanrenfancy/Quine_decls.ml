@@ -8,42 +8,30 @@ open GT
 open MiniKanren
 
 module Gterm = struct
-  @type ('s,'list) t =
-    | Symb  of 's
-    | Seq   of 'list with show
-    ;;
-  let fmap f g = function
-  | Symb s -> Symb (f s)
-  | Seq xs -> Seq (g xs)
+  module X = struct
+    @type ('s, 'xs) t =
+      | Symb  of 's
+      | Seq   of 'xs with show
+      ;;
+    let fmap f g = function
+    | Symb s -> Symb (f s)
+    | Seq xs -> Seq (g xs)
+  end
+  include X
+  include Fmap2(X)
+
+  type rterm = (string, rterm List.ground) X.t
+  type lterm = (string logic, lterm List.logic) X.t logic
+  type fterm = (rterm, lterm) fancy
+
+  let rec show_rterm = GT.(show X.t (fun s -> s) (show List.ground show_rterm))
+  let rec show_lterm = show_logic GT.(show X.t (show_logic (fun s -> s)) (show List.logic show_lterm) )
+
+  let symb s : fterm = inj @@ distrib @@ Symb s
+  let seq xs : fterm = inj @@ distrib @@ Seq xs
 end
 
-type fterm = ((string      , 'b List.flist) Gterm.t as 'b) fancy
-
-let rec show_fterm (x: fterm fancy) =
-  let rec helper (x: fterm) = GT.(show Gterm.t (show string) (List.show helper)) x in
-  helper x
-
-let (_: fterm fancy -> string) = show_fterm
-
-type lterm = (string logic, lterm logic List.logic) Gterm.t lterm
-
-let rec show_lterm (x: lterm logic) =
-  show_logic GT.(show Gterm.t (show_logic (show string)) (show List.logic show_lterm)) x
-
-let (_: lterm logic -> string) = show_lterm
-
-module Wrappers = Fmap2(Gterm)
-let symb s = Wrappers.fmap (Gterm.Symb s)
-let seq xs = Wrappers.fmap (Gterm.Seq xs)
-
-let (_: string fancy -> fterm fancy) = symb
-(*
-let rec show_fterm = (function
-  | Symb s -> show_fancy (fun x -> x) s
-  | Seq  s ->
-      "(" ^ String.concat " " (List.map (show logic show_term) (List.to_list @@ List.prj (fun x -> x) s)) ^ ")")
-*)
-(* let show_term = show logic show_term *)
+let rec gterm_reifier c x = Gterm.reifier ManualReifiers.string_reifier gterm_reifier c x
 
 let list_combine3 xs ys zs =
   let rec helper acc = function
@@ -72,27 +60,44 @@ let rec not_in_envo x env =
 ;;
 
 module Gresult = struct
-  @type ('s, 't, 'xs) t =
-  | Closure of 's * 't * 'xs
-  | Val     of 't
-  with show;;
+  module X = struct
+    @type ('s, 't, 'xs) t =
+    | Closure of 's * 't * 'xs
+    | Val     of 't
+    with show;;
 
-  let fmap f g h = function
-  | Closure (a,b,c) -> Closure (f a, g b, h c)
-  | Val b -> Val (g b)
+    let fmap f g h = function
+    | Closure (a,b,c) -> Closure (f a, g b, h c)
+    | Val b -> Val (g b)
+  end
+
+  (* include X *)
+  include Fmap3(X)
+
+  type rresult = (string, Gterm.rterm, (string * rresult) List.ground) X.t
+  type lresult = (string logic, Gterm.lterm, (string logic * lresult logic) logic List.logic) X.t logic
+  type fresult = (rresult, lresult) fancy
+
+  let closure s t xs = inj @@ distrib @@ X.Closure (s,t,xs)
+  let val_ t         = inj @@ distrib @@ X.Val t
+
+  let show_string = GT.(show string)
+  let show_stringl = show_logic show_string
+
+  let rec show_rresult r = GT.(show X.t show_string Gterm.show_rterm (show pair show_string show_rresult)) r
+  let rec show_lresult r = show_logic GT.(show X.t show_stringl Gterm.show_lterm
+    (show_logic @@ show pair show_stringl show_lresult)) r
 end
 
-module Fresult = struct
-  open Gresult
-  type t = ((string, term, (string * 'b) List.flist) Gresult.t as 'b) fancy
-end
+let rec gresult_reifier c x =
+  let open ManualReifiers in
+  Gresult.reifier string_reifier gterm_reifier
+    (pair_reifier string_reifier gresult_reifier)
+    c x
 
-module FMapResult = Fmap3(Gresult)
-let closure s t xs : Fresult.t = FMapResult.fmap @@ Gresult.Closure (s,t,xs)
-let val_ t = FMapResult.fmap @@ Gresult.Val t
 
-type fresult = Fresult.t
-
+(* type fresult = Fresult.t *)
+(*
 let rec show_fresult (x: fresult) =
   let open GT in
   let show_pair: (string * _) -> string = show pair (show_fancy (show string)) show_fresult in
@@ -106,14 +111,18 @@ let rec show_lresult (x: lresult) =
   let p : (string logic * lresult) logic -> _ = show_logic GT.(show pair (show_logic (fun s -> s)) show_lresult) in
   show_logic GT.(show Gresult.t (show_logic (show string)) show_lterm (show List.logic p)) x
 
-let (_: lresult -> string) = show_lresult
+let (_: lresult -> string) = show_lresult *)
 (* type result =
   | Closure of string logic * term logic * (string logic * result logic) logic List.logic
   | Val     of term   logic *)
 
-let (_: fterm fancy) = symb @@injlift ""
+(* let (_: fterm fancy) = symb @@injlift "" *)
 
-let (!!) = injlift
+let (!!) x = inj @@ lift x
+
+open Gterm
+open Gresult
+
 let rec map_evalo es env rs =
   conde [
     (es === nil ()) &&& (rs === nil ());
@@ -123,36 +132,37 @@ let rec map_evalo es env rs =
       (evalo e env (val_ r))
       (map_evalo es' env rs')
   ]
-and evalo term env r =
+and evalo (term: fterm) env r =
   conde [
     fresh (t)
-      (term === seq (symb !!"quote") %< t)
+      (term === seq ((symb !!"quote") %< t))
       (r === (val_ t))
       (not_in_envo !!"quote" env);
     fresh (s)
       (term === (symb s))
       (lookupo s env r);
     fresh (x body)
-      (term === !!(Seq (!!(Symb !!"lambda")      %
-                        (!!(Seq (!< !!(Symb x))) %<
-                         body))))
+      (term === seq ( (symb !!"lambda") %
+                      (seq (!< (symb x)) %< body)
+                    ) )
       (r === closure x body env)
       (not_in_envo !!"lambda" env);
     fresh (es rs)
-      (term === (seq @@ symb !!"list") % es)
+      (term === seq ((symb !!"list") % es) )
       (r === val_ (seq rs))
       (not_in_envo !!"list" env)
       (map_evalo es env rs)(*(List.mapo (fun e r -> evalo e env !!(Val r)) es rs)*);
     fresh (func arge arg x body env')
       (term === seq (func %< arge))
       (evalo arge env arg)
-      (evalo func env closure x body env')
+      (evalo func env (closure x body env') )
       (evalo body ((inj_pair x arg) % env') r)
   ]
 
 let ( ~~ ) s  = symb s
 let s      tl = seq (inj_list tl)
 
+let nil = nil ()
 let quineo q =
   fresh (x y)
     (evalo q nil (val_ q))
@@ -167,12 +177,12 @@ let thrineso q p r =
   (evalo r nil (val_ p))
 
 
-let run_term t = Printf.printf "> %s\n%s\n\n" (show_term t) @@
+let run_term t = printf "> %s\n%s\n\n" (Gterm.show_term t) @@
   run q (fun q -> evalo t nil (val_ q)) (fun qs -> if Stream.is_empty qs
                                            then "fail"
                                            else show_term @@ Stream.hd qs)
 
-let gen_terms n r = Printf.printf "> %s\n" (show_term r);
+let gen_terms n r = printf "> %s\n" (show_term r);
   run q (fun q -> evalo q nil (val_ r))
     (fun qs -> List.iter (fun t -> printf "%s\n" @@ show_term t) @@
       Stream.take ~n:n qs);
