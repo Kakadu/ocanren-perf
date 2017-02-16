@@ -7,6 +7,22 @@ open Printf
 open GT
 open MiniKanren
 
+let list_combine3 xs ys zs =
+  let rec helper acc = function
+    | (x::xs, y::ys, z::zs) -> helper ((x,y,z)::acc) (xs,ys,zs)
+    | ([],[],[]) -> List.rev acc
+    | _ -> failwith "bad argument of list_combine3"
+  in
+  helper [] (xs,ys,zs)
+
+let list_iter3 f xs ys zs =
+  let rec helper = function
+    | (x::xs, y::ys, z::zs) -> f (x,y,z); helper (xs,ys,zs)
+    | ([],[],[]) -> ()
+    | _ -> failwith "bad argument of list_combine3"
+  in
+  helper (xs,ys,zs)
+
 module Gterm = struct
   module X = struct
     @type ('s, 'xs) t =
@@ -33,15 +49,6 @@ end
 
 let rec gterm_reifier c : Gterm.fterm -> Gterm.lterm =
   Gterm.reifier ManualReifiers.string_reifier (List.reifier gterm_reifier) c
-
-let list_combine3 xs ys zs =
-  let rec helper acc = function
-    | (x::xs, y::ys, z::zs) -> helper ((x,y,z)::acc) (xs,ys,zs)
-    | ([],[],[]) -> List.rev acc
-    | _ -> failwith "bad argument of list_combine3"
-  in
-  helper [] (xs,ys,zs)
-
 
 let rec lookupo x env r =
   fresh (y t env')
@@ -164,14 +171,14 @@ let thrineso q p r =
   (evalo r nil (val_ p))
 
 let run_term (text,t) = printf "> %s\n%!%s\n\n%!" text @@
-  run q (fun q -> evalo t nil (val_ q)) (fun qs -> if Stream.is_empty qs
-                                          then "fail"
-                                          else match Stream.hd qs with
-                                          | Final x -> show_rterm @@ Obj.magic x
-                                          | HasFreeVars (f,x) ->
-                                            let c = (object method isVar: 'a . 'a -> bool = fun x -> f @@ Obj.repr x end) in
-                                            show_lresult @@ gresult_reifier c (Obj.magic x)
-                                        )
+  run q (fun q -> evalo t nil (val_ q)) (fun qs ->
+      if Stream.is_empty qs
+      then "fail"
+      else match Stream.hd qs with
+      | Final x -> show_rterm @@ Obj.magic x
+      | HasFreeVars (c, x) ->
+        show_lterm @@ gterm_reifier c x
+    )
 
 let quine_c =
   s[s[~~"lambda"; s[~~"x"];
@@ -180,7 +187,7 @@ let quine_c =
       s[~~"lambda"; s[~~"x"];
         s[~~"list"; ~~"x"; s[~~"list"; s[~~"quote"; ~~"quote"]; ~~"x"]]]]]
 
-let () =
+let _f () =
   printf "Evaluate:\n\n%!";
   run_term (REPR( ~~"x" ));
   run_term (REPR( (s[s[~~"quote"; ~~"x"]; s[~~"quote"; ~~"y"]]) ));
@@ -204,23 +211,29 @@ let gen_terms n r = printf "> %s\n" (show_term r);
   Printf.printf "\n"
 *)
 
-(*
-let find_quines n = run q quineo
-    (fun qs -> List.iter (fun t -> printf "%s\n\n" @@ show_term t) @@
-      Stream.take ~n qs)
+let wrap_term = function
+  | Final x -> show_rterm @@ Obj.magic x
+  | HasFreeVars (c, x) ->
+    show_lterm @@ gterm_reifier c x
+
+let find_quines n = run q quineo @@ fun qs ->
+  Stream.take ~n qs |> List.map wrap_term |> List.iter (printf "%s\n\n")
 
 let find_twines n =
   run qr (fun q r -> twineso q r)
     (fun qs rs ->
-      List.iter (fun (q,r) -> printf "%s,\n%s\n\n" (show_term q) (show_term r)) @@
-      List.combine (Stream.take ~n qs) (Stream.take ~n rs))
+      List.iter2 (fun q r -> printf "%s,\n%s\n\n%!" (wrap_term q) (wrap_term r))
+        (Stream.take ~n qs) (Stream.take ~n rs)
+    )
 
 let find_thrines n =
   run qrs thrineso
     (fun qs rs ss ->
-      List.iter (fun (q,r,s) -> printf "%s,\n\t%s,\n\t%s\n\n" (show_term q) (show_term r) (show_term s))
-      @@ list_combine3 (Stream.take ~n qs) (Stream.take ~n rs) (Stream.take ~n ss))
+      list_iter3 (fun (q,r,s) -> printf "%s,\n\t%s,\n\t%s\n\n" (wrap_term q) (wrap_term r) (wrap_term s))
+        (Stream.take ~n qs) (Stream.take ~n rs) (Stream.take ~n ss)
+    )
 
+(*
 let _ =
   Printf.printf "Evaluate:\n\n%!";
   run_term @@ ~~"x";

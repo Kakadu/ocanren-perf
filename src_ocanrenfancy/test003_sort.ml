@@ -35,9 +35,9 @@ let rec sorto x y = conde [
 (* let show_int      = show(logic) (show int)
 let show_int_list = show(List.logic) show_int
 let show_nat_list   = show(List.logic) (show Nat.logic) *)
-let show_int_flist = GT.show(List.flist) (GT.show lnat Nat.show_groundf)
+let show_int_list = GT.(show List.ground @@ show Nat.ground)
 
 open Tester
-let _ =
-  run_exn show_int_flist   1  q (REPR (fun q -> sorto (inj_nat_list [4;3;2;1]) q )) qh;
+let () =
+  run_exn show_int_list   1  q qh (REPR (fun q -> sorto (inj_nat_list [4;3;2;1]) q ));
   ()

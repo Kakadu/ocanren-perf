@@ -319,42 +319,15 @@ let test17 n m =
 let test27 b q r =
   (logo (build_num 68) b q r) &&& (gt1o q)
 
-let show_int       = string_of_int
-let show_int_list  = GT.show(GT.list) show_int
-let show_int_flist = GT.show(List.flist) show_int
-(*
-let _ffoo _ =
-  run_exn show_int_llist (-1)  qr (REPR (fun q r     -> multo q r (build_num 1)                          ))   qrh;
-  run_exn show_int_llist (-1)   q (REPR (fun q       -> multo (build_num 7) (build_num 63) q             ))    qh;
-  run_exn show_int_llist (-1)  qr (REPR (fun q r     -> divo (build_num 3) (build_num 2) q r             ))   qrh;
-  run_exn show_int_llist (-1)   q (REPR (fun q       -> logo (build_num 14) (build_num 2) (build_num 3) q))    qh;
-  run_exn show_int_llist (-1)   q (REPR (fun q       -> expo (build_num 3) (build_num 5) q               ))    qh;
-  ()
-*)
-(* reifier. TODO: maybe add something like that into MiniKanren.ml? *)
-let reify_int_list (c: var_checker) f =
-  let rec helper (t: int List.flist) : int logic List.logic =
-    if c#isVar t then refine_fancy t c helper
-    else match coerce_fancy t with
-    | Nil -> Value Nil
-    | Cons (h, tl) when c#isVar h -> Value (Cons (refine_fancy h c (Reifiers.int c), helper tl))
-    | Cons (h, tl) -> Value (Cons (Value (coerce_fancy h), helper tl))
-  in
-  helper f
+let show_num       = GT.(show List.ground @@ show int)
+let show_num_logic = GT.(show List.logic @@ show logic @@ show int)
 
-let show1 l  = (GT.show(List.logic) (GT.show(logic) show_int)) l
-let runL n = runR reify_int_list show_int_flist show1 n
+(* let _ffoo _ =
+  run_exn show_num (-1)  qr qrh (REPR (fun q r     -> multo q r (build_num 1)                          ));
+  run_exn show_num (-1)   q  qh (REPR (fun q       -> multo (build_num 7) (build_num 63) q             ));
+  run_exn show_num (-1)  qr qrh (REPR (fun q r     -> divo (build_num 3) (build_num 2) q r             ));
+  run_exn show_num (-1)   q  qh (REPR (fun q       -> logo (build_num 14) (build_num 2) (build_num 3) q));
+  run_exn show_num (-1)   q  qh (REPR (fun q       -> expo (build_num 3) (build_num 5) q               ));
+  () *)
 
-let show_num = show_int_flist
-(*
-let _freeVars =
-  runL   22  qrs (REPR (fun q r s   -> pluso q r s                                      ))  qrsh;
-  runL   34  qrs (REPR (fun q r s   -> multo q r s                                      ))  qrsh;
-  runL   10   qr (REPR (fun q r     -> test17 q r                                       ))   qrh;
-  runL   15   qr (REPR (fun q r     -> lelo q r                                         ))   qrh;
-  runL  (-1)   q (REPR (fun q       -> lto (build_num 5) q                              ))    qh;
-  runL  (-1)   q (REPR (fun q       -> lto q (build_num 5)                              ))    qh;
-  runL    6 qrst (REPR (fun q r s t -> divo q r s t                                     )) qrsth;
-  runL    5  qrs (REPR (fun q r s   -> test27 q r s                                     ))  qrsh;
-  ()
-*)
+let runL n = runR (List.reifier ManualReifiers.int_reifier) show_num show_num_logic n
