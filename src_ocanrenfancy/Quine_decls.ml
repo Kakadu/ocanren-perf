@@ -173,23 +173,29 @@ let run_term (text,t) = printf "> %s\n%!%s\n\n%!" text @@
                                             show_lresult @@ gresult_reifier c (Obj.magic x)
                                         )
 
-let (_: string * fterm -> unit) = run_term
+let quine_c =
+  s[s[~~"lambda"; s[~~"x"];
+      s[~~"list"; ~~"x"; s[~~"list"; s[~~"quote"; ~~"quote"]; ~~"x"]]];
+    s[~~"quote";
+      s[~~"lambda"; s[~~"x"];
+        s[~~"list"; ~~"x"; s[~~"list"; s[~~"quote"; ~~"quote"]; ~~"x"]]]]]
 
 let () =
   printf "Evaluate:\n\n%!";
   run_term (REPR( ~~"x" ));
   run_term (REPR( (s[s[~~"quote"; ~~"x"]; s[~~"quote"; ~~"y"]]) ));
-  (* run_term @@ REPR(s[~~"quote"; ~~"x"; ~~"y"];
-  run_term @@ REPR(s[~~"quote"; ~~"x"];
-  run_term @@ REPR(s[~~"list"];
-  run_term @@ REPR(s[~~"list"; s[~~"quote"; ~~"x"]; s[~~"quote"; ~~"y"]];
-  run_term @@ REPR(s[s[~~"lambda"; s[~~"x"]; ~~"x"]; s[~~"list"]];
-  run_term @@ REPR(s[s[s[~~"lambda"; s[~~"x"]; s[~~"lambda"; s[~~"y"]; s[~~"list"; ~~"x"; ~~"y"]]]; s[~~"quote"; ~~"1"]]; s[~~"quote"; ~~"2"]];
-  run_term @@ REPR(s[s[~~"lambda"; s[~~"lambda"]; s[~~"lambda"; s[~~"list"]]]; s[~~"lambda"; s[~~"x"]; ~~"x"]];
-  run_term @@ REPR(s[~~"quote"; ~~"list"];
-  run_term @@ REPR(quine_c; *)
+  run_term (REPR( s[~~"quote"; ~~"x"; ~~"y"] ));
+  run_term (REPR( s[~~"quote"; ~~"x"] ));
+  run_term (REPR( s[~~"list"] ));
+  run_term (REPR( s[~~"list"; s[~~"quote"; ~~"x"]; s[~~"quote"; ~~"y"]] ));
+  run_term (REPR( s[s[~~"lambda"; s[~~"x"]; ~~"x"]; s[~~"list"]]        ));
+  run_term (REPR( s[ s[ s[~~"lambda"; s[~~"x"]; s[~~"lambda"; s[~~"y"]; s[~~"list"; ~~"x"; ~~"y"]]]; s[~~"quote"; ~~"1"]];
+                     s[ ~~"quote"; ~~"2"]] ));
+  run_term (REPR( s[s[~~"lambda"; s[~~"lambda"]; s[~~"lambda"; s[~~"list"]]]; s[~~"lambda"; s[~~"x"]; ~~"x"]] ));
+  run_term (REPR( s[~~"quote"; ~~"list"] ));
+  run_term (REPR( quine_c ));
   ()
-
+;;
 (*
 let gen_terms n r = printf "> %s\n" (show_term r);
   run q (fun q -> evalo q nil (val_ r))
@@ -197,6 +203,8 @@ let gen_terms n r = printf "> %s\n" (show_term r);
       Stream.take ~n:n qs);
   Printf.printf "\n"
 *)
+
+(*
 let find_quines n = run q quineo
     (fun qs -> List.iter (fun t -> printf "%s\n\n" @@ show_term t) @@
       Stream.take ~n qs)
@@ -212,14 +220,7 @@ let find_thrines n =
     (fun qs rs ss ->
       List.iter (fun (q,r,s) -> printf "%s,\n\t%s,\n\t%s\n\n" (show_term q) (show_term r) (show_term s))
       @@ list_combine3 (Stream.take ~n qs) (Stream.take ~n rs) (Stream.take ~n ss))
-(*
-let quine_c =
-  s[s[~~"lambda"; s[~~"x"];
-      s[~~"list"; ~~"x"; s[~~"list"; s[~~"quote"; ~~"quote"]; ~~"x"]]];
-    s[~~"quote";
-      s[~~"lambda"; s[~~"x"];
-        s[~~"list"; ~~"x"; s[~~"list"; s[~~"quote"; ~~"quote"]; ~~"x"]]]]]
-(*
+
 let _ =
   Printf.printf "Evaluate:\n\n%!";
   run_term @@ ~~"x";
@@ -244,4 +245,4 @@ let _ =
 
   Printf.printf "%!Twines:\n\n%!";
   find_twines ()
-  *) *)
+  *)
