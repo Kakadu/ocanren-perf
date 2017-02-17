@@ -1,3 +1,3 @@
-true: rectypes, short_paths
+true: rectypes, short_paths, keep_asm, debug
 <*.ml>: syntax(camlp5o), package(logger.syntax,GT.syntax.all,ocanren.tester,ocanren.syntax)
 <*.native>: package(GT,ocanren.tester)
