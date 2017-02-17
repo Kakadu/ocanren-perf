@@ -6,7 +6,14 @@ TESTS=001 002 004 003 005 006 007
 EXPRTESTS=$(addprefix expr, $(TESTS))
 CTESTS=$(addprefix c, $(TESTS))
 MEASURE=/usr/bin/time -f "%U"
-DUMMY_MEASURE=echo " 0.01"
+DUMMY_MEASURE=printf "%10.3f" 0.001
+
+MEASURE_OC1   ?= y
+MEASURE_OC2   ?= y
+MEASURE_OC3   ?= y
+MEASURE_RKT   ?= y
+MEASURE_SCM   ?=
+MEASURE_MUSCM ?=
 
 .DEFAULT_GOAL := all
 #ML_TESTS_TO_COMPILE :=
@@ -14,36 +21,37 @@ DUMMY_MEASURE=echo " 0.01"
 	measure_rkt measure_ml measure_scm measure_muscm
 
 define XXX
-#ocanrendefault
+#ocanren 1 default
 MLOD_NATIVE_$(1) := $$(wildcard src_ocanrendefault/test$(1)*.native)
-#ML_TESTS_TO_COMPILE += $$(ML_NATIVE_$(1))
 TEST$(1)_NAME = $$(MLOD_NATIVE_$(1):src_ocanrendefault/test$(1)_%.native=%)
-#$$(info TEST$(1)_NAME = $$(TEST$(1)_NAME) )
-#compile$(1)_ml:
-#ifneq ($$(MLFILE_$(1)),)
-#	cd ../.. && $(OB) -Is src,regression $$(ML_NATIVE_$(1))
-#endif
-measure$(1)_MLOD:
-ifneq ($$(MLOD_NATIVE_$(1)),)
+measure$(1)_ML1OD:
+ifneq "$(and $$(MLOD_NATIVE_$(1)),$(MEASURE_OC1))" ""
 	export OCAMLRUNPARAM='s=250M,h=250M' &&  $(MEASURE) --append -o .$(1).data $$(MLOD_NATIVE_$(1))
 else
 	$(DUMMY_MEASURE) >> .$(1).data
 endif
-#perf: perf$(1)_ml
-
+# ocanren 2 fancy
 MLOF_NATIVE_$(1) := $$(wildcard src_ocanrenfancy/test$(1)*.native)
-measure$(1)_MLOF:
-ifneq ($$(MLOF_NATIVE_$(1)),)
+measure$(1)_ML2OF:
+ifneq "$(and $$(MLOF_NATIVE_$(1)),$(MEASURE_OC2))" ""
 	export OCAMLRUNPARAM='s=250M,h=250M' && $(MEASURE) --append -o .$(1).data $$(MLOF_NATIVE_$(1))
 else
 	$(DUMMY_MEASURE) >> .$(1).data
 endif
-#perf: perf$(1)_ml
+
+# ocanren 3 fancy-speedup
+MLOF_NATIVE_$(1) := $$(wildcard src_ocanrenfancy3/test$(1)*.native)
+measure$(1)_ML3OF:
+ifneq "$(and $$(MLOF_NATIVE_$(1)),$(MEASURE_OC3))" ""
+	export OCAMLRUNPARAM='s=250M,h=250M' && $(MEASURE) --append -o .$(1).data $$(MLOF_NATIVE_$(1))
+else
+	$(DUMMY_MEASURE) >> .$(1).data
+endif
+
 
 #racket
 RKT_FILE_$(1) = $$(wildcard src_lisps/test$(1)*.rkt)
 RKT_NATIVE_$(1) = $$(RKT_FILE_$(1)).native
-#$$(warning RKTFILE_$(1) = $$(RKT_FILE_$(1)))
 .PHONY: compile$(1)_rkt
 ifneq ($$(RKT_FILE_$(1)),)
 compile$(1)_rkt: $$(RKT_NATIVE_$(1))
@@ -56,7 +64,7 @@ compile$(1)_rkt:
 endif
 
 measure$(1)_rkt:
-ifneq ($$(RKT_FILE_$(1)),)
+ifneq "$(and $$(RKT_FILE_$(1)),$(MEASURE_RKT))" ""
 	$(MEASURE) --append -o .$(1).data ./$$(RKT_NATIVE_$(1))
 else
 	$(DUMMY_MEASURE) >> .$(1).data
@@ -78,7 +86,7 @@ compile$(1)_scm:
 endif
 
 measure$(1)_scm:
-ifneq ($$(SCM_FILE_$(1)),)
+ifneq "$(and $$(SCM_FILE_$(1)),$(MEASURE_SCM))" ""
 	$(MEASURE) --append -o .$(1).data scheme --program $$(SCM_NATIVE_$(1))
 else
 	$(DUMMY_MEASURE) >> .$(1).data
@@ -100,7 +108,7 @@ compile$(1)_muscm:
 endif
 
 measure$(1)_muscm:
-ifneq ($$(MUSCM_FILE_$(1)),)
+ifneq "$(and $$(MUSCM_FILE_$(1)),$(MEASURE_MUSCM))" ""
 	$(MEASURE) --append -o .$(1).data scheme --program $$(MUSCM_NATIVE_$(1))
 else
 	$(DUMMY_MEASURE) >> .$(1).data
@@ -110,7 +118,7 @@ endif
 measure$(1)_prepare:
 	$(RM) .$(1).data .$(1).name
 measure$(1): measure$(1)_prepare \
-							measure$(1)_MLOD measure$(1)_MLOF \
+							measure$(1)_ML1OD measure$(1)_ML2OF measure$(1)_ML3OF \
 							measure$(1)_rkt measure$(1)_scm measure$(1)_muscm
 	@printf "$$(TEST$(1)_NAME) " >> $(DATAFILE)
 	@tr '\n' ' ' < .$(1).data >> $(DATAFILE)
@@ -121,20 +129,23 @@ endef
 
 .PHONY: prepare_header do_measure
 prepare_header:
-	echo "x     OCanren OCanrenFancy mini/Racket mini/Scheme micro/Scheme" > data.gnuplot
+	echo "x     OCanren OCanren2Fancy OCanren3Fancy mini/Racket mini/Scheme micro/Scheme" > data.gnuplot
 
-prepare_ocanren_default:
+prepare_ocanren1default:
 	$(MAKE) -C ocanrendefault -f Makefile.ob all compile_tests bundle
 	$(MAKE) -C ocanrendefault -f Makefile.ob bundle
-	#$(OB) -Is src,regression $(ML_TESTS_TO_COMPILE)
 
-prepare_ocanren_flat:
+prepare_ocanren2flat:
 	$(MAKE) -C ocanrenflat -f Makefile.ob all compile_tests bundle
 	$(MAKE) -C ocanrenflat -f Makefile.ob bundle
-	#$(OB) -Is src,regression $(ML_TESTS_TO_COMPILE)
 
-.PHONY: prepare_ocanren_flat prepare_ocanren_default prepare_ocanren
-prepare_ocanren: prepare_ocanren_default prepare_ocanren_flat
+prepare_ocanren3flat:
+	$(MAKE) -C ocanren_fancy2 -f Makefile.ob all compile_tests bundle
+	$(MAKE) -C ocanren_fancy2 -f Makefile.ob bundle
+
+.PHONY: prepare_ocanren1default prepare_ocanren2flat prepare_ocanren3flat \
+	prepare_ocanren
+prepare_ocanren: prepare_ocanren1default prepare_ocanren2flat prepare_ocanren3flat
 
 .PHONY: compile_ocanrendef_tests compile_ocanrenfancy_tests
 compile_ocanrendef_tests:
