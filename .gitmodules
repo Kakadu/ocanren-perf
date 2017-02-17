@@ -14,3 +14,7 @@
 	branch = master
 [submodule "ocanrendefault.path"]
 	branch = master
+[submodule "ocanren_fancy2"]
+	path = ocanren_fancy2
+	url = https://github.com/Kakadu/OCanren.git
+	branch = flat-speedingup
