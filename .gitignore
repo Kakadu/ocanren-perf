@@ -1,3 +1,4 @@
 /.*.data
+perf.data*
 /data.gnuplot
 /graph.pdf

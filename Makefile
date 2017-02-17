@@ -165,4 +165,8 @@ perf:
 
 .PHONY: clean
 clean:
-	$(RM) *.native *.so *~ ./compiled
+	$(RM) *~
+	$(MAKE) -C ocanrenflat    -f Makefile.ob clean
+	$(MAKE) -C ocanrendefault -f Makefile.ob clean
+	$(MAKE) -C src_ocanrendefault clean
+	$(MAKE) -C src_ocanrenfancy   clean
