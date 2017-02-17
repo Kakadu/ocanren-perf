@@ -1,4 +1,4 @@
-(include "../../microKanren/microKanren.scm")
+(include "../microKanren/microKanren.scm")
 (include "mini_from_microKanren.scm")
 
 (define poso

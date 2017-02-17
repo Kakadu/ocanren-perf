@@ -9,14 +9,14 @@ MEASURE=/usr/bin/time -f "%U"
 DUMMY_MEASURE=echo " 0.01"
 
 .DEFAULT_GOAL := all
-ML_TESTS_TO_COMPILE :=
+#ML_TESTS_TO_COMPILE :=
 .PHONY: compile_rkt compile_ml compile_scm compile_muscm\
 	measure_rkt measure_ml measure_scm measure_muscm
 
 define XXX
 #ocanrendefault
 MLOD_NATIVE_$(1) := $$(wildcard src_ocanrendefault/test$(1)*.native)
-ML_TESTS_TO_COMPILE += $$(ML_NATIVE_$(1))
+#ML_TESTS_TO_COMPILE += $$(ML_NATIVE_$(1))
 TEST$(1)_NAME = $$(MLOD_NATIVE_$(1):src_ocanrendefault/test$(1)_%.native=%)
 #$$(info TEST$(1)_NAME = $$(TEST$(1)_NAME) )
 #compile$(1)_ml:
@@ -65,12 +65,13 @@ endif
 # miniKanren in Scheme
 SCM_FILE_$(1) = $(wildcard src_lisps/test$(1)*.chez)
 SCM_NATIVE_$(1) = $$(SCM_FILE_$(1):.chez=).so
+SCM_FILE_$(1)_BASENAME = $$(shell basename $$(SCM_FILE_$(1)))
 
 ifneq ("$$(SCM_FILE_$(1))","")
 .PHONY: compile$(1)_scm
 compile$(1)_scm: $$(SCM_NATIVE_$(1))
 $$(SCM_NATIVE_$(1)):
-	echo '(compile-file "$$(SCM_FILE_$(1))")' | scheme -q
+	(cd src_lisps && echo '(compile-file "$$(SCM_FILE_$(1)_BASENAME)")' | scheme -q)
 compile_scm: compile$(1)_scm
 else
 compile$(1)_scm:
@@ -86,11 +87,13 @@ endif
 # muKanren in Scheme
 MUSCM_FILE_$(1) = $(wildcard src_lisps/test$(1)*.mu.scm)
 MUSCM_NATIVE_$(1) = $$(MUSCM_FILE_$(1):.scm=).so
+MUSCM_FILE_$(1)_BASENAME = $$(shell basename $$(MUSCM_FILE_$(1)))
+
 ifneq ("$$(MUSCM_FILE_$(1))","")
 .PHONY: compile$(1)_muscm
 compile$(1)_muscm: $$(MUSCM_NATIVE_$(1))
 $$(MUSCM_NATIVE_$(1)): $$(MUSCM_FILE_$(1))
-	echo '(compile-file "$$(MUSCM_FILE_$(1))")' | scheme -q
+	(cd src_lisps  && echo '(compile-file "$$(MUSCM_FILE_$(1)_BASENAME)")' | scheme -q)
 compile_muscm: compile$(1)_muscm
 else
 compile$(1)_muscm:
@@ -118,7 +121,7 @@ endef
 
 .PHONY: prepare_header do_measure
 prepare_header:
-	echo "x     OCanren OCanrenFancy Racket Scheme uKanren/Scheme" > data.gnuplot
+	echo "x     OCanren OCanrenFancy mini/Racket mini/Scheme micro/Scheme" > data.gnuplot
 
 prepare_ocanren_default:
 	$(MAKE) -C ocanrendefault -f Makefile.ob all compile_tests bundle
