@@ -25,7 +25,7 @@ TEST$(1)_NAME = $$(MLOD_NATIVE_$(1):src_ocanrendefault/test$(1)_%.native=%)
 #endif
 measure$(1)_MLOD:
 ifneq ($$(MLOD_NATIVE_$(1)),)
-	$(MEASURE) --append -o .$(1).data $$(MLOD_NATIVE_$(1))
+	export OCAMLRUNPARAM='s=250M,h=250M' &&  $(MEASURE) --append -o .$(1).data $$(MLOD_NATIVE_$(1))
 else
 	$(DUMMY_MEASURE) >> .$(1).data
 endif
@@ -34,7 +34,7 @@ endif
 MLOF_NATIVE_$(1) := $$(wildcard src_ocanrenfancy/test$(1)*.native)
 measure$(1)_MLOF:
 ifneq ($$(MLOF_NATIVE_$(1)),)
-	$(MEASURE) --append -o .$(1).data $$(MLOF_NATIVE_$(1))
+	export OCAMLRUNPARAM='s=250M,h=250M' && $(MEASURE) --append -o .$(1).data $$(MLOF_NATIVE_$(1))
 else
 	$(DUMMY_MEASURE) >> .$(1).data
 endif
