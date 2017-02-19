@@ -135,17 +135,17 @@ prepare_ocanren1default:
 	$(MAKE) -C ocanrendefault -f Makefile.ob all compile_tests
 	$(MAKE) -C ocanrendefault -f Makefile.ob bundle
 
-prepare_ocanren2flat:
-	$(MAKE) -C ocanrenflat    -f Makefile.ob all compile_tests
-	$(MAKE) -C ocanrenflat    -f Makefile.ob bundle
+prepare_ocanren2fancy:
+	$(MAKE) -C ocanren2fancy -f Makefile.ob all compile_tests
+	$(MAKE) -C ocanren2fancy -f Makefile.ob bundle
 
 prepare_ocanren3flat:
-	$(MAKE) -C ocanren_fancy2 -f Makefile.ob all compile_tests
-	$(MAKE) -C ocanren_fancy2 -f Makefile.ob bundle
+	$(MAKE) -C ocanren3fancy -f Makefile.ob all compile_tests
+	$(MAKE) -C ocanren3fancy -f Makefile.ob bundle
 
-.PHONY: prepare_ocanren1default prepare_ocanren2flat prepare_ocanren3flat \
+.PHONY: prepare_ocanren1default prepare_ocanren2fancy prepare_ocanren3fancy \
 	prepare_ocanren
-prepare_ocanren: prepare_ocanren1default prepare_ocanren2flat prepare_ocanren3flat
+prepare_ocanren: prepare_ocanren1default prepare_ocanren2fancy prepare_ocanren3fancy
 
 .PHONY: compile_ocanren1def_tests compile_ocanren2fancy_tests compile_ocanren3fancy_tests
 compile_ocanren1def_tests:

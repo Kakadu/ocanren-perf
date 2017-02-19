@@ -6,9 +6,8 @@ $(info $(natives))
 
 .PHONY: all clean
 all:
-	OCAMLPATH=`pwd`/../ocanren_fancy2/_build/bundle \
+	OCAMLPATH=`pwd`/../ocanren3fancy/_build/bundle \
 	ocamlbuild -use-ocamlfind $(natives)
 
 clean:
 	$(RM) -fr _build test*.native
-
