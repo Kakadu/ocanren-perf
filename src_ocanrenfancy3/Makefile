@@ -10,4 +10,5 @@ all:
 	ocamlbuild -use-ocamlfind $(natives)
 
 clean:
-	$(RM) -fr _build
+	$(RM) -fr _build test*.native
+
