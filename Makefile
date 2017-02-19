@@ -139,7 +139,7 @@ prepare_ocanren2fancy:
 	$(MAKE) -C ocanren2fancy -f Makefile.ob all compile_tests
 	$(MAKE) -C ocanren2fancy -f Makefile.ob bundle
 
-prepare_ocanren3flat:
+prepare_ocanren3fancy:
 	$(MAKE) -C ocanren3fancy -f Makefile.ob all compile_tests
 	$(MAKE) -C ocanren3fancy -f Makefile.ob bundle
 
