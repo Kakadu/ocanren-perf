@@ -4,14 +4,14 @@ print-%: ; @echo $*=$($*)
 DATAFILE=data.gnuplot
 TESTS=001 002 004 003 005 006 007
 MEASURE=/usr/bin/time -f "%U"
-DUMMY_MEASURE=printf "%10.3f\t" 0.001
+DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
-MEASURE_OC1   ?= y
-MEASURE_OC2   ?= y
+MEASURE_OC1   ?=
+MEASURE_OC2   ?=
 MEASURE_OC3   ?= y
 MEASURE_RKT   ?= y
 MEASURE_SCM   ?= y
-MEASURE_MUSCM ?= y
+MEASURE_MUSCM ?=
 
 .DEFAULT_GOAL := all
 .PHONY: compile_rkt compile_ml compile_scm compile_muscm\
@@ -95,22 +95,24 @@ MUSCM_FILE_$(1) = $(wildcard src_lisps/test$(1)*.mu.scm)
 MUSCM_NATIVE_$(1) = $$(MUSCM_FILE_$(1):.scm=).so
 MUSCM_FILE_$(1)_BASENAME = $$(shell basename $$(MUSCM_FILE_$(1)))
 
-ifeq "$(or $$(MUSCM_FILE_$(1)),$(MEASURE_MUSCM))" ""
-compile$(1)_muscm:
-else
 .PHONY: compile$(1)_muscm
+ifneq "$(and $$(MUSCM_FILE_$(1)),$(MEASURE_MUSCM))" ""
 compile$(1)_muscm: $$(MUSCM_NATIVE_$(1))
 $$(MUSCM_NATIVE_$(1)): $$(MUSCM_FILE_$(1))
 	(cd src_lisps  && echo '(compile-file "$$(MUSCM_FILE_$(1)_BASENAME)")' | scheme -q)
 compile_muscm: compile$(1)_muscm
+else
+compile$(1)_muscm:
 endif
 
 measure$(1)_muscm:
-ifeq "$(or $$(MUSCM_FILE_$(1)),$(MEASURE_MUSCM))" ""
-	$(DUMMY_MEASURE) >> .$(1).data
-else
+ifneq "$(and $$(MUSCM_FILE_$(1)),$(MEASURE_MUSCM))" ""
 	$(MEASURE) --append -o .$(1).data scheme --program $$(MUSCM_NATIVE_$(1))
+else
+	$(DUMMY_MEASURE) >> .$(1).data
 endif
+
+
 ################################################################################
 .PHONY: measure$(1) measure$(1)_prepare
 measure$(1)_prepare:
@@ -132,8 +134,8 @@ prepare_header:
 	echo "x     OCanren OCanren2Fancy OCanren3Fancy mini/Racket mini/Scheme micro/Scheme" > data.gnuplot
 
 prepare_ocanren1default:
-	$(MAKE) -C ocanrendefault -f Makefile.ob all compile_tests
-	$(MAKE) -C ocanrendefault -f Makefile.ob bundle
+	$(MAKE) -C ocanren1default -f Makefile.ob all compile_tests
+	$(MAKE) -C ocanren1default -f Makefile.ob bundle
 
 prepare_ocanren2fancy:
 	$(MAKE) -C ocanren2fancy -f Makefile.ob all compile_tests
