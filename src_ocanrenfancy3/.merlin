@@ -1,4 +1,4 @@
-FINDLIB_PATH ../ocanrenflat/_build/bundle
+FINDLIB_PATH ../ocanren3fancy/_build/bundle
 PKG ocanren
 S .
 B _build

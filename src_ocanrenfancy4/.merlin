@@ -1,0 +1,5 @@
+FINDLIB_PATH ../ocanrenfancy4/_build/bundle
+PKG ocanren
+S .
+B _build
+FLG -rectypes
