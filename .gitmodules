@@ -15,3 +15,7 @@
 	path = ocanren3fancy
 	url = https://github.com/Kakadu/OCanren.git
 	branch = flat-speedingup
+[submodule "ocanren4fancy"]
+	path = ocanren4fancy
+	url = https://github.com/Kakadu/OCanren.git
+	branch = omit-wrap
