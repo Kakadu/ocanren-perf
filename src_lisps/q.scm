@@ -1,3 +1,19 @@
+(define lookupo
+  (lambda (x env t)
+    (fresh (rest y v)
+      (== `((,y . ,v) . ,rest) env)
+      (conde
+        ((== y x) (== v t))
+        ((=/= y x) (lookupo x rest t))))))
+
+(define not-in-envo
+  (lambda (x env)
+    (conde
+      ((fresh (y v rest)
+         (== `((,y . ,v) . ,rest) env)
+         (=/= y x)
+         (not-in-envo x rest)))
+      ((== '() env)))))
 
 (define eval-expo
   (lambda (exp env val)
@@ -24,14 +40,6 @@
          (not-in-envo 'lambda env)
          (== `(closure ,x ,body ,env) val))))))
 
-(define not-in-envo
-  (lambda (x env)
-    (conde
-      ((fresh (y v rest)
-         (== `((,y . ,v) . ,rest) env)
-         (=/= y x)
-         (not-in-envo x rest)))
-      ((== '() env)))))
 
 (define proper-listo
   (lambda (exp env val)
@@ -44,13 +52,6 @@
          (eval-expo a env t-a)
          (proper-listo d env t-d))))))
 
-(define lookupo
-  (lambda (x env t)
-    (fresh (rest y v)
-      (== `((,y . ,v) . ,rest) env)
-      (conde
-        ((== y x) (== v t))
-        ((=/= y x) (lookupo x rest t))))))
 
 #|
 (test-check "4 thrines"

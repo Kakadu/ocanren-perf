@@ -4,34 +4,32 @@
 (require "../faster-miniKanren/mk.rkt")
 (include "../faster-miniKanren/test-check.scm")
 
-(define peano
-  (lambda (n)
-    (conde
-      ((== 'z n))
-      ((fresh (n-1)
-         (== `(s ,n-1) n)
-         (peano n-1))))))
+(define addo (lambda (n1 n2 out)
+  (conde
+    ((== 'z n1) (== n2 out))
+    ((fresh (n1-1 res)
+       (== `(s ,n1-1) n1)
+       (== `(s ,res) out)
+       (addo n1-1 n2 res)) ) )))
 
-(define addo
-  (lambda (n1 n2 out)
-    (conde
-      ((== 'z n1)
-       (== n2 out))
-      ((fresh (n1-1 res)
-         (== `(s ,n1-1) n1)
-         (== `(s ,res) out)
-         (addo n1-1 n2 res))))))
+(define <=o (lambda (n1 n2)
+  (conde
+    ((== n1 'z) (succeed))
+    ((=/= n1 'z) (== n2 'z) (fail))
 
-(define <=o
-  (lambda (n1 n2)
-    (fresh (m)
-      (addo n1 m n2))))
+    ((fresh (p1 p2)
+      (== `(s ,p1) n1)
+      (== `(s ,p2) n2)
+      (<=o p1 p2) )) )))
+
+;(run 10 (q r) (<=o q r) )
 
 (define >o
   (lambda (n1 n2)
     (fresh (t zz)
            (addo n2 t n1)
            (== t `(s ,zz)))))
+
 #|
 (define >o2  ; bad
   (lambda (n1 n2)

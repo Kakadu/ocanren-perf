@@ -50,24 +50,23 @@ end
 let rec gterm_reifier c : Gterm.fterm -> Gterm.lterm =
   Gterm.reifier ManualReifiers.string_reifier (List.reifier gterm_reifier) c
 
-let rec lookupo x env r =
-  fresh (y t env')
-    (env === (inj_pair y t) % env')
-    (conde [
-        (y === x) &&& (r === t);
-        (y =/= x) &&& (lookupo x env' r)
+let rec lookupo x env t =
+  Fresh.three (fun rest y v ->
+    (env === (inj_pair y v) % rest) &&&
+    (condel [
+        (y === x) &&& (v === t);
+        (y =/= x) &&& (lookupo x rest t)
       ])
-
-let (_: ('a,'b) fancy -> (('a * 'c) List.ground, ('b * 'd) logic List.logic) fancy -> ('c,'d) fancy -> goal) = lookupo
+  )
 
 let rec not_in_envo x env =
-  conde [
-    (env === nil());
-    fresh (y t env')
-      (env === (inj_pair y t) % env')
-      (y =/= x)
-      (not_in_envo x env')
-  ]
+  condel
+    [ Fresh.three (fun y t env' ->
+        (env === (inj_pair y t) % env') &&&
+        (y =/= x) &&&
+        (not_in_envo x env') )
+    ; (env === nil())
+    ]
 
 module Gresult = struct
   module X = struct
@@ -81,7 +80,6 @@ module Gresult = struct
     | Val b -> Val (g b)
   end
 
-  (* include X *)
   include Fmap3(X)
 
   type rresult = (string, Gterm.rterm, (string * rresult) List.ground) X.t
@@ -108,8 +106,6 @@ let rec gresult_reifier c : Gresult.fresult -> Gresult.lresult =
     (List.reifier (pair_reifier string_reifier gresult_reifier))
     c
 
-let (_: var_checker -> Gresult.fresult -> Gresult.lresult) = gresult_reifier
-
 let (!!) x = inj @@ lift x
 
 open Gterm
@@ -118,7 +114,7 @@ open Gresult
 type fenv = ( (string * rresult) List.ground, (string logic * lresult) logic List.logic) fancy
 
 let rec map_evalo es env rs =
-  conde [
+  condel [
     (es === nil ()) &&& (rs === nil ());
     fresh (e es' r rs')
       (es === e % es')
@@ -127,7 +123,7 @@ let rec map_evalo es env rs =
       (map_evalo es' env rs')
   ]
 and evalo (term: fterm) (env: fenv) (r: fresult) =
-  conde [
+  condel [
     fresh (t)
       (term === seq ((symb !!"quote") %< t))
       (r === (val_ t))
