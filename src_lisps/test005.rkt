@@ -7,12 +7,21 @@
 (include "q.scm")
 
 ; thrines
-(run 2 (x)
-  (fresh (p q r)
-    (=/= p q)
-    (=/= q r)
-    (=/= r p)
-    (eval-expo p '() q)
-    (eval-expo q '() r)
-    (eval-expo r '() p)
-    (== `(,p ,q ,r) x)))
+;(loop for x in answers
+;         do (print x) )
+
+;(length answers)
+(define answers
+  (run 2 (x)
+    (fresh (p q r)
+      (=/= p q)
+      (=/= q r)
+      (=/= r p)
+      (eval-expo p '() q)
+      (eval-expo q '() r)
+      (eval-expo r '() p)
+      (== `(,p ,q ,r) x))) )
+
+(map println answers)
+
+;(dump-memory-stats)
