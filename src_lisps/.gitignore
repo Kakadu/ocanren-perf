@@ -1,3 +1,4 @@
+compiled
 /*.native
 /*.so
 # ignore manually compiled racket executables

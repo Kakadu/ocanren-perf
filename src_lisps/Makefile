@@ -3,4 +3,4 @@
 all:
 
 clean:
-	$(RM) *.rkt.native *.so
+	$(RM) -f *.rkt.native *.so ./compiled ../faster-miniKanren/compiled
