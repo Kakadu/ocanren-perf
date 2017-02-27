@@ -11,7 +11,7 @@
        (== `(s ,n1-1) n1)
        (== `(s ,res) out)
        (addo n1-1 n2 res)) ) )))
-
+#|
 (define <=o (lambda (n1 n2)
   (conde
     ((== n1 'z) (succeed))
@@ -29,6 +29,18 @@
     (fresh (t zz)
            (addo n2 t n1)
            (== t `(s ,zz)))))
+|#
+
+(define <=o
+ (lambda (n1 n2)
+   (fresh (m)
+     (addo n1 m n2))))
+
+(define >o
+ (lambda (n1 n2)
+   (fresh (t zz)
+          (addo n2 t n1)
+          (== t `(s ,zz)))))
 
 #|
 (define >o2  ; bad
