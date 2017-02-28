@@ -16,6 +16,7 @@
  * (enclosed in the file COPYING).
  *)
 
+open Printf
 open GT
 open MiniKanren
 
@@ -31,6 +32,7 @@ module Tree = struct
   include X
   include Fmap2(X)
 
+  type inttree = (int, inttree) X.t
   (* A shortcut for "ground" tree we're going to work with in "functional" code *)
   type rtree = (Nat.ground, rtree) X.t
 
@@ -39,25 +41,27 @@ module Tree = struct
 
   type ftree = (rtree, ltree) fancy
 
-  let nil        : ftree = inj @@ distrib @@ Nil
-  let node a b c : ftree = inj @@ distrib @@ Node (a,b,c)
+  let nil        : ftree = inj @@ distrib @@ X.Nil
+  let node a b c : ftree = inj @@ distrib @@ X.Node (a,b,c)
 
-  let rec show_rtree = GT.(show X.t (show Nat.ground) show_rtree)
-  let rec show_ltree = show_logic GT.(show X.t (show Nat.logic) show_ltree)
+  (* Printing tree with ints inside *)
+  let rec show_inttree t = GT.(show X.t (show int) show_inttree) t
+  (* Printing tree with Peano numbers inside *)
+  let rec show_rtree t = GT.(show X.t (show Nat.ground) show_rtree) t
+  (* Printing logical tree *)
+  let rec show_ltree t = show_logic GT.(show X.t (show Nat.logic) show_ltree) t
+
+  (* Injection *)
+  let rec inj_tree : inttree -> ftree = fun tree ->
+     inj @@ distrib @@ GT.(gmap t inj_nat inj_tree tree)
+
+  (* Projection *)
+  let rec prj_tree : rtree -> inttree =
+    fun x -> GT.(gmap t) Nat.to_int prj_tree x
+
 end
 
-(* Printing ground tree function *)
-(* let rec show_tree t = show(tree) (show(int)) show_tree t *)
-
 open Tree
-(* let (_:int) = GT.gmap Tree.t *)
-(* Injection *)
- let rec inj_tree : ((int, 'a) Tree.t as 'a) -> ftree = fun t ->
-   inj @@ Tree.distrib @@ (gmap(Tree.t) inj_nat inj_tree t)
-
-(* Projection *)
-(* let rec prj_tree : ltree -> gtree = fun t ->
-  gmap(tree) prj_nat prj_tree (prj t) *)
 
 (* Relational insert into a search tree *)
 let rec inserto a t t' = conde [
@@ -72,15 +76,22 @@ let rec inserto a t t' = conde [
 ]
 
 (* Top-level wrapper for insertion --- takes and returns non-logic data *)
-let insert a t =
+let insert : int -> inttree -> inttree = fun a t ->
   run q (fun q  -> inserto (inj_nat a) (inj_tree t) q)
-        (fun qs -> prj_tree @@ Stream.hd qs)
+        (fun qs -> match Stream.hd qs with
+          | Final x -> prj_tree x
+          | HasFreeVars _ -> assert false
+          )
 
 (* Top-level wrapper for "inverse" insertion --- returns an integer, which
    has to be inserted to convert t into t' *)
 let insert' t t' =
   run q (fun q  -> inserto q (inj_tree t) (inj_tree t'))
-        (fun qs -> prj_nat @@ Stream.hd qs)
+        (fun qs ->
+          match Stream.hd qs with
+          | Final nat -> Nat.to_int nat
+          | HasFreeVars _ -> assert false
+          )
 
 (* Entry point *)
 let _ =
@@ -88,9 +99,9 @@ let _ =
     let rec inner t = function
     | []    -> t
     | x::xs ->
-       let t' = insert x t in
-       Printf.printf "Inserting %d into %s makes %s\n%!" x (show_tree t) (show_tree t');
-       inner t' xs
+      let t' = insert x t in
+      printf "Inserting %d into %s makes %s\n%!" x (show_inttree t) (show_inttree t');
+      inner t' xs
     in
     inner Nil l
   in
