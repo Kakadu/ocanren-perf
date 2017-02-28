@@ -1,6 +1,6 @@
-(include "mk-vicare.scm")
-(include "mk.scm")
-(include "test-check.scm")
+(include "../faster-miniKanren/mk-vicare.scm")
+(include "../faster-miniKanren/mk.scm")
+(include "../faster-miniKanren/test-check.scm")
 
 (define poso
   (lambda (n)
