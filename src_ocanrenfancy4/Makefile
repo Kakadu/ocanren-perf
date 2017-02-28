@@ -16,3 +16,7 @@ clean:
 test900_trees.native:
 	OCAMLPATH=`pwd`/../ocanren4fancy/_build/bundle \
 	ocamlbuild -use-ocamlfind $@
+
+test003_sort.native:
+	OCAMLPATH=`pwd`/../ocanren4fancy/_build/bundle \
+	ocamlbuild -use-ocamlfind $@

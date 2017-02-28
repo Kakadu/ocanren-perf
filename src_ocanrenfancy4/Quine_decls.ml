@@ -172,8 +172,8 @@ let run_term (text,t) = printf "> %s\n%!%s\n\n%!" text @@
       then "fail"
       else match Stream.hd qs with
       | Final x -> show_rterm @@ Obj.magic x
-      | HasFreeVars (c, x) ->
-        show_lterm @@ gterm_reifier c x
+      | HasFreeVars func ->
+        show_lterm @@ func gterm_reifier
     )
 
 let quine_c =
@@ -209,8 +209,7 @@ let gen_terms n r = printf "> %s\n" (show_term r);
 
 let wrap_term = function
   | Final x -> show_rterm @@ Obj.magic x
-  | HasFreeVars (c, x) ->
-    show_lterm @@ gterm_reifier c x
+  | HasFreeVars func -> show_lterm @@ func gterm_reifier
 
 let find_quines n = run q quineo @@ fun qs ->
   Stream.take ~n qs |> List.map wrap_term |> List.iter (printf "%s\n\n")
