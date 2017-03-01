@@ -38,36 +38,36 @@ module Gterm = struct
 
   type rterm = (string, rterm List.ground) X.t
   type lterm = (string logic, lterm List.logic) X.t logic
-  type fterm = (rterm, lterm) fancy
+  type fterm = (rterm, lterm) injected
 
   let rec show_rterm : rterm -> string = fun t -> GT.(show X.t (fun s -> s) (show List.ground show_rterm)) t
-  let rec show_lterm : lterm -> string = fun x -> show_logic GT.(show X.t (show_logic (fun s -> s)) (show List.logic show_lterm) ) x
+  let rec show_lterm : lterm -> string =
+    fun x -> GT.(show logic @@ show X.t (show logic (fun s -> s)) (show List.logic show_lterm) ) x
 
   let symb s : fterm = inj @@ distrib @@ Symb s
   let seq xs : fterm = inj @@ distrib @@ Seq xs
 end
 
 let rec gterm_reifier c : Gterm.fterm -> Gterm.lterm =
-  Gterm.reifier ManualReifiers.string_reifier (List.reifier gterm_reifier) c
+  Gterm.reify ManualReifiers.string_reifier (List.reify gterm_reifier) c
 
-let rec lookupo x env r =
-  fresh (y t env')
-    (env === (inj_pair y t) % env')
+let rec lookupo x env t =
+  Fresh.three (fun rest y v ->
+    (env === (inj_pair y v) % rest) &&&
     (conde [
-        (y === x) &&& (r === t);
-        (y =/= x) &&& (lookupo x env' r)
+        (y === x) &&& (v === t);
+        (y =/= x) &&& (lookupo x rest t)
       ])
-
-let (_: ('a,'b) fancy -> (('a * 'c) List.ground, ('b * 'd) logic List.logic) fancy -> ('c,'d) fancy -> goal) = lookupo
+  )
 
 let rec not_in_envo x env =
-  conde [
-    (env === nil());
-    fresh (y t env')
-      (env === (inj_pair y t) % env')
-      (y =/= x)
-      (not_in_envo x env')
-  ]
+  conde
+    [ Fresh.three (fun y t env' ->
+        (env === (inj_pair y t) % env') &&&
+        (y =/= x) &&&
+        (not_in_envo x env') )
+    ; (env === nil())
+    ]
 
 module Gresult = struct
   module X = struct
@@ -81,41 +81,38 @@ module Gresult = struct
     | Val b -> Val (g b)
   end
 
-  (* include X *)
   include Fmap3(X)
 
   type rresult = (string, Gterm.rterm, (string * rresult) List.ground) X.t
   type lresult = (string logic, Gterm.lterm, (string logic * lresult) logic List.logic) X.t logic
-  type fresult = (rresult, lresult) fancy
+  type fresult = (rresult, lresult) injected
 
   let closure s t xs = inj @@ distrib @@ X.Closure (s,t,xs)
   let val_ t         = inj @@ distrib @@ X.Val t
 
   let show_string = GT.(show string)
-  let show_stringl = show_logic show_string
+  let show_stringl = GT.(show logic) show_string
 
   let rec show_rresult r = GT.(show X.t show_string Gterm.show_rterm
       @@ show List.ground (show pair show_string show_rresult)) r
-  let rec show_lresult r = show_logic GT.(show X.t show_stringl Gterm.show_lterm
-    @@ show List.logic (show_logic @@ show pair show_stringl show_lresult)) r
+  let rec show_lresult r = GT.(show logic @@ show X.t show_stringl Gterm.show_lterm
+    @@ show List.logic (show logic @@ show pair show_stringl show_lresult)) r
 
 end
 
 
 let rec gresult_reifier c : Gresult.fresult -> Gresult.lresult =
   let open ManualReifiers in
-  Gresult.reifier string_reifier gterm_reifier
-    (List.reifier (pair_reifier string_reifier gresult_reifier))
+  Gresult.reify string_reifier gterm_reifier
+    (List.reify (pair_reifier string_reifier gresult_reifier))
     c
-
-let (_: var_checker -> Gresult.fresult -> Gresult.lresult) = gresult_reifier
 
 let (!!) x = inj @@ lift x
 
 open Gterm
 open Gresult
 
-type fenv = ( (string * rresult) List.ground, (string logic * lresult) logic List.logic) fancy
+type fenv = ( (string * rresult) List.ground, (string logic * lresult) logic List.logic) injected
 
 let rec map_evalo es env rs =
   conde [
@@ -176,8 +173,8 @@ let run_term (text,t) = printf "> %s\n%!%s\n\n%!" text @@
       then "fail"
       else match Stream.hd qs with
       | Final x -> show_rterm @@ Obj.magic x
-      | HasFreeVars (c, x) ->
-        show_lterm @@ gterm_reifier c x
+      | HasFreeVars func ->
+        show_lterm @@ func gterm_reifier
     )
 
 let quine_c =
@@ -213,8 +210,7 @@ let gen_terms n r = printf "> %s\n" (show_term r);
 
 let wrap_term = function
   | Final x -> show_rterm @@ Obj.magic x
-  | HasFreeVars (c, x) ->
-    show_lterm @@ gterm_reifier c x
+  | HasFreeVars func -> show_lterm @@ func gterm_reifier
 
 let find_quines n = run q quineo @@ fun qs ->
   Stream.take ~n qs |> List.map wrap_term |> List.iter (printf "%s\n\n")

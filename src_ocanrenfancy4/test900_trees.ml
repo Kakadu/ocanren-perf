@@ -39,7 +39,7 @@ module Tree = struct
   (* Logic counterpart *)
   type ltree = (Nat.logic, ltree) X.t logic
 
-  type ftree = (rtree, ltree) fancy
+  type ftree = (rtree, ltree) injected
 
   let nil        : ftree = inj @@ distrib @@ X.Nil
   let node a b c : ftree = inj @@ distrib @@ X.Node (a,b,c)
@@ -49,7 +49,7 @@ module Tree = struct
   (* Printing tree with Peano numbers inside *)
   let rec show_rtree t = GT.(show X.t (show Nat.ground) show_rtree) t
   (* Printing logical tree *)
-  let rec show_ltree t = show_logic GT.(show X.t (show Nat.logic) show_ltree) t
+  let rec show_ltree t = GT.(show logic @@ show X.t (show Nat.logic) show_ltree) t
 
   (* Injection *)
   let rec inj_tree : inttree -> ftree = fun tree ->
