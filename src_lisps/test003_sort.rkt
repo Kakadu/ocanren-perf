@@ -11,10 +11,10 @@
        (== `(s ,n1-1) n1)
        (== `(s ,res) out)
        (addo n1-1 n2 res)) ) )))
-#|
+
 (define <=o (lambda (n1 n2)
   (conde
-    ((== n1 'z) (succeed))
+    ((== n1 'z))
     ((=/= n1 'z) (== n2 'z) (fail))
 
     ((fresh (p1 p2)
@@ -25,12 +25,18 @@
 ;(run 10 (q r) (<=o q r) )
 
 (define >o
-  (lambda (n1 n2)
-    (fresh (t zz)
-           (addo n2 t n1)
-           (== t `(s ,zz)))))
-|#
+  (lambda (x y)
+    (conde
+      ((=/= x 'z) (== y 'z))
+      ((==  x 'z) (fail))
+      ((fresh (a b)
+        (== `(s ,a) x)
+        (== `(s ,b) y)
+        (>o a b)
+        ))
+      )))
 
+#|
 (define <=o
  (lambda (n1 n2)
    (fresh (m)
@@ -41,6 +47,7 @@
    (fresh (t zz)
           (addo n2 t n1)
           (== t `(s ,zz)))))
+|#
 
 #|
 (define >o2  ; bad
@@ -105,7 +112,7 @@ let rec sorto x y = conde [
   (conde
      ((== x '()) (== y '()))
      ((fresh (s xs xs2)
-        (== y `(,s . ,xs))
+        (== y `(,s . ,xs2))
         (sorto xs xs2)
         (smallesto x s xs))))))
 
@@ -128,8 +135,9 @@ let rec sorto x y = conde [
            ;(s(s(s(s(s (s z))))))          ;6
            ;(s(s(s(s (s z)))))
            ; (s(s(s (s z))))
-           (s(s (s z)))                   ;3
+           (s (s (s z)))                   ;3
            (s (s z))
            (s z)
-           z)                             ; 0
+           z                               ; 0
+          )
          r))

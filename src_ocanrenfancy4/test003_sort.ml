@@ -8,7 +8,7 @@ let show_nat      = GT.(show Nat.ground)
 (* Relational minimum/maximum (for nats only) *)
 let minmaxo a b min max =
   let open Nat in
-  conde
+  condel
     [ (min === a) &&& (max === b) &&& (a <= b)
     ; (max === a) &&& (min === b) &&& (a >  b)
     ]
@@ -16,18 +16,19 @@ let minmaxo a b min max =
 (* [l] is a (non-empty) list, [s] is its smallest element,
    [l'] --- all other elements
 *)
-let rec smallesto l s l' = conde
-  [ (l === !< s) &&& (l' === nil())
-  ; fresh (h t s' t' max)
-      (l' === max % t')
-      (l === h % t)
-      (minmaxo h s' s max)
-      (smallesto t s' t')
-  ]
+let rec smallesto l s l' =
+  condel
+    [ (l === !< s) &&& (l' === nil())
+    ; fresh (h t s' t' max)
+        (l' === max % t')
+        (l === h % t)
+        (minmaxo h s' s max)
+        (smallesto t s' t')
+    ]
 
 (* Relational sort *)
 let rec sorto x y =
-  conde
+  condel
     [ (* either both lists are empty *)
       (x === nil()) &&& (y === nil())
     ; fresh (s xs xs')
@@ -41,4 +42,4 @@ let rec sorto x y =
 
 open Tester
 let () =
-  run_exn show_nat_list   1  q qh (REPR (fun q -> sorto (inj_nat_list [4;3;2;1]) q ))
+  run_exn show_nat_list   1  q qh (REPR (fun q -> sorto (inj_nat_list [3;2;1;0]) q ))

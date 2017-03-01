@@ -61,12 +61,12 @@ let rec lookupo x env t =
   )
 
 let rec not_in_envo x env =
-  conde
-    [ (env === nil())
-    ; Fresh.three (fun y t env' ->
-        (env === (inj_pair y t) % env') &&&
+  condel
+    [ Fresh.three (fun y v rest ->
+        (env === (inj_pair y v) % rest) &&&
         (y =/= x) &&&
-        (not_in_envo x env') )
+        (not_in_envo x rest) )
+    ; (env === nil ())
     ]
 
 module Gresult = struct
@@ -115,40 +115,40 @@ open Gresult
 type fenv = ( (string * rresult) List.ground, (string logic * lresult) logic List.logic) injected
 
 let rec map_evalo es env rs =
-  conde [
-    (es === nil ()) &&& (rs === nil ());
-    fresh (e es' r rs')
-      (es === e % es')
-      (rs === r % rs')
-      (evalo e env (val_ r))
-      (map_evalo es' env rs')
-  ]
+  condel
+    [ (es === nil ()) &&& (rs === nil ())
+    ; fresh (e es' r rs')
+        (es === e % es')
+        (rs === r % rs')
+        (evalo e env (val_ r))
+        (map_evalo es' env rs')
+    ]
 and evalo (term: fterm) (env: fenv) (r: fresult) =
-  conde [
-    fresh (t)
-      (term === seq ((symb !!"quote") %< t))
-      (r === (val_ t))
-      (not_in_envo !!"quote" env);
-    fresh (s)
-      (term === (symb s))
-      (lookupo s env r);
-    fresh (x body)
-      (term === seq ( (symb !!"lambda") %
-                      (seq (!< (symb x)) %< body)
-                    ) )
-      (r === (closure x body env))
-      (not_in_envo !!"lambda" env);
-    fresh (es rs)
-      (term === seq ((symb !!"list") % es) )
-      (r === val_ (seq rs))
-      (not_in_envo !!"list" env)
-      (map_evalo es env rs)(*(List.mapo (fun e r -> evalo e env !!(Val r)) es rs)*);
-    fresh (func arge arg x body env')
-      (term === seq (func %< arge))
-      (evalo arge env arg)
-      (evalo func env (closure x body env') )
-      (evalo body ((inj_pair x arg) % env') r)
-  ]
+  condel
+    [ fresh (t)
+        (term === seq ((symb !!"quote") %< t))
+        (r === (val_ t))
+        (not_in_envo !!"quote" env)
+    ; fresh (es rs)
+        (term === seq ((symb !!"list") % es) )
+        (r === val_ (seq rs))
+        (not_in_envo !!"list" env)
+        (map_evalo es env rs)
+    ; fresh (s)
+        (term === (symb s))
+        (lookupo s env r)
+    ; fresh (func arge arg x body env')
+        (term === seq (func %< arge))
+        (evalo arge env arg)
+        (evalo func env (closure x body env') )
+        (evalo body ((inj_pair x arg) % env') r)
+    ; fresh (x body)
+        (term === seq ( (symb !!"lambda") %
+                        (seq (!< (symb x)) %< body)
+                      ) )
+        (not_in_envo !!"lambda" env)
+        (r === (closure x body env))
+    ]
 
 let ( ~~ ) s  = symb @@ inj @@ lift s
 let s      tl = seq (inj_list tl)

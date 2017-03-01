@@ -15,6 +15,17 @@
          (not-in-envo x rest)))
       ((== '() env)))))
 
+(define proper-listo
+  (lambda (exp env val)
+    (conde
+      ((== '() exp)
+       (== '() val))
+      ((fresh (a d t-a t-d)
+         (== `(,a . ,d) exp)
+         (== `(,t-a . ,t-d) val)
+         (eval-expo a env t-a)
+         (proper-listo d env t-d))))))
+
 (define eval-expo
   (lambda (exp env val)
     (conde
@@ -39,18 +50,6 @@
          (symbolo x)
          (not-in-envo 'lambda env)
          (== `(closure ,x ,body ,env) val))))))
-
-
-(define proper-listo
-  (lambda (exp env val)
-    (conde
-      ((== '() exp)
-       (== '() val))
-      ((fresh (a d t-a t-d)
-         (== `(,a . ,d) exp)
-         (== `(,t-a . ,t-d) val)
-         (eval-expo a env t-a)
-         (proper-listo d env t-d))))))
 
 
 #|
