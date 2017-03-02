@@ -32,6 +32,24 @@ module Gterm = struct
     let fmap f g = function
     | Symb s -> Symb (f s)
     | Seq xs -> Seq (g xs)
+
+    let t = {t with
+      gcata = ();
+      plugins = object
+        method show fa fb bx =
+           GT.transform(t)
+              (GT.lift fa) (GT.lift fb)
+              (object inherit ['a,'b] @t[show]
+                method c_Symb _ s str =
+                  sprintf "(symb '%s)" (str.GT.fx ())
+                method c_Seq  _ _ xs =
+                  sprintf "(seq %s)" (xs.GT.fx ())
+               end)
+              ()
+              bx
+       end
+    }
+
   end
   include X
   include Fmap2(X)
@@ -50,24 +68,6 @@ end
 
 let rec gterm_reifier c : Gterm.fterm -> Gterm.lterm =
   Gterm.reify ManualReifiers.string_reifier (List.reify gterm_reifier) c
-
-let rec lookupo x env t =
-  Fresh.three (fun rest y v ->
-    (env === (inj_pair y v) % rest) &&&
-    (conde [
-        (y === x) &&& (v === t);
-        (y =/= x) &&& (lookupo x rest t)
-      ])
-  )
-
-let rec not_in_envo x env =
-  condel
-    [ Fresh.three (fun y v rest ->
-        (env === (inj_pair y v) % rest) &&&
-        (y =/= x) &&&
-        (not_in_envo x rest) )
-    ; (env === nil ())
-    ]
 
 module Gresult = struct
   module X = struct
@@ -112,10 +112,29 @@ let (!!) x = inj @@ lift x
 open Gterm
 open Gresult
 
+let rec lookupo x env t =
+  Fresh.three (fun rest y v ->
+    (env === (inj_pair y v) % rest) &&&
+    (conde [
+        (y === x) &&& (v === t);
+        (y =/= x) &&& (lookupo x rest t)
+      ])
+  )
+
+let rec not_in_envo x env = fun st ->
+  (* print_endline "not_in_envo"; *)
+  conde
+    [ Fresh.three (fun y v rest ->
+        (env === (inj_pair y v) % rest) &&&
+        (y =/= x) &&&
+        (not_in_envo x rest) )
+    ; (env === nil ())
+    ] st
+
 type fenv = ( (string * rresult) List.ground, (string logic * lresult) logic List.logic) injected
 
 let rec map_evalo es env rs =
-  condel
+  conde
     [ (es === nil ()) &&& (rs === nil ())
     ; fresh (e es' r rs')
         (es === e % es')
@@ -124,19 +143,23 @@ let rec map_evalo es env rs =
         (map_evalo es' env rs')
     ]
 and evalo (term: fterm) (env: fenv) (r: fresult) =
-  condel
-    [ fresh (t)
-        (term === seq ((symb !!"quote") %< t))
+  conde
+    [ call_fresh_named "t" (fun t ->
+        (term === seq ((symb !!"quote") %< t)) &&&
         (r === (val_ t))
-        (not_in_envo !!"quote" env)
+           &&& (not_in_envo !!"quote" env)
+        )
     ; fresh (es rs)
         (term === seq ((symb !!"list") % es) )
         (r === val_ (seq rs))
         (not_in_envo !!"list" env)
         (map_evalo es env rs)
+
     ; fresh (s)
         (term === (symb s))
         (lookupo s env r)
+
+
     ; fresh (func arge arg x body env')
         (term === seq (func %< arge))
         (evalo arge env arg)
@@ -148,6 +171,7 @@ and evalo (term: fterm) (env: fenv) (r: fresult) =
                       ) )
         (not_in_envo !!"lambda" env)
         (r === (closure x body env))
+
     ]
 
 let ( ~~ ) s  = symb @@ inj @@ lift s
