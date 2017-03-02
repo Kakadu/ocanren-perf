@@ -1,6 +1,6 @@
-(include "../faster-miniKanren/mk-vicare.scm")
-(include "../faster-miniKanren/mk.scm")
-(include "../faster-miniKanren/test-check.scm")
+;(include "../faster-miniKanren/mk-vicare.scm")
+(include "../webyrd-quines/mk.scm")
+;(include "../webyrd-quines/test-check.scm")
 
 (include "q.scm")
 

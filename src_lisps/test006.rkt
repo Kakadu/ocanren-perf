@@ -10,6 +10,6 @@
 (run 2 (x)
   (fresh (p q)
     (=/= p q)
-    (eval-expo p '() q)
-    (eval-expo q '() p)
+    (eval-expo p '() `(val_ ,q))
+    (eval-expo q '() `(val_ ,p))
     (== `(,p ,q) x)))

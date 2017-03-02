@@ -1,29 +1,52 @@
-(define noo absento)
+(define (list-display lis)
+          (cond ((null? lis)
+                 #f)
+                (else
+                 (display (car lis))
+                 (newline)
+                 (list-display (cdr lis)))))
+
+(define proper-listo
+ (lambda (exp env rs)
+   (conde
+     ((== '() exp) (== '() rs))
+     ((fresh (e d t-e t-d)
+        (== exp `(,e . ,d) )
+        (== rs `(,t-e . ,t-d) )
+        (eval-expo e env `(val_ ,t-e) )
+        (proper-listo d env t-d) )) )))
 
 (define eval-expo
-  (lambda (exp env val)
+  (lambda (exp env r)
     (conde
-      ((fresh (v)
-         (== `(quote ,v) exp)
+      ((fresh (t)
+         (== exp `(seq ((symb 'quote) ,t)) )
+         (== r `(val_ ,t))
          (not-in-envo 'quote env)
-         (noo 'closure v)
-         (== v val)))
-      ((fresh (a*)
-         (== `(list . ,a*) exp)
+           ))
+      ((fresh (es rs)
+         (== exp `(seq ((symb 'list) . ,es)) )
+         (== r `(val_ (seq ,rs)) )
          (not-in-envo 'list env)
-         (noo 'closure a*)
-         (proper-listo a* env val)))
-      ((symbolo exp) (lookupo exp env val))
+         (proper-listo es env rs)
+           ))
+
+      ((fresh (s)
+         (== exp `(symb ,s))
+         (lookupo s env r) ))
+
       ((fresh (rator rand x body env^ a)
-         (== `(,rator ,rand) exp)
-         (eval-expo rator env `(closure ,x ,body ,env^))
+         (== exp `(seq (,rator ,rand)) )
          (eval-expo rand env a)
-         (eval-expo body `((,x . ,a) . ,env^) val)))
+         (eval-expo rator env `(closure ,x ,body ,env^))
+         (eval-expo body `((,x . ,a) . ,env^) r) ))
       ((fresh (x body)
-         (== `(lambda (,x) ,body) exp)
-         (symbolo x)
+         (== exp `(seq ( (symb 'lambda)
+                         (seq ((symb ,x)))
+                         ,body) ) )
          (not-in-envo 'lambda env)
-         (== `(closure ,x ,body ,env) val))))))
+         (== r `(closure ,x ,body ,env) ) ))
+         )) )
 
 (define not-in-envo
   (lambda (x env)
@@ -31,19 +54,9 @@
       ((fresh (y v rest)
          (== `((,y . ,v) . ,rest) env)
          (=/= y x)
-         (not-in-envo x rest)))
+         (not-in-envo x rest)
+          ))
       ((== '() env)))))
-
-(define proper-listo
-  (lambda (exp env val)
-    (conde
-      ((== '() exp)
-       (== '() val))
-      ((fresh (a d t-a t-d)
-         (== `(,a . ,d) exp)
-         (== `(,t-a . ,t-d) val)
-         (eval-expo a env t-a)
-         (proper-listo d env t-d))))))
 
 (define lookupo
   (lambda (x env t)
@@ -196,4 +209,5 @@
         (not (equal? q r))
         (not (equal? r p)))))
   #t)
+
 |#
