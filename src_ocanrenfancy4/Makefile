@@ -3,7 +3,7 @@ mls := $(foreach n,$(TESTS),$(wildcard test$(n)*))
 natives := $(patsubst %.ml,%.native,$(mls) )
 
 #$(info $(natives))
-#SUFFIXES: .native
+.SUFFIX: .native
 .PHONY: all clean $(natives)
 
 all:
@@ -14,6 +14,10 @@ clean:
 	$(RM) -fr _build test*.native
 
 test900_trees.native:
+	OCAMLPATH=`pwd`/../ocanren4fancy/_build/bundle \
+	ocamlbuild -use-ocamlfind $@
+
+test007_quines.native:
 	OCAMLPATH=`pwd`/../ocanren4fancy/_build/bundle \
 	ocamlbuild -use-ocamlfind $@
 

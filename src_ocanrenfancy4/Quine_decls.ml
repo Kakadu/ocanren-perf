@@ -123,12 +123,12 @@ let rec lookupo x env t =
 
 let rec not_in_envo x env = fun st ->
   (* print_endline "not_in_envo"; *)
-  conde
-    [ Fresh.three (fun y v rest ->
+  condel
+    [ (env === nil ())
+    ; Fresh.three (fun y v rest ->
         (env === (inj_pair y v) % rest) &&&
         (y =/= x) &&&
         (not_in_envo x rest) )
-    ; (env === nil ())
     ] st
 
 type fenv = ( (string * rresult) List.ground, (string logic * lresult) logic List.logic) injected
@@ -139,7 +139,7 @@ let rec map_evalo es env rs =
     ; fresh (e es' r rs')
         (es === e % es')
         (rs === r % rs')
-        (evalo e env (val_ r))
+        (* (evalo e env (val_ r)) *)
         (map_evalo es' env rs')
     ]
 and evalo (term: fterm) (env: fenv) (r: fresult) =
@@ -155,11 +155,11 @@ and evalo (term: fterm) (env: fenv) (r: fresult) =
         (not_in_envo !!"list" env)
         (map_evalo es env rs)
 
+(*
     ; fresh (s)
         (term === (symb s))
-        (lookupo s env r)
-
-
+        (lookupo s env r) *)
+(*
     ; fresh (func arge arg x body env')
         (term === seq (func %< arge))
         (evalo arge env arg)
@@ -171,6 +171,7 @@ and evalo (term: fterm) (env: fenv) (r: fresult) =
                       ) )
         (not_in_envo !!"lambda" env)
         (r === (closure x body env))
+        *)
 
     ]
 

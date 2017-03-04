@@ -1,9 +1,0 @@
-;(include "../faster-miniKanren/mk-vicare.scm")
-(include "../webyrd-quines/mk.scm")
-;(include "../webyrd-quines/test-check.scm")
-
-(include "q.scm")
-
-; quines
-(run 5 (p)
-  (eval-expo p '() p))

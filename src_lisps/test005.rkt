@@ -12,7 +12,7 @@
 
 ;(length answers)
 (define answers
-  (run 2 (x)
+  (run 5 (x)
     (fresh (p q r)
       (=/= p q)
       (=/= q r)

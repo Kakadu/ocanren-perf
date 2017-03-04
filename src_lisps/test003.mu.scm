@@ -1,19 +1,26 @@
 (include "../microKanren/microKanren.scm")
 (include "mini_from_microKanren.scm")
 
+(define (list-display lis)
+          (cond ((null? lis)
+                 #f)
+                (else
+                 (display (car lis))
+                 (newline)
+                 (list-display (cdr lis)))))
 (define poso
   (lambda (n)
     (fresh (a d)
       (== `(,a . ,d) n))))
 
 (include "numbers.scm")
-(define fives
-  (lambda (x)
-    (disj
-     (== x 5)
-     (lambda (a/c)
-       (lambda ()
-         ((fives x) a/c))))))
+;(define fives
+;  (lambda (x)
+;    (disj
+;     (== x 5)
+;     (lambda (a/c)
+;       (lambda ()
+;         ((fives x) a/c))))))
 
 (define peano
  (lambda (n)
@@ -106,7 +113,7 @@ let rec sorto x y = conde [
  (conde
     ((== x '()) (== y '()))
     ((fresh (s xs xs2)
-       (== y `(,s . ,xs))
+       (== y `(,s . ,xs2))
        (sorto xs xs2)
        (smallesto x s xs))))))
 
@@ -121,16 +128,20 @@ let rec sorto x y = conde [
 
 ;(run 1 (r) (sorto '() r))
 ;(run 1 (r) (sorto '(z) r))
-(run 1 (r)
- (sorto '(
-          ;(s(s(s(s(s(s(s(s (s z))))))))) ; 9
-          ;(s(s(s(s(s(s(s (s z))))))))
-          ;(s(s(s(s(s(s (s z)))))))
-          ;(s(s(s(s(s (s z))))))          ;6
-          ;(s(s(s(s (s z)))))
-          ; (s(s(s (s z))))
-          (s(s (s z)))                   ;3
-          (s (s z))
-          (s z)
-          z)                             ; 0
-        r))
+
+(list-display
+  (run 1 (r)
+    (sorto '(
+            ;(s(s(s(s(s(s(s(s (s z))))))))) ; 9
+            ;(s(s(s(s(s(s(s (s z))))))))
+            ;(s(s(s(s(s(s (s z)))))))
+            ;(s(s(s(s(s (s z))))))          ;6
+            ;(s(s(s(s (s z)))))
+            ;(s (s (s (s z))))
+            (s (s (s z)))                   ;3
+            (s (s z))
+            (s z)
+            z                             ; 0
+            )
+          r))
+)

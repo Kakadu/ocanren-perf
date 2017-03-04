@@ -18,7 +18,7 @@
 
 (display
  (run* (q)
-   (logo '(0 1 1 1) '(0 1) '(1 1) q)))
+   (logo '(1 1 0 0 1 1 1 1) '(1 1) q '())))
 
 ; without display REPL prints the result but compiled code doesn't
 ;(display

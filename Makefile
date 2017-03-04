@@ -1,20 +1,21 @@
 print-%: ; @echo $*=$($*)
 
 DATAFILE=data.gnuplot
-TESTS=001 002 004 003 005 006 007 008
+TESTS=001 002 003 005 006 007
 MEASURE=/usr/bin/time -f "%U"
 DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
-MEASURE_OC1   ?=
-MEASURE_OC2   ?=
+#MEASURE_OC1   ?=
+#MEASURE_OC2   ?=
 MEASURE_OC3   ?= y
-MEASURE_OC4   ?= y
-MEASURE_RKT   ?= y
-MEASURE_SCM   ?=
-MEASURE_MUSCM ?=
+#MEASURE_OC4   ?=
+MEASURE_OC5   ?= y
+#MEASURE_RKT   ?= y
+MEASURE_SCM   ?= y
+MEASURE_MUSCM ?= y
 
 .DEFAULT_GOAL := all
-.PHONY: compile_rkt compile_ml compile_scm compile_muscm\
+.PHONY: compile_rkt compile_ml compile_scm compile_muscm \
 	measure_rkt measure_ml measure_scm measure_muscm
 
 ####### AVG_MEASURE(what-to-run,where-to-put-avg)
@@ -62,7 +63,7 @@ endif
 endif
 endef
 
-TEST_OCAMLRUNPARAM=OCAMLRUNPARAM='s=250M,h=250M'
+# TEST_OCAMLRUNPARAM=OCAMLRUNPARAM='s=250M,h=250M'
 define DOUBLE_IF_OC
 $(call DOUBLE_IF,$1,$2,$3,$$(TEST_OCAMLRUNPARAM) $$(MEASURE) --append -o $(3) $(1) )
 endef
@@ -72,47 +73,25 @@ endef
 
 # https://www.gnu.org/software/make/manual/html_node/Conditional-Functions.html
 define XXX
-# ML OCanren 1 Default
-MLOC1D_NATIVE_$(1) := $$(wildcard src_ocanrendefault/test$(1)*.native)
-TEST$(1)_NAME := $$(MLOC1D_NATIVE_$(1):src_ocanrendefault/test$(1)_%.native=%)
-measure$(1)_MLOC1D:
-$(call DOUBLE_IF_OC,$$(MLOC1D_NATIVE_$(1)),$(MEASURE_OC1),.$(1).data)
-
-# ML OCanren 2 Fancy
-MLOC2F_NATIVE_$(1) := $$(wildcard src_ocanrenfancy/test$(1)*.native)
-measure$(1)_MLOC2F:
-$(call DOUBLE_IF_OC,$$(MLOC2F_NATIVE_$(1)),$(MEASURE_OC2),.$(1).data)
-
 # ML OCanren 3 Fancy-speedup
 MLOC3F_NATIVE_$(1) := $$(wildcard src_ocanrenfancy3/test$(1)*.native)
+TEST$(1)_NAME := $$(MLOC3F_NATIVE_$(1):src_ocanrenfancy3/test$(1)_%.native=%)
+
 measure$(1)_MLOC3F:
 $(call DOUBLE_IF_OC_AVG,$$(MLOC3F_NATIVE_$(1)),$(MEASURE_OC3),.$(1).data)
 
-# ML OCanren 4 Fancy-speedup + nowrap
-MLOC4F_NATIVE_$(1) := $$(wildcard src_ocanrenfancy4/test$(1)*.native)
-measure$(1)_MLOC4F:
-$(call DOUBLE_IF_OC_AVG,$$(MLOC4F_NATIVE_$(1)),$(MEASURE_OC4),.$(1).data)
+# ML OCanren 5 default + speedup
+MLOC5_NATIVE_$(1) := $$(wildcard src_ocanren5def_opt/test$(1)*.native)
+
+measure$(1)_MLOC5:
+$(call DOUBLE_IF_OC_AVG,$$(MLOC5_NATIVE_$(1)),$(MEASURE_OC5),.$(1).data)
+
 ###################################### finish measuring ocanren ################
 
-# miniKanren in Racket
-RKT_FILE_$(1) = $$(wildcard src_lisps/test$(1)*.rkt)
-RKT_NATIVE_$(1) = $$(RKT_FILE_$(1)).native
-.PHONY: compile$(1)_rkt measure$(1)_rkt
-ifeq "$$(RKT_FILE_$(1))" ""
-compile$(1)_rkt:
-else
-compile_rkt: compile$(1)_rkt
-compile$(1)_rkt: $$(RKT_NATIVE_$(1))
-$$(RKT_NATIVE_$(1)):
-	raco exe -o $$(RKT_NATIVE_$(1)) $$(RKT_FILE_$(1))
-endif
-
-measure$(1)_rkt:
-$(call DOUBLE_IF_RKT_AVG,$$(RKT_FILE_$(1)),$(MEASURE_RKT),.$(1).data,./$$(RKT_NATIVE_$(1)))
-
 # miniKanren in Scheme
-SCM_FILE_$(1) = $(wildcard src_lisps/test$(1)*.chez)
-SCM_NATIVE_$(1) = $$(SCM_FILE_$(1):.chez=).so
+SCM_FILE_$(1) = $(wildcard src_lisps/test$(1)*.chez.scm)
+$$(info SCM_FILE_$(1) $$(SCM_FILE_$(1)) )
+SCM_NATIVE_$(1) = $$(SCM_FILE_$(1):.scm=).so
 SCM_FILE_$(1)_BASENAME = $$(shell basename $$(SCM_FILE_$(1)))
 
 .PHONY: compile$(1)_scm measure$(1)_scm
@@ -126,6 +105,7 @@ $$(SCM_NATIVE_$(1)):
 endif
 
 measure$(1)_scm:
+$(info SCM_NATIVE_$(1) $$$(SCM_NATIVE_$(1)) )
 $(call DOUBLE_IF_RKT_AVG,$$(SCM_FILE_$(1)),$(MEASURE_SCM),.$(1).data,scheme --program $$(SCM_NATIVE_$(1)))
 
 # microKanren in Scheme
@@ -154,12 +134,11 @@ measure$(1)_prepare:
 do_measure: measure$(1)
 
 measure$(1): measure$(1)_prepare \
-							measure$(1)_MLOC1D measure$(1)_MLOC2F measure$(1)_MLOC3F \
-							measure$(1)_MLOC4F \
-							measure$(1)_rkt measure$(1)_scm measure$(1)_muscm
+	measure$(1)_MLOC3F measure$(1)_MLOC5 measure$(1)_scm measure$(1)_muscm
+							# measure$(1)_MLOC1D  measure$(1)_MLOC2F  measure$(1)_MLOC4F  measure$(1)_scm
 	printf "$$(TEST$(1)_NAME) " >> $(DATAFILE)
-	@tr '\n' ' ' < .$(1).data >> $(DATAFILE)
-	@printf "\n" >> $(DATAFILE)
+	tr '\n' ' ' < .$(1).data >> $(DATAFILE)
+	printf "\n" >> $(DATAFILE)
 endef
 
 #$(info $(call XXX,002))
@@ -167,31 +146,51 @@ $(foreach i,$(TESTS), $(eval $(call XXX,$(i)) ) )
 
 .PHONY: prepare_header do_measure
 prepare_header:
-	echo "x     OCanren OCanren2Fancy OCanren3Fancy OCanren4Fancy mini/Racket mini/Scheme micro/Scheme" > $(DATAFILE)
+	#echo "x     OCanren OCanren2Fancy OCanren3Fancy OCanren4Fancy OCanren5def_opt mini/Racket mini/Scheme micro/Scheme"
+	echo "x      OCanren3flat OCanren5nonflat faster-miniKanren/Scheme microKanren/Scheme" \
+		> $(DATAFILE)
 
-prepare_ocanren1default:
-	$(MAKE) -C ocanren1default -f Makefile.ob all compile_tests
-	$(MAKE) -C ocanren1default -f Makefile.ob bundle
-
-prepare_ocanren2fancy:
-	$(MAKE) -C ocanren2fancy -f Makefile.ob all compile_tests
-	$(MAKE) -C ocanren2fancy -f Makefile.ob bundle
+# prepare_ocanren1default:
+# 	$(MAKE) -C ocanren1default -f Makefile.ob all compile_tests
+# 	$(MAKE) -C ocanren1default -f Makefile.ob bundle
+#
+# prepare_ocanren2fancy:
+# 	$(MAKE) -C ocanren2fancy -f Makefile.ob all compile_tests
+# 	$(MAKE) -C ocanren2fancy -f Makefile.ob bundle
 
 prepare_ocanren3fancy:
 	$(MAKE) -C ocanren3fancy -f Makefile.ob all compile_tests
 	$(MAKE) -C ocanren3fancy -f Makefile.ob bundle
 
-prepare_ocanren4fancy:
-	$(MAKE) -C ocanren4fancy -f Makefile.ob all bundle
+# prepare_ocanren4fancy:
+# 	$(MAKE) -C ocanren4fancy -f Makefile.ob all bundle
 
-.PHONY: prepare_ocanren1default prepare_ocanren2fancy prepare_ocanren3fancy \
+prepare_ocanren5def_opt:
+	$(MAKE) -C ocanren5def_opt -f Makefile.ob all compile_tests
+	$(MAKE) -C ocanren5def_opt -f Makefile.ob bundle
+
+.PHONY: prepare_ocanren1default \
+	prepare_ocanren2fancy \
 	prepare_ocanren3fancy \
+	prepare_ocanren4fancy \
+	prepare_ocanren5def_opt \
 	prepare_ocanren
-prepare_ocanren: prepare_ocanren1default prepare_ocanren2fancy prepare_ocanren3fancy \
-	prepare_ocanren4fancy
 
-.PHONY: compile_ocanren1def_tests compile_ocanren2fancy_tests \
-	 compile_ocanren3fancy_tests compile_ocanren4fancy_tests
+prepare_ocanren: \
+	prepare_ocanren3fancy \
+	prepare_ocanren5def_opt \
+	#prepare_ocanren1default \
+	#prepare_ocanren2fancy \
+	#prepare_ocanren4fancy \
+
+
+.PHONY: \
+	compile_ocanren3fancy_tests \
+	compile_ocanren5_tests \
+	#compile_ocanren1def_tests \
+	#compile_ocanren2fancy_tests \
+	#compile_ocanren4fancy_tests \
+
 compile_ocanren1def_tests:
 	$(MAKE) -C src_ocanrendefault
 compile_ocanren2fancy_tests:
@@ -200,6 +199,8 @@ compile_ocanren3fancy_tests:
 	$(MAKE) -C src_ocanrenfancy3
 compile_ocanren4fancy_tests:
 	$(MAKE) -C src_ocanrenfancy4
+compile_ocanren5def_tests:
+	$(MAKE) -C src_ocanren5def_opt
 
 .PHONY: check_submodules
 check_submodules:
@@ -210,9 +211,15 @@ check_submodules:
 
 compile: check_submodules
 compile: prepare_ocanren \
-	compile_ocanren1def_tests compile_ocanren2fancy_tests compile_ocanren3fancy_tests \
-	compile_ocanren4fancy_tests \
-	compile_rkt compile_scm compile_muscm
+	compile_ocanren3fancy_tests \
+	compile_ocanren5def_tests \
+	compile_scm \
+	compile_muscm \
+	# compile_rkt \
+	#compile_ocanren1def_tests \
+	#compile_ocanren2fancy_tests \
+	#compile_ocanren4fancy_tests \
+
 
 format_as_column:
 	@column -t $(DATAFILE) > .datafile.temp
@@ -237,6 +244,7 @@ clean:
 	$(MAKE) -C ocanren2fancy   -f Makefile.ob clean
 	$(MAKE) -C ocanren3fancy   -f Makefile.ob clean
 	$(MAKE) -C ocanren4fancy   -f Makefile.ob clean
+	$(MAKE) -C ocanren5def_opt -f Makefile.ob clean
 	$(MAKE) -C src_lisps          clean
 	$(MAKE) -C src_ocanrendefault clean
 	$(MAKE) -C src_ocanrenfancy   clean

@@ -2,19 +2,22 @@
 (require racket/include)
 
 (require "../faster-miniKanren/mk.rkt")
-
+;(require macro-debugger/syntax-browser)
+;(require macro-debugger/stepper)
 ;(include "../webyrd-quines/q.scm")
 (include "q.scm")
 
 ; quines
 (define answers
-  (run 5 (p) (eval-expo p '() `(val_ ,p)) ) )
+  (run 22 (p) (eval-expo p '() `(val_ ,p)) ) )
 
 (map println answers)
 
+;(expand/step #'(run 1 (p) (fresh (r) (eval-expo p '() r ) )) )
+
 
 ;(list-display
-;  (run 13 (p) (fresh (r) (eval-expo p '() r ) )) )
+;  (run 22 (p) (fresh (r) (eval-expo p '() r ) )) )
 
 ;(define cinqs
 ;  (lambda (q)
