@@ -11,9 +11,10 @@ and install `gnuplot` using your package manager.
 
 Какие миниканрены мы тестировали?
 
-  * различные варианты ocanren
-  * faster-miniKanren на Chez Scheme 9.4.1 и на Racket 6.6
-  * uKanren на Chez Scheme
+  * различные варианты ocanren (компилятор 4.04.0+frame_pointer+flambda)
+  * faster-miniKanren на Chez Scheme 9.4.1 и на Racket 6.6. Форк Бёрдовской
+    (https://github.com/Kakadu/faster-miniKanren.git)[реализации]
+  * uKanren на Chez Scheme: https://github.com/jasonhemann/microKanren.git
 
 В плане скорости лиспов микроканрен тормозит, схемовский на глазок чуть быстрее
 ракетовского, но там не такоя большая разница по сравнению с нами: предлагаю
@@ -33,6 +34,9 @@ and install `gnuplot` using your package manager.
 
 Квайны, переписанны в нашем стиле (дополнительные конструкторы вместо symbolo).
 Для микроКанрена не годятся.
+
+Запускалось в камле скомпилированном в native code виде, в схеме тоже в скомпилированном
+(через `echo '(compile-file "file.scm")' | scheme -q`). На компьютере
 
 ## Tips and tricks
 
