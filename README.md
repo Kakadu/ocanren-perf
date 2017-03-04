@@ -36,7 +36,9 @@ and install `gnuplot` using your package manager.
 Для микроКанрена не годятся.
 
 Запускалось в камле скомпилированном в native code виде, в схеме тоже в скомпилированном
-(через `echo '(compile-file "file.scm")' | scheme -q`). На компьютере
+(через `echo '(compile-file "file.scm")' | scheme -q`). На компьютере (смотреть файл cpuinfo)
+
+Замеры времени работы усредненные на 10 запусках.
 
 ## Tips and tricks
 
