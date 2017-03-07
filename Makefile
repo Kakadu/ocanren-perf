@@ -90,7 +90,6 @@ $(call DOUBLE_IF_OC_AVG,$$(MLOC5_NATIVE_$(1)),$(MEASURE_OC5),.$(1).data)
 
 # miniKanren in Scheme
 SCM_FILE_$(1) = $(wildcard src_lisps/test$(1)*.chez.scm)
-$$(info SCM_FILE_$(1) $$(SCM_FILE_$(1)) )
 SCM_NATIVE_$(1) = $$(SCM_FILE_$(1):.scm=).so
 SCM_FILE_$(1)_BASENAME = $$(shell basename $$(SCM_FILE_$(1)))
 
@@ -105,7 +104,6 @@ $$(SCM_NATIVE_$(1)):
 endif
 
 measure$(1)_scm:
-$(info SCM_NATIVE_$(1) $$$(SCM_NATIVE_$(1)) )
 $(call DOUBLE_IF_RKT_AVG,$$(SCM_FILE_$(1)),$(MEASURE_SCM),.$(1).data,scheme --program $$(SCM_NATIVE_$(1)))
 
 # microKanren in Scheme

@@ -38,5 +38,5 @@ let show_nat_list   = show(List.logic) (show Nat.logic)
 
 open Tester
 let _ =
-  run show_nat_list  1  q (REPR (fun q -> sorto (inj_nat_list [4;3;2;1]) q )) qh;
-  ()
+  (* run show_nat_list (-1)  q (REPR (fun q -> sorto q (inj_nat_list [0;1;2;3;4;5;6;7])  )) qh; *)
+  run (fun _ -> "") (-1)  q (REPR (fun q -> sorto q (inj_nat_list [0;1;2;3;4;5;6;7])  )) qh

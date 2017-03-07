@@ -41,4 +41,6 @@ let rec sorto x y =
 
 open Tester
 let () =
-  run_exn show_nat_list   1  q qh (REPR (fun q -> sorto (inj_nat_list [4;3;2;1]) q ))
+  (* run_exn show_nat_list   1  q qh (REPR (fun q -> sorto (inj_nat_list [4;3;2;1]) q )) *)
+  (* run_exn (show_nat_list) (-1)  q qh (REPR (fun q -> sorto q (inj_nat_list [0;1;2;3;4;5;6;7])  )) *)
+  run_exn (fun _ -> "") (-1)  q qh (REPR (fun q -> sorto q (inj_nat_list [0;1;2;3;4;5;6;7])  ))

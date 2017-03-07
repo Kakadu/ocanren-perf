@@ -1,5 +1,5 @@
 TESTS=001 002 003 004 005 006 007
-mls := $(foreach n,$(TESTS),$(wildcard test$(n)*))
+mls := $(foreach n,$(TESTS),$(wildcard test$(n)*.ml))
 natives := $(patsubst %.ml,%.native,$(mls) )
 
 $(info $(natives))

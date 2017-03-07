@@ -129,19 +129,28 @@ let rec sorto x y = conde [
 ;(run 1 (r) (sorto '() r))
 ;(run 1 (r) (sorto '(z) r))
 
-(list-display
-  (run 1 (r)
-    (sorto '(
-            ;(s(s(s(s(s(s(s(s (s z))))))))) ; 9
-            ;(s(s(s(s(s(s(s (s z))))))))
-            ;(s(s(s(s(s(s (s z)))))))
-            ;(s(s(s(s(s (s z))))))          ;6
-            ;(s(s(s(s (s z)))))
-            ;(s (s (s (s z))))
-            (s (s (s z)))                   ;3
-            (s (s z))
-            (s z)
-            z                             ; 0
-            )
-          r))
+;(map display
+;  (run 1 (r)
+;    (sorto '( ; more than 4 elements will not be sorted
+;          (s (s (s z)))                   ; 3
+;          (s (s z))
+;          (s z)
+;          z                               ; 0
+;          )
+;        r))
+;)
+
+(map display
+  (run* (r)
+    (sorto r '(
+          z
+          (s z)
+          (s (s z))
+          (s (s (s z)))
+          (s (s (s (s z))))
+          (s (s (s (s (s z)))))
+          (s (s (s (s (s (s z))))))
+          (s (s (s (s (s (s (s z)))))))  ; 7
+          )
+        ))
 )

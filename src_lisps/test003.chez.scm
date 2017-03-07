@@ -110,16 +110,28 @@ let rec sorto x y = conde [
        (sorto xs xs2)
        (smallesto x s xs))))))
 
+;(map display
+;  (run 1 (r)
+;    (sorto '( ; more than 4 elements will not be sorted
+;          (s (s (s z)))                   ; 3
+;          (s (s z))
+;          (s z)
+;          z                               ; 0
+;          )
+;        r))
+;)
+
 (map display
-  (run 1 (r)
-    (sorto '(
-          ;(s(s(s(s(s (s z))))))          ; 6
-          ;(s(s(s(s (s z)))))
-          ;(s (s (s (s z))))
-          (s (s (s z)))                   ; 3
-          (s (s z))
+  (run* (r)
+    (sorto r '(
+          z
           (s z)
-          z                               ; 0
+          (s (s z))
+          (s (s (s z)))
+          (s (s (s (s z))))
+          (s (s (s (s (s z)))))
+          (s (s (s (s (s (s z))))))      ; 6
+          (s (s (s (s (s (s (s z)))))))  ; 7
           )
-        r))
+        ))
 )
