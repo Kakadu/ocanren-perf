@@ -1,21 +1,11 @@
-[submodule "microKanren"]
-	path = microKanren
-	url = https://github.com/jasonhemann/microKanren.git
 [submodule "faster-miniKanren"]
 	path = faster-miniKanren
 	url = https://github.com/Kakadu/faster-miniKanren.git
-[submodule "ocanren1default"]
-	path = ocanren1default
+[submodule "ocanren-master"]
+	path = ocanren-master
 	url = https://github.com/Kakadu/OCanren.git
-[submodule "ocanren2fancy"]
-	path = ocanren2fancy
+	branch = master
+[submodule "ocanren2patTree"]
+	path = ocanren2patTree
 	url = https://github.com/Kakadu/OCanren.git
-	branch = fancy
-[submodule "ocanren3fancy"]
-	path = ocanren3fancy
-	url = https://github.com/Kakadu/OCanren.git
-	branch = flat-speedingup
-[submodule "ocanren4fancy"]
-	path = ocanren4fancy
-	url = https://github.com/Kakadu/OCanren.git
-	branch = omit-wrap
+	branch = patTree
