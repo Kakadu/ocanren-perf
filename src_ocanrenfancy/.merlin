@@ -1,5 +1,0 @@
-FINDLIB_PATH ../ocanren2facny/_build/bundle
-PKG ocanren
-S .
-B _build
-FLG -rectypes
