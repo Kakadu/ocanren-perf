@@ -4,7 +4,7 @@
 (include "q.scm")
 
 (list-display
-  (run 3 (x)
+  (run 2 (x)
     (fresh (p q r)
       (=/= p q)
       (=/= q r)

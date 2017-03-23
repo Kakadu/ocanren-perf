@@ -1,11 +1,5 @@
 (include "../faster-miniKanren/mk-vicare.scm")
 (include "../faster-miniKanren/mk.scm")
-;(include "../faster-miniKanren/test-check.scm")
-
-;(define poso
-;  (lambda (n)
-;    (fresh (a d)
-;      (== `(,a . ,d) n))))
 
 (define fives
   (lambda (x)
@@ -121,7 +115,15 @@ let rec sorto x y = conde [
 ;        r))
 ;)
 
-(map display
+(define (list-display lis)
+          (cond ((null? lis)
+                 #f)
+                (else
+                 (display (car lis))
+                 (newline)
+                 (list-display (cdr lis)))))
+
+(list-display
   (run* (r)
     (sorto r '(
           z
@@ -130,8 +132,8 @@ let rec sorto x y = conde [
           (s (s (s z)))
           (s (s (s (s z))))
           (s (s (s (s (s z)))))
-          (s (s (s (s (s (s z))))))      ; 6
-          (s (s (s (s (s (s (s z)))))))  ; 7
+          ;(s (s (s (s (s (s z))))))      ; 6
+          ;(s (s (s (s (s (s (s z)))))))  ; 7
           )
         ))
 )

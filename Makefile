@@ -5,14 +5,11 @@ TESTS=001 002 003 005 006 007
 MEASURE=/usr/bin/time -f "%U"
 DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
-#MEASURE_OC1   ?=
-#MEASURE_OC2   ?=
-MEASURE_OC3   ?= y
-#MEASURE_OC4   ?=
-MEASURE_OC5   ?= y
-#MEASURE_RKT   ?= y
+MEASURE_OC1   ?= y
+MEASURE_OC2   ?= y
+MEASURE_RKT   ?=
 MEASURE_SCM   ?= y
-MEASURE_MUSCM ?= y
+MEASURE_MUSCM ?=
 
 .DEFAULT_GOAL := all
 .PHONY: compile_rkt compile_ml compile_scm compile_muscm \
@@ -74,17 +71,17 @@ endef
 # https://www.gnu.org/software/make/manual/html_node/Conditional-Functions.html
 define XXX
 # ML OCanren 3 Fancy-speedup
-MLOC3F_NATIVE_$(1) := $$(wildcard src_ocanrenfancy3/test$(1)*.native)
-TEST$(1)_NAME := $$(MLOC3F_NATIVE_$(1):src_ocanrenfancy3/test$(1)_%.native=%)
+MLOC1_NATIVE_$(1) := $$(wildcard src_ocanren1master/test$(1)*.native)
+TEST$(1)_NAME := $$(MLOC1_NATIVE_$(1):src_ocanren1master/test$(1)_%.native=%)
 
-measure$(1)_MLOC3F:
-$(call DOUBLE_IF_OC_AVG,$$(MLOC3F_NATIVE_$(1)),$(MEASURE_OC3),.$(1).data)
+measure$(1)_MLOC1:
+$(call DOUBLE_IF_OC_AVG,$$(MLOC1_NATIVE_$(1)),$(MEASURE_OC1),.$(1).data)
 
-# ML OCanren 5 default + speedup
-MLOC5_NATIVE_$(1) := $$(wildcard src_ocanren5def_opt/test$(1)*.native)
+# ML OCanren 2 patricia trees
+MLOC2_NATIVE_$(1) := $$(wildcard src_ocanren2patTree/test$(1)*.native)
 
-measure$(1)_MLOC5:
-$(call DOUBLE_IF_OC_AVG,$$(MLOC5_NATIVE_$(1)),$(MEASURE_OC5),.$(1).data)
+measure$(1)_MLOC2:
+$(call DOUBLE_IF_OC_AVG,$$(MLOC2_NATIVE_$(1)),$(MEASURE_OC2),.$(1).data)
 
 ###################################### finish measuring ocanren ################
 
@@ -132,7 +129,7 @@ measure$(1)_prepare:
 do_measure: measure$(1)
 
 measure$(1): measure$(1)_prepare \
-	measure$(1)_MLOC3F measure$(1)_MLOC5 measure$(1)_scm measure$(1)_muscm
+	measure$(1)_MLOC1 measure$(1)_MLOC2 measure$(1)_scm
 							# measure$(1)_MLOC1D  measure$(1)_MLOC2F  measure$(1)_MLOC4F  measure$(1)_scm
 	printf "$$(TEST$(1)_NAME) " >> $(DATAFILE)
 	tr '\n' ' ' < .$(1).data >> $(DATAFILE)
@@ -144,61 +141,38 @@ $(foreach i,$(TESTS), $(eval $(call XXX,$(i)) ) )
 
 .PHONY: prepare_header do_measure
 prepare_header:
-	#echo "x     OCanren OCanren2Fancy OCanren3Fancy OCanren4Fancy OCanren5def_opt mini/Racket mini/Scheme micro/Scheme"
-	echo "x      OCanren3flat OCanren5nonflat faster-miniKanren/Scheme microKanren/Scheme" \
+	echo "x      OCanren1master OCanren2patTrees f-mK/Scheme" \
 		> $(DATAFILE)
 
-# prepare_ocanren1default:
-# 	$(MAKE) -C ocanren1default -f Makefile.ob all compile_tests
-# 	$(MAKE) -C ocanren1default -f Makefile.ob bundle
-#
-# prepare_ocanren2fancy:
-# 	$(MAKE) -C ocanren2fancy -f Makefile.ob all compile_tests
-# 	$(MAKE) -C ocanren2fancy -f Makefile.ob bundle
+prepare_ocanren1master:
+	$(MAKE) -C ocanren-master all compile_tests
+	$(MAKE) -C ocanren-master bundle
 
-prepare_ocanren3fancy:
-	$(MAKE) -C ocanren3fancy -f Makefile.ob all compile_tests
-	$(MAKE) -C ocanren3fancy -f Makefile.ob bundle
+prepare_ocanren2patTree:
+	$(MAKE) -C ocanren2patTree all compile_tests
+	$(MAKE) -C ocanren2patTree bundle
 
-# prepare_ocanren4fancy:
-# 	$(MAKE) -C ocanren4fancy -f Makefile.ob all bundle
-
-prepare_ocanren5def_opt:
-	$(MAKE) -C ocanren5def_opt -f Makefile.ob all compile_tests
-	$(MAKE) -C ocanren5def_opt -f Makefile.ob bundle
-
-.PHONY: prepare_ocanren1default \
-	prepare_ocanren2fancy \
-	prepare_ocanren3fancy \
-	prepare_ocanren4fancy \
-	prepare_ocanren5def_opt \
+.PHONY: prepare_ocanren1master \
+	prepare_ocanren2patTree \
 	prepare_ocanren
 
 prepare_ocanren: \
-	prepare_ocanren3fancy \
-	prepare_ocanren5def_opt \
+	prepare_ocanren1master \
+	prepare_ocanren2patTree \
 	#prepare_ocanren1default \
 	#prepare_ocanren2fancy \
 	#prepare_ocanren4fancy \
 
 
 .PHONY: \
-	compile_ocanren3fancy_tests \
-	compile_ocanren5_tests \
-	#compile_ocanren1def_tests \
-	#compile_ocanren2fancy_tests \
-	#compile_ocanren4fancy_tests \
+	compile_ocanren1tests \
+	compile_ocanren2tests
 
-compile_ocanren1def_tests:
-	$(MAKE) -C src_ocanrendefault
-compile_ocanren2fancy_tests:
-	$(MAKE) -C src_ocanrenfancy
-compile_ocanren3fancy_tests:
-	$(MAKE) -C src_ocanrenfancy3
-compile_ocanren4fancy_tests:
-	$(MAKE) -C src_ocanrenfancy4
-compile_ocanren5def_tests:
-	$(MAKE) -C src_ocanren5def_opt
+
+compile_ocanren1tests:
+	$(MAKE) -C src_ocanren1master
+compile_ocanren2tests:
+	$(MAKE) -C src_ocanren2patTree
 
 .PHONY: check_submodules
 check_submodules:
@@ -209,14 +183,11 @@ check_submodules:
 
 compile: check_submodules
 compile: prepare_ocanren \
-	compile_ocanren3fancy_tests \
-	compile_ocanren5def_tests \
+	compile_ocanren1tests \
+	compile_ocanren2tests \
 	compile_scm \
 	compile_muscm \
-	# compile_rkt \
-	#compile_ocanren1def_tests \
-	#compile_ocanren2fancy_tests \
-	#compile_ocanren4fancy_tests \
+	compile_rkt \
 
 
 format_as_column:
@@ -224,8 +195,6 @@ format_as_column:
 	@mv .datafile.temp $(DATAFILE)
 
 measure: prepare_header do_measure format_as_column
-#$(info $(call XXX,002))
-#$(eval $(call XXX,001))
 all:
 	$(MAKE) compile
 	$(MAKE) measure graph
@@ -238,13 +207,8 @@ perf:
 .PHONY: clean
 clean:
 	$(RM) *~ .*.data
-	$(MAKE) -C ocanren1default -f Makefile.ob clean
-	$(MAKE) -C ocanren2fancy   -f Makefile.ob clean
-	$(MAKE) -C ocanren3fancy   -f Makefile.ob clean
-	$(MAKE) -C ocanren4fancy   -f Makefile.ob clean
-	$(MAKE) -C ocanren5def_opt -f Makefile.ob clean
-	$(MAKE) -C src_lisps          clean
-	$(MAKE) -C src_ocanrendefault clean
-	$(MAKE) -C src_ocanrenfancy   clean
-	$(MAKE) -C src_ocanrenfancy3  clean
-	$(MAKE) -C src_ocanrenfancy4  clean
+	$(MAKE) -C ocanren-master      clean
+	$(MAKE) -C ocanren2patTree     clean
+	$(MAKE) -C src_lisps           clean
+	$(MAKE) -C src_ocanren1master  clean
+	$(MAKE) -C src_ocanren2patTree clean
