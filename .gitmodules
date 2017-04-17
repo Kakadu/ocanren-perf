@@ -9,3 +9,7 @@
 	path = ocanren2patTree
 	url = https://github.com/Kakadu/OCanren.git
 	branch = patTree
+[submodule "ocanren3MKstreams"]
+	path = ocanren3MKstreams
+	url = https://github.com/Kakadu/OCanren.git
+	branch = dumb-streams
