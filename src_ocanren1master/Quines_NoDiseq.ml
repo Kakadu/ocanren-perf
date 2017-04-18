@@ -153,6 +153,7 @@ let rec nat o =
     ]
 
 let rec tm o =
+  let (===) = unitrace (fun h t -> show_lterm @@ gterm_reifier h t) in
   conde
     [ fresh (n)
         (o === (vr n))
@@ -206,6 +207,8 @@ let rec neq n1 n2 =
     ]
 
 let rec vlookup env x v =
+  (* let (====)  = unitrace (fun h t -> show_lterm   @@ gterm_reifier   h t) in *)
+  (* trace "vlookup" @@ *)
   conde
     [ fresh (er)
         (env === (inj_pair x v) % er)
@@ -278,24 +281,28 @@ let ( ~~ ) s  = symb @@ inj @@ lift s
 let s      tl = seq (inj_list tl) *)
 
 let rec ev e t v =
+  let (===)  = unitrace (fun h t -> show_lterm   @@ gterm_reifier   h t) in
+  let (====) = unitrace (fun h t -> show_lresult @@ gresult_reifier h t) in
   conde
-    [ fresh (x)
-        (t === (vr x))
+    [ Fresh.one (fun x -> delay @@ fun () ->
+        (t === (vr x)) &&&
         (vlookup e x v)
+      )
+    (* ; Fresh.two (fun t0 x -> delay @@ fun () -> *)
     ; fresh (x t0)
-        (t === (lambda x t0))
-        (v === (closure e x t0))
+        (t ===  (lambda x t0))
+        (v ==== (closure e x t0))
     ; fresh (t0)
-        (t === (quote t0))
-        (v === (code t0))
+        (t ===  (quote t0))
+        (v ==== (code t0))
     ; fresh (t1 t2 e0 x0 t0 v2)
         (t === (app t1 t2))
         (ev e t1 (closure e0 x0 t0))
         (ev e t2 v2)
         (ev ((inj_pair x0 v2) % e0) t0 v)
     ; fresh (t1 t2 c1 c2)
-        (t === (lst t1 t2))
-        (v === (code (lst c1 c2)))
+        (t ===  (lst t1 t2))
+        (v ==== (code (lst c1 c2)))
         (ev e t1 (code c1))
         (ev e t2 (code c2))
     ]

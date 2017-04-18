@@ -1,9 +1,11 @@
-(include "../simple-miniKanren/mk.scm")
+;(include "../simple-miniKanren/mk.scm")
+(include "../faster-miniKanren/mk-vicare.scm")
+(include "../faster-miniKanren/mk.scm")
 (include "list-display.scm")
 (include "q_nodiseq.scm")
 
 (list-display
-  (run 3 (q)
+  (run 1 (q)
     (ev '()
         q
         `(code ,q)))

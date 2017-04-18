@@ -14,6 +14,14 @@
 
 ;;; Syntax
 
+(define ===
+  (lambda (x y)
+    (lambda (s)
+      (let ((x2 (walk x s))
+            (y2 (walk y s)))
+        (printf "unify '~a' and '~a'\n" x2 y2)
+        ((== x y) s) ))))
+
 ;; Peano numbers
 (define nat
   (lambda (o)
@@ -105,9 +113,9 @@
   (lambda (e x v)
     (conde
       ((fresh (er)
-         (== e (cons `(,x ,v) er))))
+         (=== e (cons `(,x ,v) er))))
       ((fresh (y vy er)
-         (== e (cons `(,y ,vy) er))
+         (=== e (cons `(,y ,vy) er))
          (neq x y)
          (vlookup er x v))))))
 
@@ -116,22 +124,22 @@
   (lambda (e t v)
     (conde
       ((fresh (x)
-         (== t `(vr ,x))
+         (=== t `(vr ,x))
          (vlookup e x v)))
       ((fresh (x t0)
-         (== t `(lambda ((vr ,x)) ,t0))
-         (== v `(clo ,e ,x ,t0))))
+         (=== t `(lambda ((vr ,x)) ,t0))
+         (=== v `(clo ,e ,x ,t0))))
       ((fresh (t0)
-         (== t `(quote ,t0))
-         (== v `(code ,t0))))
+         (=== t `(quote ,t0))
+         (=== v `(code ,t0))))
       ((fresh (t1 t2 e0 x0 t0 v2)
-         (== t `(,t1 ,t2))
+         (=== t `(,t1 ,t2))
          (ev e t1 `(clo ,e0 ,x0 ,t0))
          (ev e t2 v2)
          (ev (cons `(,x0 ,v2) e0) t0 v)))
       ((fresh (t1 t2 c1 c2)
-         (== t `(list ,t1 ,t2))
-         (== v `(code ,(list c1 c2)))
+         (=== t `(list ,t1 ,t2))
+         (=== v `(code ,(list c1 c2)))
          (ev e t1 `(code ,c1))
          (ev e t2 `(code ,c2)))))))
 
@@ -171,27 +179,27 @@
     r))
 
 ;; Quine verification.
-(define quine
-  '((lambda ((vr z)) (list (vr z) (list (quote quote) (vr z))))
-    (quote (lambda ((vr z)) (list (vr z) (list (quote quote) (vr z)))))))
-(ok
- (normalize
-  (run* (q)
-    (ev '()
-        quine
-        `(code ,quine)))))
+;(define quine
+;  '((lambda ((vr z)) (list (vr z) (list (quote quote) (vr z))))
+;    (quote (lambda ((vr z)) (list (vr z) (list (quote quote) (vr z)))))))
+;(ok
+; (normalize
+;  (run* (q)
+;    (ev '()
+;        quine
+;        `(code ,quine)))))
 
 ;; Quine generation.
-(ok
- (map
-  (lambda (q)
-    (assert (equal? (eval q) q))
-    q)
-  (normalize
-   (run 10 (q)
-     (ev '()
-         q
-         `(code ,q))))))
+;(ok
+; (map
+;  (lambda (q)
+;    (assert (equal? (eval q) q))
+;    q)
+;  (normalize
+;   (run 10 (q)
+;     (ev '()
+;         q
+;         `(code ,q))))))
 
 ;; Twine generation.
 ;(ok
