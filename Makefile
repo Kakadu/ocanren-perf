@@ -1,12 +1,12 @@
 print-%: ; @echo $*=$($*)
 
 DATAFILE=data.gnuplot
-TESTS=001 002 003 005 006 007
+TESTS=007 011 #001 002 003 005 006 007
 MEASURE=/usr/bin/time -f "%U"
 DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
 MEASURE_OC1   ?= y
-MEASURE_OC2   ?= y
+MEASURE_OC2   ?=
 MEASURE_OC3   ?= y
 MEASURE_RKT   ?=
 MEASURE_SCM   ?= y
@@ -21,16 +21,7 @@ MEASURE_MUSCM ?=
 define AVG_MEASURE
 	$(RM) .avg
 	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	# OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	# OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	# OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	# OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	# OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	sh avg.awk .avg | xargs echo -n >> $(2)
+	@sh avg.awk .avg | xargs echo -n >> $(2)
 	@echo -n " " >> $(2)
 	@$(RM)  .avg
 endef
@@ -110,6 +101,25 @@ endif
 measure$(1)_scm:
 $(call DOUBLE_IF_RKT_AVG,$$(SCM_FILE_$(1)),$(MEASURE_SCM),.$(1).data,scheme --program $$(SCM_NATIVE_$(1)))
 
+# simple-miniKanren in Scheme
+SIMPLESCM_FILE_$(1) = $(wildcard src_lisps/test$(1)*.simplechez.scm)
+SIMPLESCM_NATIVE_$(1) = $$(SIMPLESCM_FILE_$(1):.scm=).so
+SIMPLESCM_FILE_$(1)_BASENAME = $$(shell basename $$(SIMPLESCM_FILE_$(1)))
+$(info $$(SIMPLESCM_FILE_$(1)) )
+
+.PHONY: compile$(1)_simple_scm measure$(1)_simple_scm
+ifeq "$$(SIMPLESCM_FILE_$(1))" ""
+compile$(1)_simple_scm:
+else
+compile_simple_scm: compile$(1)_simple_scm
+compile$(1)_simple_scm: $$(SIMPLESCM_NATIVE_$(1))
+$$(SIMPLESCM_NATIVE_$(1)): $$(SIMPLESCM_FILE_$(1))
+	(cd src_lisps && echo '(compile-file "$$(SIMPLESCM_FILE_$(1)_BASENAME)")' | scheme -q)
+endif
+
+measure$(1)_simple_scm:
+$(call DOUBLE_IF_RKT_AVG,$$(SIMPLESCM_FILE_$(1)),$(MEASURE_SCM),.$(1).data,scheme --program $$(SIMPLESCM_NATIVE_$(1)))
+
 # microKanren in Scheme
 MUSCM_FILE_$(1) = $(wildcard src_lisps/test$(1)*.mu.scm)
 MUSCM_NATIVE_$(1) = $$(MUSCM_FILE_$(1):.scm=).so
@@ -136,7 +146,7 @@ measure$(1)_prepare:
 do_measure: measure$(1)
 
 measure$(1): measure$(1)_prepare \
-	measure$(1)_MLOC1 measure$(1)_MLOC2 measure$(1)_MLOC3 measure$(1)_scm
+	measure$(1)_MLOC1 measure$(1)_MLOC2 measure$(1)_MLOC3 measure$(1)_scm measure$(1)_simple_scm
 							# measure$(1)_MLOC1D  measure$(1)_MLOC2F  measure$(1)_MLOC4F  measure$(1)_scm
 	printf "$$(TEST$(1)_NAME) " >> $(DATAFILE)
 	tr '\n' ' ' < .$(1).data >> $(DATAFILE)
@@ -148,7 +158,7 @@ $(foreach i,$(TESTS), $(eval $(call XXX,$(i)) ) )
 
 .PHONY: prepare_header do_measure
 prepare_header:
-	echo "x      OCanren1master OCanren2patTrees Ocanren3MKstreams f-mK/Scheme" \
+	echo "x      OCanren1master OCanren2patTrees Ocanren3MKstreams f-mK/Scheme s-mk/Scheme" \
 		> $(DATAFILE)
 
 prepare_ocanren1master:
@@ -178,7 +188,7 @@ prepare_ocanren: \
 
 .PHONY: \
 	compile_ocanren1tests \
-	compile_ocanren2tests
+	compile_ocanren2tests compile_ocanren3tests
 
 
 compile_ocanren1tests:
@@ -201,6 +211,7 @@ compile: prepare_ocanren \
 	compile_ocanren2tests \
 	compile_ocanren3tests \
 	compile_scm \
+	compile_simple_scm \
 	compile_muscm \
 	compile_rkt \
 

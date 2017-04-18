@@ -1,8 +1,8 @@
 #lang racket
 (require racket/include)
 
-(require "../faster-miniKanren/mk.rkt")
-(include "../faster-miniKanren/test-check.scm")
+(require "../simple-miniKanren/mk.rkt")
+(include "../simple-miniKanren/test-check.scm")
 
 
 (define nullo
@@ -28,15 +28,20 @@
     (fresh (d)
       (== (cons a d) p))))
 
-(include "numbers.scm")
+;(include "numbers.scm")
 
 (define myappendo (lambda (l s out)
     (conde
-      ((== '() l) (== s out))
+      ( (project (l s)
+          (lambda (st)
+            (printf "~a ~a\n" l s)
+            (succeed) ))
+        (== '() l)
+        (== s out) )
       ((fresh (a d res)
          (== `(,a . ,d) l)
          (== `(,a . ,res) out)
          (myappendo d s res))) )))
 
-(run* (q r)
-  (myappendo q r '(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 )))
+(run 2 (q r)
+  (myappendo q '() r ))

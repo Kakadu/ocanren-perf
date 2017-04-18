@@ -13,3 +13,6 @@
 	path = ocanren3MKstreams
 	url = https://github.com/Kakadu/OCanren.git
 	branch = dumb-streams
+[submodule "simple-miniKanren"]
+	path = simple-miniKanren
+	url = https://github.com/miniKanren/simple-miniKanren.git

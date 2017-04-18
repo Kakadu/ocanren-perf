@@ -1,4 +1,4 @@
-FINDLIB_PATH ../ocanren-master/_build/bundle
+FINDLIB_PATH ../ocanren3MKstreams/_build/bundle
 PKG ocanren
 PKG GT
 S .
