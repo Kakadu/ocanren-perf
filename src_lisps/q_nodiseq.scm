@@ -141,7 +141,8 @@
          (=== t `(list ,t1 ,t2))
          (=== v `(code ,(list c1 c2)))
          (ev e t1 `(code ,c1))
-         (ev e t2 `(code ,c2)))))))
+         (ev e t2 `(code ,c2))))
+         )))
 
 ;;; Normalization (of terms, so that they can be evaluated in Scheme)
 ;; Our language is a subset of Scheme, except that we need to turn
@@ -179,9 +180,9 @@
     r))
 
 ;; Quine verification.
-;(define quine
-;  '((lambda ((vr z)) (list (vr z) (list (quote quote) (vr z))))
-;    (quote (lambda ((vr z)) (list (vr z) (list (quote quote) (vr z)))))))
+(define quine
+  '((lambda ((vr z)) (list (vr z) (list (quote quote) (vr z))))
+    (quote (lambda ((vr z)) (list (vr z) (list (quote quote) (vr z)))))))
 ;(ok
 ; (normalize
 ;  (run* (q)

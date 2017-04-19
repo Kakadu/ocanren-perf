@@ -1,26 +1,31 @@
-TESTS=001 002 003 004 005 006 007 008 009 011 900
-mls := $(foreach n,$(TESTS),$(wildcard test$(n)*))
-natives := $(patsubst %.ml,%.native,$(mls) )
+ALL_TEST_MLS = $(shell ls test*.ml -1 | sort -n)
 
-#$(info $(natives))
+define XXX
+IDX  :=
+IDX  := $(shell echo $(1) | sed 's/^test\([0-9]*\)_\([a-zA-Z0-9]*\).ml/\1/')
+
+ifneq "$$(IDX)" ""
+NAME :=
+NAME := $(shell echo $(1) | sed 's/^test\([0-9]*\)_\([a-zA-Z0-9]*\).ml/\2/')
+
+ALL_NATIVES += $$(patsubst %.ml,%.native,$(1))
+.PHONY: test$$(IDX)
+test$$(IDX): $(1)
+	OCAMLPATH=`pwd`/../ocanren3MKstreams/_build/bundle \
+	ocamlbuild -use-ocamlfind $$(patsubst %.ml,%.native,$(1))
+endif
+endef
+
+#$(info $(call XXX,test900_trees.ml) )
+#$(info $(call XXX,test011_quinesNoDiseq.ml) )
+$(foreach i,$(ALL_TEST_MLS), $(eval $(call XXX,$(i)) ) )
+
 .SUFFIX: .native
 .PHONY: all clean $(natives)
 
 all:
 	OCAMLPATH=`pwd`/../ocanren3MKstreams/_build/bundle \
-	ocamlbuild -use-ocamlfind $(natives)
+	ocamlbuild -use-ocamlfind $(ALL_NATIVES)
 
 clean:
 	$(RM) -fr _build test*.native
-
-# test900_trees.native:
-# 	OCAMLPATH=`pwd`/../ocanren4fancy/_build/bundle \
-# 	ocamlbuild -use-ocamlfind $@
-#
-# test007_quines.native:
-# 	OCAMLPATH=`pwd`/../ocanren4fancy/_build/bundle \
-# 	ocamlbuild -use-ocamlfind $@
-#
-# test003_sort.native:
-# 	OCAMLPATH=`pwd`/../ocanren4fancy/_build/bundle \
-# 	ocamlbuild -use-ocamlfind $@

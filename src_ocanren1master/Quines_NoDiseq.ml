@@ -25,12 +25,12 @@ let list_iter3 f xs ys zs =
 
 module Gterm = struct
   module X = struct
-    @type ('n, 't) t =
+    @type ('n, 'ts) t =
       | VR  of 'n   (* variable indexed by peano numbers *)
-      | Quote of 't
-      | Abs of 'n * 't
-      | App of 't * 't
-      | List of 't * 't
+      | Quote
+      | List
+      | Lambda
+      | Tuple of 'ts
       with gmap,show
       ;;
 
@@ -46,15 +46,11 @@ module Gterm = struct
             (object inherit ['a,'b] show_t_t
               method c_VR _ _ peano =
                 sprintf "(vr %s)" (peano.GT.fx ())
-              method c_Quote _ _ term =
-                sprintf "(quote %s)" (term.GT.fx ())
-              method c_Abs  _ _ var body =
-                sprintf "(lambda (%s) %s)" (var.GT.fx ()) (body.GT.fx ())
-              method c_App _ _ f arg =
-                sprintf "(%s %s)" (f.GT.fx ()) (arg.GT.fx ())
-              method c_List _ _ a b =
-                sprintf "(list (%s) %s)" (a.GT.fx ()) (b.GT.fx ())
-             end)
+              method c_Quote  _ _ = "quote"
+              method c_List   _ _ = "list"
+              method c_Lambda _ _ = "lambda"
+              method c_Tuple _ _ xs = sprintf "(%s)" (xs.GT.fx ())
+            end)
             ()
             bx
        end
@@ -64,34 +60,36 @@ module Gterm = struct
   include X
   include Fmap2(X)
 
-  type rterm = (Nat.ground, rterm) X.t
-  type lterm = (Nat.logic,  lterm) X.t logic
+  type rterm = (Nat.ground, rterm List.ground) X.t
+  type lterm = (Nat.logic,  lterm List.logic) X.t logic
   type fterm = (rterm, lterm) injected
 
-  let rec show_rterm : rterm -> string = fun t -> GT.(show X.t (show Nat.ground) show_rterm) t
-  let rec show_lterm : lterm -> string =
-    fun x -> GT.(show logic @@ show X.t (show Nat.logic) show_lterm) x
+  let rec show_rterm : rterm -> string = fun term ->
+    GT.(show t (show Nat.ground) (show List.ground show_rterm)) term
+  let rec show_lterm : lterm -> string = fun x ->
+    GT.(show logic @@ show t (show Nat.logic) (show List.logic show_lterm)) x
 
   let rec to_logic : rterm -> lterm = fun term ->
-    Value (GT.(gmap X.t) (Nat.inj_ground) to_logic term)
+    Value (GT.(gmap X.t) (Nat.inj_ground) (List.to_logic to_logic) term)
 
   let vr  n   : fterm = inj @@ distrib @@ VR n
-  let quote t : fterm = inj @@ distrib @@ Quote t
-  let abs v b : fterm = inj @@ distrib @@ Abs (v, b)
-  let lambda v b : fterm = abs v b
-  let app f g : fterm = inj @@ distrib @@ App (f,g)
-  let lst a b : fterm = inj @@ distrib @@ List (a,b)
+  let quoteS  : fterm = inj @@ distrib @@ Quote
+  let lambdaS : fterm = inj @@ distrib @@ Lambda
+  let listS   : fterm = inj @@ distrib @@ List
+  let tuple xs: fterm = inj @@ distrib @@ Tuple xs
+
+  let lambda n body : fterm = tuple @@ List.inj_list [lambdaS; vr n; body]
 end
 
 let rec gterm_reifier c : Gterm.fterm -> Gterm.lterm =
-  Gterm.reify Nat.reify gterm_reifier c
+  Gterm.reify Nat.reify (List.reify gterm_reifier) c
 
 module Gresult = struct
   module X = struct
     @type ('env, 'v, 't) t =
     | Closure of 'env * 'v * 't
     | Code    of 't
-    with show;;
+    with show,gmap;;
 
     let fmap f g h = function
     | Closure (a,b,c) -> Closure (f a, g b, h c)
@@ -104,8 +102,11 @@ module Gresult = struct
   let show_rvar = GT.show Nat.ground
   let show_lvar = GT.show Nat.logic
 
-  type rresult = ((rvar * rresult) List.ground, rvar, Gterm.rterm) X.t
-  type lresult = ((lvar * lresult) logic List.logic, lvar, Gterm.lterm) X.t logic
+  type rresult = (renv, rvar, Gterm.rterm) X.t
+  and renv = (rvar * rresult) List.ground
+  type lresult = (lenv, lvar, Gterm.lterm) X.t logic
+  and lenv = (lvar * lresult) logic List.logic
+
   type fresult = (rresult, lresult) injected
 
   let closure env v b = inj @@ distrib @@ X.Closure (env,v,b)
@@ -119,21 +120,27 @@ module Gresult = struct
     show_rvar
     Gterm.show_rterm) r
   let rec show_lresult r = GT.(show logic @@ show X.t
-    (show List.logic (show logic @@ show pair show_lvar show_lresult))
+    show_lenv
     show_lvar
     Gterm.show_lterm) r
+  and show_lenv e =
+    GT.(show List.logic (show logic @@ show pair show_lvar show_lresult)) e
 
+  let pair_to_logic f g = fun (a,b) -> Value (f a, g b)
+  let rec to_logic : rresult -> lresult = fun res ->
+    Value (GT.gmap X.t env_to_logic Nat.inj_ground Gterm.to_logic res)
+  and env_to_logic: renv -> lenv = fun e ->
+    List.inj_ground (pair_to_logic Nat.inj_ground to_logic) e
 end
 
 let var_reifier = Nat.reify
 
 let rec gresult_reifier c : Gresult.fresult -> Gresult.lresult =
   let open ManualReifiers in
-  Gresult.reify
-    (List.reify (pair_reifier var_reifier gresult_reifier))
-    var_reifier
-    gterm_reifier
-    c
+  Gresult.reify env_reifier var_reifier gterm_reifier c
+and env_reifier e =
+  List.reify ManualReifiers.(pair_reifier var_reifier gresult_reifier) e
+
 
 let (!!) x = inj @@ lift x
 
@@ -152,14 +159,28 @@ let rec nat o =
         (nat n)
     ]
 
+(* TODO: move to miniKanren.mli *)
+let rec neq n1 n2 =
+  conde
+    [ (n1 === zero) &&&
+      (fresh (prev)
+        (n2 === s prev))
+    ; (n2 === zero) &&&
+      (fresh (prev)
+        (n1 === s prev))
+    ; fresh (p1 p2)
+        (n1 === s p1)
+        (n2 === s p2)
+        (neq p1 p2)
+    ]
+
 let rec tm o =
   let (===) = unitrace (fun h t -> show_lterm @@ gterm_reifier h t) in
   conde
     [ fresh (n)
         (o === (vr n))
         (nat n)
-    ; fresh (b)
-        (o === quote b)
+    ; (o === quoteS)
     ; fresh (n t)
         (o === (lambda n t))
         (nat n)
@@ -191,120 +212,52 @@ and venv o =
         (venv e)
     ]
 
-(* TODO: move to miniKanren.mli *)
-let rec neq n1 n2 =
-  conde
-    [ (n1 === zero) &&&
-      (fresh (prev)
-        (n2 === s prev))
-    ; (n2 === zero) &&&
-      (fresh (prev)
-        (n1 === s prev))
-    ; fresh (p1 p2)
-        (n1 === s p1)
-        (n2 === s p2)
-        (neq p1 p2)
-    ]
-
 let rec vlookup env x v =
+  (* let env_reifier e = List.reify (ManualReifiers.pair_reifier) *)
+  let (<=>) = unitrace (fun h t -> show_lenv @@ env_reifier   h t) in
   (* let (====)  = unitrace (fun h t -> show_lterm   @@ gterm_reifier   h t) in *)
   (* trace "vlookup" @@ *)
   conde
-    [ fresh (er)
-        (env === (inj_pair x v) % er)
-    ; fresh (y vy er)
-        (env === (inj_pair x vy) % er)
-        (neq x y)
+    [ call_fresh_named "er" (fun er -> delay @@ fun () ->
+        (env <=> (inj_pair x v) % er)
+      )
+    ; call_fresh_named "er" (fun er ->
+      call_fresh_named "vy" (fun vy ->
+      call_fresh_named "y"  (fun y  -> (*delay @@ fun () ->*)
+        (env <=> (inj_pair y vy) % er) &&&
+        (neq x y) &&&
         (vlookup er x v)
+      )))
     ]
-
-(* let rec lookupo x env t =
-  Fresh.three (fun rest y v ->
-    (env === (inj_pair y v) % rest) &&&
-    (conde [
-        (y === x) &&& (v === t);
-        (y =/= x) &&& (lookupo x rest t)
-      ])
-  )
-
-let rec not_in_envo x env =
-  conde
-    [ (env === nil ())
-    ; Fresh.three (fun y v rest ->
-        (env === (inj_pair y v) % rest) &&&
-        (y =/= x) &&&
-        (not_in_envo x rest) )
-    ] *)
-
-(* type fenv = ( (string * rresult) List.ground, (string logic * lresult) logic List.logic) injected
-
-let rec map_evalo es env rs =
-  conde
-    [ (es === nil ()) &&& (rs === nil ())
-    ; fresh (e es' r rs')
-        (es === e % es')
-        (rs === r % rs')
-        (evalo e env (val_ r))
-        (map_evalo es' env rs')
-    ]
-and evalo (term: fterm) (env: fenv) (r: fresult) =
-  conde
-    [ call_fresh (fun t ->
-        (term === seq ((symb !!"quote") %< t)) &&&
-        (r === (val_ t))
-           &&& (not_in_envo !!"quote" env)
-        )
-    ; fresh (es rs)
-        (term === seq ((symb !!"list") % es) )
-        (r === val_ (seq rs))
-        (not_in_envo !!"list" env)
-        (map_evalo es env rs)
-
-    ; fresh (s)
-        (term === (symb s))
-        (lookupo s env r)
-
-    ; fresh (func arge arg x body env')
-        (term === seq (func %< arge))
-        (evalo arge env arg)
-        (evalo func env (closure x body env') )
-        (evalo body ((inj_pair x arg) % env') r)
-    ; fresh (x body)
-        (term === seq ( (symb !!"lambda") %
-                        (seq (!< (symb x)) %< body)
-                      ) )
-        (not_in_envo !!"lambda" env)
-        (r === (closure x body env))
-    ]
-
-let ( ~~ ) s  = symb @@ inj @@ lift s
-let s      tl = seq (inj_list tl) *)
 
 let rec ev e t v =
   let (===)  = unitrace (fun h t -> show_lterm   @@ gterm_reifier   h t) in
   let (====) = unitrace (fun h t -> show_lresult @@ gresult_reifier h t) in
   conde
-    [ Fresh.one (fun x -> delay @@ fun () ->
-        (t === (vr x)) &&&
-        (vlookup e x v)
-      )
-    (* ; Fresh.two (fun t0 x -> delay @@ fun () -> *)
+    [ fresh (x)
+        (t === (vr x))
+        (delay @@ fun () -> vlookup e x v)
     ; fresh (x t0)
-        (t ===  (lambda x t0))
-        (v ==== (closure e x t0))
+    (* ; Fresh.two (fun t0 x -> delay @@ fun () -> *)
+    (* ; call_fresh_named "t0" (fun t0 ->
+        call_fresh_named "x" (fun x ->
+          delay @@ fun () -> *)
+            (t ===  (lambda x t0))
+            (v ==== (closure e x t0))
+
     ; fresh (t0)
-        (t ===  (quote t0))
+        (t ===  (app quote t0))
         (v ==== (code t0))
     ; fresh (t1 t2 e0 x0 t0 v2)
         (t === (app t1 t2))
         (ev e t1 (closure e0 x0 t0))
         (ev e t2 v2)
-        (ev ((inj_pair x0 v2) % e0) t0 v)
+        (ev (lst (app x0 v2) e0) t0 v)
     ; fresh (t1 t2 c1 c2)
         (t ===  (lst t1 t2))
         (v ==== (code (lst c1 c2)))
-        (ev e t1 (code c1))
-        (ev e t2 (code c2))
+        (delay @@ fun () -> ev e t1 (code c1))
+        (delay @@ fun () -> ev e t2 (code c2))
     ]
 
 
@@ -361,9 +314,9 @@ let gen_terms n r = printf "> %s\n" (show_term r);
 *)
 let wrap_term rr =
   rr#refine gterm_reifier ~inj:Gterm.to_logic |> show_lterm
- (* function
-  | Final x -> show_rterm @@ Obj.magic x
-  | HasFreeVars func -> show_lterm @@ func gterm_reifier *)
+
+let wrap_result rr =
+  rr#refine gresult_reifier ~inj:Gresult.to_logic |> show_lresult
 
 let find_quines n = run q quineo @@ fun qs ->
   Stream.take ~n qs |> List.map wrap_term |> List.iter (printf "%s\n\n")
