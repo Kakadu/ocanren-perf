@@ -116,62 +116,62 @@ open Gterm
 open Gresult
 
 let rec lookupo x env t =
-  Fresh.three (fun rest y v ->
-    (env === (inj_pair y v) % rest) &&&
+  fresh (rest y v)
+    ((inj_pair y v) % rest === env)
     (conde [
         (y === x) &&& (v === t);
         (y =/= x) &&& (lookupo x rest t)
       ])
-  )
 
 let rec not_in_envo x env =
   conde
-    [ (env === nil ())
-    ; Fresh.three (fun y v rest ->
-        (env === (inj_pair y v) % rest) &&&
-        (y =/= x) &&&
-        (not_in_envo x rest) )
+    [ fresh (y v rest)
+        (env === (inj_pair y v) % rest)
+        (y =/= x)
+        (delay @@ fun () -> not_in_envo x rest)
+    ; (env === nil ())
     ]
 
 type fenv = ( (string * rresult) List.ground, (string logic * lresult) logic List.logic) injected
 
-let rec map_evalo es env rs =
+let rec proper_listo es env rs =
   conde
     [ (es === nil ()) &&& (rs === nil ())
-    ; fresh (e es' r rs')
-        (es === e % es')
-        (rs === r % rs')
-        (evalo e env (val_ r))
-        (map_evalo es' env rs')
+    ; fresh (e d te td)
+        (es === e  % d)
+        (rs === te % td)
+        (delay @@ fun () -> evalo e env (val_ te))
+        (delay @@ fun () -> proper_listo d env td)
     ]
 and evalo (term: fterm) (env: fenv) (r: fresult) =
+  let (===) = unitrace (fun h t -> show_lterm   @@ gterm_reifier   h t) in
+  let (<=>) = unitrace (fun h t -> show_lresult @@ gresult_reifier h t) in
   conde
-    [ call_fresh (fun t ->
-        (term === seq ((symb !!"quote") %< t)) &&&
-        (r === (val_ t))
-           &&& (not_in_envo !!"quote" env)
-        )
+    [ fresh (t)
+        (term === seq ((symb !!"quote") %< t))
+        (r <=> (val_ t))
+        (delay @@ fun () -> not_in_envo !!"quote" env)
     ; fresh (es rs)
         (term === seq ((symb !!"list") % es) )
-        (r === val_ (seq rs))
-        (not_in_envo !!"list" env)
-        (map_evalo es env rs)
+        (r <=> val_ (seq rs))
+        (delay @@ fun () -> not_in_envo !!"list" env)
+        (delay @@ fun () -> proper_listo es env rs)
 
     ; fresh (s)
         (term === (symb s))
-        (lookupo s env r)
+        (delay @@ fun () -> lookupo s env r)
 
     ; fresh (func arge arg x body env')
         (term === seq (func %< arge))
-        (evalo arge env arg)
-        (evalo func env (closure x body env') )
-        (evalo body ((inj_pair x arg) % env') r)
+        (delay @@ fun () -> evalo arge env arg)
+        (delay @@ fun () -> evalo func env (closure x body env') )
+        (delay @@ fun () -> evalo body ((inj_pair x arg) % env') r)
     ; fresh (x body)
         (term === seq ( (symb !!"lambda") %
                         (seq (!< (symb x)) %< body)
                       ) )
-        (not_in_envo !!"lambda" env)
-        (r === (closure x body env))
+        (delay @@ fun () -> not_in_envo !!"lambda" env)
+        (r <=> (closure x body env))
     ]
 
 let ( ~~ ) s  = symb @@ inj @@ lift s
@@ -185,7 +185,7 @@ let quineo q =
 let twineso q p =
   (q =/= p) &&& (evalo q nil (val_ p)) &&& (evalo p nil (val_ q))
 
-let thrineso q p r =
+let thrineso r q p =
   (q =/= p) &&& (p =/= r) &&& (r =/= q) &&&
   (evalo p nil (val_ q)) &&&
   (evalo q nil (val_ r)) &&&
