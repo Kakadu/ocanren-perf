@@ -2,7 +2,7 @@
   Quines stuff by Dmitrii Rozplokhas. Adopted from
   https://raw.githubusercontent.com/rozplokhas/OCanren/master/regression/test015.ml
 *)
-
+(*
 open Printf
 open GT
 open MiniKanren
@@ -361,3 +361,4 @@ let _ =
   Printf.printf "%!Twines:\n\n%!";
   find_twines ()
   *) *)
+*)

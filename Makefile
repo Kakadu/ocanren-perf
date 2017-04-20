@@ -1,7 +1,7 @@
 print-%: ; @echo $*=$($*)
 
 DATAFILE=data.gnuplot
-TESTS=007 011 #001 002 003 005 006 007
+TESTS=001 002 003 005 006 007
 MEASURE=/usr/bin/time -f "%U"
 DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
@@ -20,6 +20,9 @@ MEASURE_MUSCM ?=
 ####### we need to measure 20 times to have 1-2% error
 define AVG_MEASURE
 	$(RM) .avg
+	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
+	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
+	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
 	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
 	@sh avg.awk .avg | xargs echo -n >> $(2)
 	@echo -n " " >> $(2)
@@ -102,6 +105,7 @@ measure$(1)_scm:
 $(call DOUBLE_IF_RKT_AVG,$$(SCM_FILE_$(1)),$(MEASURE_SCM),.$(1).data,scheme --program $$(SCM_NATIVE_$(1)))
 
 # simple-miniKanren in Scheme
+compile_simple_scm:
 SIMPLESCM_FILE_$(1) = $(wildcard src_lisps/test$(1)*.simplechez.scm)
 SIMPLESCM_NATIVE_$(1) = $$(SIMPLESCM_FILE_$(1):.scm=).so
 SIMPLESCM_FILE_$(1)_BASENAME = $$(shell basename $$(SIMPLESCM_FILE_$(1)))
@@ -192,11 +196,11 @@ prepare_ocanren: \
 
 
 compile_ocanren1tests:
-	$(MAKE) -C src_ocanren1master
+	$(MAKE) -C src_ocanren1master all
 compile_ocanren2tests:
-	$(MAKE) -C src_ocanren2patTree
+	$(MAKE) -C src_ocanren2patTree all
 compile_ocanren3tests:
-	$(MAKE) -C src_ocanren3MKstreams
+	$(MAKE) -C src_ocanren3MKstreams all
 
 .PHONY: check_submodules
 check_submodules:

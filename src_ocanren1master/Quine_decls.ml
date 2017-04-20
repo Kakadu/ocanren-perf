@@ -144,7 +144,7 @@ let show_reif_env h e =
 let show_reif_term h t = show_lterm @@ gterm_reifier h t
 let show_reif_result h t = show_lresult @@ gresult_reifier h t
 
-let rec proper_listo es env rs =
+(* let rec proper_listo es env rs =
   conde
     [ (es === nil ()) &&& (rs === nil ())
     ; fresh (e d te td)
@@ -152,14 +152,49 @@ let rec proper_listo es env rs =
         (rs === te % td)
         (delay @@ fun () -> evalo e env (val_ te))
         (delay @@ fun () -> proper_listo d env td)
+    ] *)
+let rec map_evalo es env rs =
+  conde
+    [ (es === nil ()) &&& (rs === nil ())
+    ; fresh (e es' r rs')
+        (es === e % es')
+        (rs === r % rs')
+        (evalo e env (val_ r))
+        (map_evalo es' env rs')
     ]
 and evalo (term: fterm) (env: fenv) (r: fresult) =
-  let (===)  = unitrace show_reif_term in
-  let (===================================) = unitrace show_reif_result in
+  (* let (===)  = unitrace show_reif_term in *)
+  (* let (===================================) = unitrace show_reif_result in *)
+
+  conde
+  [ fresh (t)
+    (term === seq ((symb !!"quote") %< t))
+    (r === (val_ t))
+    (not_in_envo !!"quote" env)
+  ; fresh (es rs)
+      (term === seq ((symb !!"list") % es) )
+      (r === val_ (seq rs))
+      (not_in_envo !!"list" env)
+      (map_evalo es env rs)
+  ; fresh (s)
+      (term === (symb s))
+      (lookupo s env r)
+  ; fresh (func arge arg x body env')
+      (term === seq (func %< arge))
+      (evalo arge env arg)
+      (evalo func env (closure x body env') )
+      (evalo body ((inj_pair x arg) % env') r)
+  ; fresh (x body)
+      (term === seq ( (symb !!"lambda") %
+                      (seq (!< (symb x)) %< body)
+                    ) )
+      (not_in_envo !!"lambda" env)
+      (r === (closure x body env))
+  ]
 
   (* trace "entering evalo" @@ *)
-  (* conde [ *)
-      begin let () = printf "pizda1\n" in
+  (* conde [
+    (* begin *)
       call_fresh_named "t" (fun t ->
         let () = printf "creating inc when creating 't'\n%!" in
         delay (fun () ->
@@ -172,7 +207,6 @@ and evalo (term: fterm) (env: fenv) (r: fresult) =
     (* ; *)
       |||
       begin
-      let () = printf "pizda2\n" in
       call_fresh_named "es" (fun es ->
         let () = printf "creating inc when creating 'es'\n%!" in
         delay @@ fun () ->
@@ -184,37 +218,20 @@ and evalo (term: fterm) (env: fenv) (r: fresult) =
         (* (delay_goal @@ not_in_envo !!"list" env)
         (delay_goal @@ map_evalo es env rs) *)
       end
-    (* ] *)
+    ] *)
 
 let ( ~~ ) s  = symb @@ inj @@ lift s
 let s      tl = seq (inj_list tl)
 
 let nil = nil ()
-let quineo q =
-  fresh (x y)
-    (evalo q nil (val_ q))
 
-let twineso q p =
-  (q =/= p) &&& (evalo q nil (val_ p)) &&& (evalo p nil (val_ q))
-
-let thrineso q p r =
-  (evalo p nil (val_ q))
-  (* ?&
-    [ (*(q =/= p)
-    ; (p =/= r)
-    ; (r =/= q)
-    ;*) (evalo p nil (val_ q))
-    (* ; (evalo q nil (val_ r))
-    ; (evalo r nil (val_ p)) *)
-    ] *)
-
-let run_term (text,t) = printf "> %s\n%!%s\n\n%!" text @@
+(* let run_term (text,t) = printf "> %s\n%!%s\n\n%!" text @@
   run q (fun q -> evalo t nil (val_ q)) (fun qs ->
       if Stream.is_empty qs
       then "fail"
       else (Stream.hd qs)#refine gterm_reifier ~inj:Gterm.to_logic |> show_lterm
-    )
-
+    ) *)
+(*
 let quine_c =
   s[s[~~"lambda"; s[~~"x"];
       s[~~"list"; ~~"x"; s[~~"list"; s[~~"quote"; ~~"quote"]; ~~"x"]]];
@@ -238,7 +255,7 @@ let _f () =
   run_term (REPR( quine_c ));
   ()
 ;;
-(*
+
 let gen_terms n r = printf "> %s\n" (show_term r);
   run q (fun q -> evalo q nil (val_ r))
     (fun qs -> List.iter (fun t -> printf "%s\n" @@ show_term t) @@
@@ -246,13 +263,20 @@ let gen_terms n r = printf "> %s\n" (show_term r);
   Printf.printf "\n"
 *)
 
-let wrap_term rr =
-  rr#refine gterm_reifier ~inj:Gterm.to_logic |> show_lterm
- (* function
-  | Final x -> show_rterm @@ Obj.magic x
-  | HasFreeVars func -> show_lterm @@ func gterm_reifier *)
+let quineso q = (evalo q nil (val_ q))
 
-let find_quines n = run q quineo @@ fun qs ->
+let twineso q p =
+  (q =/= p) &&& (evalo q nil (val_ p)) &&& (evalo p nil (val_ q))
+
+let thrineso q p r =
+  (q =/= p) &&& (p =/= r) &&& (r =/= q) &&&
+  (evalo p nil (val_ q)) &&&
+  (evalo q nil (val_ r)) &&&
+  (evalo r nil (val_ p))
+
+let wrap_term rr = rr#refine gterm_reifier ~inj:Gterm.to_logic |> show_lterm
+
+let find_quines n = run q quineso @@ fun qs ->
   Stream.take ~n qs |> List.map wrap_term |> List.iter (printf "%s\n\n")
 
 let find_twines n =
@@ -263,11 +287,11 @@ let find_twines n =
     )
 
 let find_thrines n =
-  run qrs thrineso
-    (fun qs rs ss ->
+  run qrs thrineso @@
+    fun qs rs ss ->
       list_iter3 (fun (q,r,s) -> printf "%s,\n\t%s,\n\t%s\n\n" (wrap_term q) (wrap_term r) (wrap_term s))
         (Stream.take ~n qs) (Stream.take ~n rs) (Stream.take ~n ss)
-    )
+
 
 (*
 let _ =

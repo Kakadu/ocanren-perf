@@ -2,7 +2,7 @@ open Printf
 open MiniKanren
 open Tester
 open Quines_NoDiseq
-
+(* 
 (* let _ = find_quines 3 *)
 
 (*  (lambda ((vr _.0)) (list (vr _.0) (list 'quote (vr _.0))))
@@ -23,4 +23,4 @@ let () =
 
   (* run q quineo @@ fun qs ->
     Stream.take ~n qs |> List.map wrap_term |> List.iter (printf "%s\n\n"); *)
-  ()
+  () *)

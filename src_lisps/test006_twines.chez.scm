@@ -12,3 +12,5 @@
       (eval-expo q '() `(val_ ,p))
       (== `(,p ,q) x)))
 )
+
+(printf "unif-counter = ~a\n" unif-counter)

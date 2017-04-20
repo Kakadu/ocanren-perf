@@ -4,17 +4,25 @@
 (include "q.scm")
 
 (list-display
-  (run 1
-    ;(p q r)
-    (x)
+  (run 1 (x)
     (fresh (p q r)
-    ;((bind*
-      ;(=/= p q)
-      ;(=/= q r)
-      ;(=/= r p)
+      (=/= p q)
+      (=/= q r)
+      (=/= r p)
       (eval-expo p '() `(val_ ,q))
-      ;(eval-expo q '() `(val_ ,r))
-      ;(eval-expo r '() `(val_ ,p))
-      (== `(,p ,q ,r) x)
-      ))
+      (eval-expo q '() `(val_ ,r))
+      (eval-expo r '() `(val_ ,p))
+      (== `(,p ,q ,r) x)))
 )
+
+(printf "unif-counter = ~a\n" unif-counter)
+
+;(list-display (run 1 (exp)
+;    (disj
+;      (fresh (t)
+;        (=== exp `(seq ((symb 'quote) ,t)) )
+;      )
+;      (fresh (eeeeeeeeeeees)
+;        (succeed))
+;      )
+;))
