@@ -4,13 +4,17 @@
 (include "q.scm")
 
 (list-display
-  (run 2 (x)
+  (run 1
+    ;(p q r)
+    (x)
     (fresh (p q r)
-      (=/= p q)
-      (=/= q r)
-      (=/= r p)
+    ;((bind*
+      ;(=/= p q)
+      ;(=/= q r)
+      ;(=/= r p)
       (eval-expo p '() `(val_ ,q))
-      (eval-expo q '() `(val_ ,r))
-      (eval-expo r '() `(val_ ,p))
-      (== `(,p ,q ,r) x)))
+      ;(eval-expo q '() `(val_ ,r))
+      ;(eval-expo r '() `(val_ ,p))
+      (== `(,p ,q ,r) x)
+      ))
 )
