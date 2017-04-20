@@ -4,10 +4,12 @@
 (include "q_nodiseq.scm")
 
 (list-display
-  (run 3 (q)
+  (run 1 (q)
     (ev '()
+        ;quine
         q
-        `(code ,q)))
+        `(code ,q)
+    ))
 )
 
 ;(list-display

@@ -1,4 +1,4 @@
-true: rectypes, short_paths, keep_asm, debug
+true: rectypes, short_paths, keep_asm, debug, safe_string
 #true: runtime_variant(i)
 
 <*.ml>: syntax(camlp5o), package(logger.syntax,GT.syntax.all,ocanren.tester,ocanren.syntax)
