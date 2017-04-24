@@ -1,10 +1,27 @@
 open Printf
 open GT
 open MiniKanren
+open Quine_decls
 
 let show_intl = GT.show logic string_of_int
 
-let foo q =
+
+let evalo (term: (int, int logic) injected) =
+  (* let (===)  = unitrace show_reif_term in *)
+  (* let (===================================) = unitrace show_reif_result in *)
+  let (===) = unitrace (fun h t -> (GT.show logic string_of_int) @@ ManualReifiers.int_reifier h t) in
+  conde
+  [ fresh (t)
+    (term === !!1)
+    (* (t === !!2) *)
+
+  ; fresh (es)
+      (success)
+
+  ]
+
+
+(* let foo q =
   let (===) = unitrace (fun h x -> show_intl @@ ManualReifiers.int_reifier h x) in
   conde
     [ fresh (x)
@@ -15,8 +32,8 @@ let foo q =
         (q === !!4)
         (x === !!5)
         (y === !!6)
-    ]
+    ] *)
 
 open Tester
 let () =
-  run_exn string_of_int (2) q qh (REPR (foo))
+  run_exn string_of_int 1 q qh (REPR (evalo))

@@ -1,30 +1,77 @@
-;(include "../simple-miniKanren/mk.scm")
 (include "../faster-miniKanren/mk-vicare.scm")
 (include "../faster-miniKanren/mk.scm")
-(include "list-display.scm")
-;(include "q_nodiseq.scm")
 
-(define ===
-  (lambda (x y)
-    (lambda (s)
-      (let ((x2 (walk x s))
-            (y2 (walk y s)))
-        (printf "unify '~a' and '~a'\n" x2 y2)
-        ((== x y) s) ))))
+(include "q.scm")
 
-(define custom1 (lambda (q)
-  (=== q 2)
-  ))
+;(list-display
+;  (run 1 (x)
+;    (fresh (p q r)
+;      (=/= p q)
+;      (=/= q r)
+;      (=/= r p)
+;      (eval-expo p '() `(val_ ,q))
+;      (eval-expo q '() `(val_ ,r))
+;      (eval-expo r '() `(val_ ,p))
+;      (== `(,p ,q ,r) x)))
+;)
+;
+;(printf "unif-counter = ~a\n" unif-counter)
 
-(list-display
-  (run 2 (q)
+;
+;(list-display (run 2 (exp)
+;  ; conde
+;  (lambdag@ (st)
+;    (let ((st (state-with-scope st (new-scope))))
+;      (mplus
+;        ; fresh
+;        (
+;           (begin
+;              (let ((scope (subst-scope (state-S st))))
+;                (let ( (t (var 't scope)) )
+;                   (inc (begin
+;                     (bind* ((=== exp 1 ) st) )))))))
+;        (inc
+;          (mplus
+;            (
+;                (let ((scope (subst-scope (state-S st))))
+;                  (let ( (es (var 'es scope)) )
+;                     (inc (begin
+;                       (bind* ((=== exp 2) st) ))))))
+;
+;            (
+;                (let ((scope (subst-scope (state-S st))))
+;                  (let ( (zzzzzzzzzzs (var 'zzzzzzzzzs scope)) )
+;                     (inc (begin
+;                       (bind* ((=== exp 3) st) ))))))
+;          )
+;        ))
+;      )
+;    )
+;))
+
+(list-display (run 2 (exp)
     (conde
-      ( (fresh (x)
-          (=== q 1)
-          (custom1 x)))
-      ( (fresh (x y)
-            (=== q 4)
-            (=== x 5)
-            (=== y 6)))
-        ))
-)
+      ((lambdag@ (st)
+         (begin
+            (let ((scope (subst-scope (state-S st))))
+              (let ( (t (var 't scope)) )
+                 (inc (begin
+                   (bind* ((=== exp 1 ) st) ))))))))
+
+      ((lambdag@ (st)
+         (begin
+            (let ((scope (subst-scope (state-S st))))
+              (let ( (es (var 'es scope)) )
+                 (inc (begin
+                   (bind* ((=== exp 2) st) ))))))))
+
+      ((lambdag@ (st)
+         (begin
+            (let ((scope (subst-scope (state-S st))))
+              (let ( (zzzzzzzzzzs (var 'zzzzzzzzzs scope)) )
+                 (inc (begin
+                   (bind* ((=== exp 3) st) ))))))))
+
+
+    )
+))
