@@ -2,11 +2,11 @@
 (include "../faster-miniKanren/mk.scm")
 (include "list-display.scm")
 
-
+; substo 'x' by 'a' in 'l'
 (define substo (lambda (l x a l2)
   (conde
     ((fresh (y)
-        (== l `(v ,y))
+        (== l `(v ,y))  ; if a value
         (== y x)
         (== l2 a) ))
     ((fresh (m n m2 n2)
@@ -30,7 +30,7 @@
   (conde
     ((fresh (x)
         (== m `(v ,x))
-        (== n m)))
+        (== n m) ))
     ((fresh (x l)
         (== m `(abs ,x ,l))
         (== n m) ))
@@ -46,16 +46,32 @@
               (== n  `(app ,f2 ,a2)) ))
           ((fresh (x)
               (== f2 `(v ,x))
-              (== n  `(app ,f2 ,a2))))
-        )))
-
+              (== n  `(app ,f2 ,a2)) )) )
+        (evalo f f2)
+        (evalo a a2) ))
   )
 ))
 
-(list-display
-  (run 2 (q r s)
-    (evalo `(app ,q ,r) s)
-    (evalo `(app ,r ,s) q)
-    (evalo `(app ,s ,q) r)
-  )
-)
+; run_exn show_rlam 2 q qh (REPR (fun q -> evalo (abs varX (v varX)) q));
+(list-display (run 1 (q)
+  (evalo `(abs 'x (v 'x)) q)
+))
+; fun q   -> evalo (app (abs varX (v varX)) (v varY))        q
+(list-display (run 1 (q)
+  (evalo `(app (abs 'x (v 'x)) (v 'y)) q)
+))
+
+(list-display (run 1 (q)
+  (evalo `(app ,q (v 'x)) '(v 'x) )
+))
+
+
+
+;; Hangs!
+;(list-display
+;  (run 2 (q r s)
+;    (evalo `(app ,q ,r) s)
+;    (evalo `(app ,r ,s) q)
+;    (evalo `(app ,s ,q) r)
+;  )
+;)
