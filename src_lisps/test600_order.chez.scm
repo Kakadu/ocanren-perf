@@ -3,18 +3,21 @@
 
 (include "q.scm")
 
-;(list-display
-;  (run 1 (x)
-;    (fresh (p q r)
-;      (=/= p q)
-;      (=/= q r)
-;      (=/= r p)
-;      (eval-expo p '() `(val_ ,q))
-;      (eval-expo q '() `(val_ ,r))
-;      (eval-expo r '() `(val_ ,p))
-;      (== `(,p ,q ,r) x)))
-;)
-;
+(list-display
+  (run 2 (exp)
+    (conde
+      ((fresh (t)
+          (=== exp 0)
+          (=== exp 1)
+          ))
+      ((fresh (es)
+          (=== exp 2)))
+      ((fresh (zzzzzzzzzs)
+          (=== exp 3)))
+          ))
+
+)
+
 ;(printf "unif-counter = ~a\n" unif-counter)
 
 ;
@@ -49,31 +52,33 @@
 ;    )
 ;))
 
-(list-display (run 2 (exp)
-  (lambdag@ (st)
-    (lambda ()
-     (let ((st (state-with-scope st (new-scope))))
-      (mplus
-        ; Bind was here
-        (let ((scope (subst-scope (state-S st))))
-          (let ( (t (var 't scope)) )
-             (inc
-               ((=== exp 1 ) st) )))
-        (inc
-          (mplus
-            ; Bind was here
-            (let ((scope (subst-scope (state-S st))))
-              (let ( (es (var 'es scope)) )
-                 (inc
-                   ((=== exp 2) st) )))
-          (inc
-            ; Bind was here
-            (let ((scope (subst-scope (state-S st))))
-              (let ( (zzzzzzzzzzs (var 'zzzzzzzzzs scope)) )
-                 (inc
-                   ((=== exp 3) st) )))))))
-  )))
-))
+;(list-display (run 2 (exp)
+;  (lambdag@ (st)
+;    (lambda ()
+;     (let ((st (state-with-scope st (new-scope))))
+;      (mplus
+;        ; Bind was here
+;        (let ((scope (subst-scope (state-S st))))
+;          (let ( (t (var 't scope)) )
+;             (inc
+;               ((=== exp 1 ) st) )))
+;
+;        (inc
+;          (begin (printf "herr\n")
+;          (mplus
+;            ; Bind was here
+;            (let ((scope (subst-scope (state-S st))))
+;              (let ( (es (var 'es scope)) )
+;                 (inc
+;                   ((=== exp 2) st) )))
+;          (inc
+;            ; Bind was here
+;            (let ((scope (subst-scope (state-S st))))
+;              (let ( (zzzzzzzzzzs (var 'zzzzzzzzzs scope)) )
+;                 (inc
+;                   ((=== exp 3) st) )))))))
+;  ))))
+;))
 
 
 ;(list-display (run 2 (exp)
