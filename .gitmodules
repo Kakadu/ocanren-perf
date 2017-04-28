@@ -16,3 +16,7 @@
 [submodule "simple-miniKanren"]
 	path = simple-miniKanren
 	url = https://github.com/miniKanren/simple-miniKanren.git
+[submodule "ocanren4fastDiseq"]
+	path = ocanren4fastDiseq
+	url = https://github.com/Kakadu/OCanren.git
+	branch = faster-diseq
