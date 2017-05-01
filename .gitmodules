@@ -20,3 +20,7 @@
 	path = ocanren4fastDiseq
 	url = https://github.com/Kakadu/OCanren.git
 	branch = faster-diseq
+[submodule "ocanren5set-var-val"]
+	path = ocanren5set-var-val
+	url = https://github.com/Kakadu/OCanren.git
+	branch = set-var-val

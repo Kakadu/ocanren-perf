@@ -1,0 +1,6 @@
+FINDLIB_PATH ../ocanren3MKstreams/_build/bundle
+PKG ocanren
+PKG GT
+S .
+B _build
+FLG -rectypes
