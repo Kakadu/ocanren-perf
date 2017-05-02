@@ -232,7 +232,7 @@ compile: prepare_ocanren \
 	compile_ocanren1tests \
 	compile_ocanren2tests \
 	compile_ocanren3tests \
-	compile_ocanren3tests \
+	compile_ocanren5tests \
 	compile_scm \
 	compile_simple_scm \
 	compile_muscm \
@@ -261,3 +261,5 @@ clean:
 	$(MAKE) -C src_lisps           clean
 	$(MAKE) -C src_ocanren1master  clean
 	$(MAKE) -C src_ocanren2patTree clean
+	$(MAKE) -C src_ocanren3MKstreams clean
+	$(MAKE) -C src_ocanren5set-var-val clean
