@@ -11,7 +11,7 @@ NAME := $(shell echo $(1) | sed 's/^test\([0-9]*\)_\([a-zA-Z0-9]*\).ml/\2/')
 ALL_NATIVES += $$(patsubst %.ml,%.native,$(1))
 .PHONY: test$$(IDX)
 test$$(IDX): $(1)
-	OCAMLPATH=`pwd`/../ocanren3MKstreams/_build/bundle \
+	OCAMLPATH=`pwd`/../ocanren5set-var-val/_build/bundle \
 	ocamlbuild -use-ocamlfind $$(patsubst %.ml,%.native,$(1))
 endif
 endef
@@ -24,7 +24,7 @@ $(foreach i,$(ALL_TEST_MLS), $(eval $(call XXX,$(i)) ) )
 .PHONY: all clean $(natives)
 
 all:
-	OCAMLPATH=`pwd`/../ocanren3MKstreams/_build/bundle \
+	OCAMLPATH=`pwd`/../ocanren5set-var-val/_build/bundle \
 	ocamlbuild -use-ocamlfind $(ALL_NATIVES)
 
 clean:
