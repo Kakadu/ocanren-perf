@@ -166,7 +166,7 @@ do_measure: measure$(1)
 measure$(1): measure$(1)_prepare \
 	measure$(1)_MLOC1 measure$(1)_MLOC2 measure$(1)_MLOC3 measure$(1)_MLOC4 measure$(1)_MLOC5 \
 		measure$(1)_scm #measure$(1)_simple_scm
-							# measure$(1)_MLOC1D  measure$(1)_MLOC2F  measure$(1)_MLOC4F  measure$(1)_scm
+
 	printf "$$(TEST$(1)_NAME) " >> $(DATAFILE)
 	tr '\n' ' ' < .$(1).data >> $(DATAFILE)
 	printf "\n" >> $(DATAFILE)
