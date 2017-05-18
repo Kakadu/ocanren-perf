@@ -24,3 +24,7 @@
 	path = ocanren5set-var-val
 	url = https://github.com/Kakadu/OCanren.git
 	branch = set-var-val
+[submodule "ocanren6same-streams"]
+	path = ocanren6same-streams
+	url = https://github.com/Kakadu/OCanren.git
+	branch = same-streams
