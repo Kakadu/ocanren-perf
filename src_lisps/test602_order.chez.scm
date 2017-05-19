@@ -89,7 +89,7 @@
 ;)))
 
 (define evalo (lambda (m)
-  (begin (printf " applying evalo to m\n")
+  (begin ;(printf " applying evalo to m\n")
   (lambdag@ (st)
     (let ((scope (subst-scope (state-S st))))
       (let ((f2 (var 'f2 scope)) )
@@ -103,27 +103,28 @@
                     (printf " force a conde\n")
                     (mplus
                       (let ( (x (var 'x (subst-scope (state-S st)))) )
-                               (printf "create inc in fresh ==== ~a\n" (list 'x))
-                               (inc (begin
-                                     (printf "inc in fresh forced: ~a \n" (list 'x))
-                                     ((=== f2 1) st) )))
+                            (printf "create inc in fresh ==== ~a\n" (list 'x))
+                            (inc (begin
+                              (printf "inc in fresh forced: ~a \n" (list 'x))
+                              ((=== f2 1) st) )))
                       (inc (begin
                         (printf " force inc from mplus*\n")
                         (let ( (p (var 'p (subst-scope (state-S st)))) )
                             (printf "create inc in fresh ==== ~a\n" (list 'p))
                             (inc (begin
-                                  (printf "inc in fresh forced: ~a \n" (list 'p))
-                                  ((=== f2 2) st) ))))
+                              (printf "inc in fresh forced: ~a \n" (list 'p))
+                              ((=== f2 2) st) ))))
                       )
                     )
                   )
                 )
               )
-              (evalo 4) )
+              (== m 1)
+
+                )
             ))
         )))
 )))
-
 
 (list-display
   (myrun1 1 (q)
