@@ -1,12 +1,21 @@
 print-%: ; @echo $*=$($*)
 
 DATAFILE=data.gnuplot
+<<<<<<< Updated upstream
 TESTS=001 002 003 005 006 007
 MEASURE=/usr/bin/time -f "%U"
 DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
 MEASURE_OC1   ?= y
 MEASURE_OC2   ?=
+=======
+TESTS=x001 x002 x004 x003 005 006 007 008
+MEASURE=/usr/bin/time -f "%U"
+DUMMY_MEASURE=printf "%10.3f\t" 0.0
+
+MEASURE_OC1   ?=
+MEASURE_OC2   ?= y
+>>>>>>> Stashed changes
 MEASURE_OC3   ?= y
 MEASURE_OC4   ?= y
 MEASURE_OC5   ?= y

@@ -3,41 +3,19 @@
 ;(include "../simple-miniKanren/test-check.scm")
 (include "list-display.scm")
 
-(define nullo
-  (lambda (x)
-    (== '() x)))
-(define pairo
-  (lambda (p)
-    (fresh (a d)
-      (conso a d p))))
-(define conso
-  (lambda (a d p)
-    (== (cons a d) p)))
-(define poso
-  (lambda (n)
-    (fresh (a d)
-      (== `(,a . ,d) n))))
-(define cdro
-  (lambda (p d)
-    (fresh (a)
-      (== (cons a d) p))))
-(define caro
-  (lambda (p a)
-    (fresh (d)
-      (== (cons a d) p))))
 
-;(include "numbers.scm")
-
-(define myappendo (lambda (l s out)
+(define myappendo (lambda (a b ab)
     (conde
-      ( (== '() l)
-        (== s out) )
-      ((fresh (a d res)
-         (== `(,a . ,d) l)
-         (== `(,a . ,res) out)
-         (myappendo d s res))) )))
+      ( (=== a '())
+        (=== b ab)  )
+      ((fresh (h t res)
+         (=== a  `(,h . ,t)   )
+         (=== ab `(,h . ,res) )
+         (myappendo t b res))) )))
 
 (list-display
-(run 2 (q r)
-  (myappendo q '() r ))
-)
+  (run 2 (q )
+    (myappendo q '() q ))
+    )
+
+(report_counters)
