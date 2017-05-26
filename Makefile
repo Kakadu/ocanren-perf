@@ -1,24 +1,16 @@
 print-%: ; @echo $*=$($*)
 
 DATAFILE=data.gnuplot
-<<<<<<< Updated upstream
 TESTS=001 002 003 005 006 007
 MEASURE=/usr/bin/time -f "%U"
 DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
-MEASURE_OC1   ?= y
-MEASURE_OC2   ?=
-=======
-TESTS=x001 x002 x004 x003 005 006 007 008
-MEASURE=/usr/bin/time -f "%U"
-DUMMY_MEASURE=printf "%10.3f\t" 0.0
-
 MEASURE_OC1   ?=
-MEASURE_OC2   ?= y
->>>>>>> Stashed changes
+MEASURE_OC2   ?=
 MEASURE_OC3   ?= y
-MEASURE_OC4   ?= y
-MEASURE_OC5   ?= y
+MEASURE_OC4   ?=
+MEASURE_OC5   ?=
+MEASURE_OC6   ?= y
 MEASURE_RKT   ?=
 MEASURE_SCM   ?= y
 MEASURE_MUSCM ?=
@@ -31,6 +23,7 @@ MEASURE_MUSCM ?=
 ####### we need to measure 20 times to have 1-2% error
 define AVG_MEASURE
 	$(RM) .avg
+	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
 	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
 	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
 	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
@@ -107,6 +100,11 @@ MLOC5_NATIVE_$(1) := $$(wildcard src_ocanren5set-var-val/test$(1)*.native)
 measure$(1)_MLOC5:
 $(call DOUBLE_IF_OC_AVG,$$(MLOC5_NATIVE_$(1)),$(MEASURE_OC5),.$(1).data)
 
+# ML OCanren 6 same-streams
+MLOC6_NATIVE_$(1) := $$(wildcard src_ocanren6same-streams/test$(1)*.native)
+
+measure$(1)_MLOC6:
+$(call DOUBLE_IF_OC_AVG,$$(MLOC6_NATIVE_$(1)),$(MEASURE_OC6),.$(1).data)
 ###################################### finish measuring ocanren ################
 
 # miniKanren in Scheme
@@ -209,11 +207,16 @@ prepare_ocanren5setvarval:
 	$(MAKE) -C ocanren5set-var-val all
 	$(MAKE) -C ocanren5set-var-val bundle
 
+prepare_ocanren6same-streams:
+	$(MAKE) -C ocanren6same-streams all
+	$(MAKE) -C ocanren6same-streams bundle
+
 .PHONY: prepare_ocanren1master \
 	prepare_ocanren2patTree \
 	prepare_ocanren3MKstreams \
 	prepare_ocanren4fastDiseq \
 	prepare_ocanren5setvarval \
+	prepare_ocanren6same-streams \
 	prepare_ocanren
 
 prepare_ocanren: \
@@ -222,6 +225,7 @@ prepare_ocanren: \
 	prepare_ocanren3MKstreams \
 	prepare_ocanren4fastDiseq \
 	prepare_ocanren5setvarval \
+	prepare_ocanren6same-streams \
 	#prepare_ocanren1default \
 	#prepare_ocanren2fancy \
 	#prepare_ocanren4fancy \
@@ -232,8 +236,8 @@ prepare_ocanren: \
 	compile_ocanren2tests \
 	compile_ocanren3tests \
 	compile_ocanren4tests \
-	compile_ocanren5tests
-
+	compile_ocanren5tests \
+	compile_ocanren6 tests
 
 compile_ocanren1tests:
 	$(MAKE) -C src_ocanren1master all
@@ -245,6 +249,8 @@ compile_ocanren4tests:
 	$(MAKE) -C src_ocanren4fastDiseq all
 compile_ocanren5tests:
 	$(MAKE) -C src_ocanren5set-var-val all
+compile_ocanren6tests:
+	$(MAKE) -C src_ocanren6same-streams all
 
 .PHONY: check_submodules
 check_submodules:
@@ -260,6 +266,7 @@ compile: prepare_ocanren \
 	compile_ocanren3tests \
 	compile_ocanren4tests \
 	compile_ocanren5tests \
+	compile_ocanren6tests \
 	compile_scm \
 	compile_simple_scm \
 	compile_muscm \
@@ -286,11 +293,13 @@ clean:
 	$(MAKE) -C ocanren-master      clean
 	$(MAKE) -C ocanren2patTree     clean
 	$(MAKE) -C ocanren3MKstreams   clean
-	$(MAKE) -C ocanren4fastDiseq   clean
-	$(MAKE) -C ocanren5set-var-val clean
-	$(MAKE) -C src_lisps           clean
-	$(MAKE) -C src_ocanren1master  clean
-	$(MAKE) -C src_ocanren2patTree clean
+	$(MAKE) -C ocanren4fastDiseq    clean
+	$(MAKE) -C ocanren5set-var-val  clean
+	$(MAKE) -C ocanren6same-streams clean
+	$(MAKE) -C src_lisps            clean
+	$(MAKE) -C src_ocanren1master   clean
+	$(MAKE) -C src_ocanren2patTree  clean
 	$(MAKE) -C src_ocanren3MKstreams clean
 	$(MAKE) -C src_ocanren4fastDiseq clean
-	$(MAKE) -C src_ocanren5set-var-val clean
+	$(MAKE) -C src_ocanren5set-var-val  clean
+	$(MAKE) -C src_ocanren5same-streams clean
