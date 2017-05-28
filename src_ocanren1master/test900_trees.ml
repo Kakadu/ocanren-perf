@@ -23,11 +23,23 @@ open MiniKanren
 module Tree = struct
   module X = struct
   (* Abstracted type for the tree *)
-  @type ('a, 'self) t = Nil | Node of 'a * 'self * 'self with gmap,show;;
+  type ('a, 'self) t = Nil | Node of 'a * 'self * 'self [@@deriving gt {show}]
 
   let fmap f g = function
   | Nil -> Nil
   | Node (a,b,c) -> Node (f a, g b, g c)
+
+  let t = {t with
+    gcata = ();
+    plugins = object
+      method gmap = fmap (* t.plugins#gmap *)
+      method show fa fb bx =
+         GT.transform(t)
+            (GT.lift fa) (GT.lift fb)
+            (new show_t)
+            bx
+     end
+  }
   end
   include X
   include Fmap2(X)
@@ -53,11 +65,11 @@ module Tree = struct
 
   (* Injection *)
   let rec inj_tree : inttree -> ftree = fun tree ->
-     inj @@ distrib @@ GT.(gmap t inj_nat inj_tree tree)
+     inj @@ distrib @@ GT.(fmap t inj_nat inj_tree tree)
 
   (* Projection *)
   let rec prj_tree : rtree -> inttree =
-    fun x -> GT.(gmap t) Nat.to_int prj_tree x
+    fun x -> GT.(fmap t) Nat.to_int prj_tree x
 
 end
 

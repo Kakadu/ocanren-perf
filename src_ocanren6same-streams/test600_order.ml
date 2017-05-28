@@ -16,7 +16,7 @@ let evalo (term: (int, int logic) injected) =
     (* (t === !!2) *)
 
   ; fresh (es)
-      (success)
+      (term === !!3)
 
   ]
 

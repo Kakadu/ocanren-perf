@@ -1,6 +1,10 @@
-FINDLIB_PATH ../ocanren3MKstreams/_build/bundle
+FLG -rectypes
+
+FINDLIB_PATH /home/kakadu/prog/asp/ocanren-bench/ocanren6same-streams/_build/bundle
 PKG ocanren
+PKG ocanren.ppx
 PKG GT
+PKG GT.ppx
+
 S .
 B _build
-FLG -rectypes

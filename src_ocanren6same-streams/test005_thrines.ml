@@ -1,1 +1,7 @@
-../src_ocanren1master/test005_thrines.ml
+open MiniKanren
+open Tester
+open Quine_decls
+
+let () = find_thrines 2
+
+let () = MiniKanren.report_counters ()

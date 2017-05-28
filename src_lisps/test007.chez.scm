@@ -5,6 +5,8 @@
 
 ; quines
 (list-display
-  (run 100 (p)
+  (run 1 (p)
     (eval-expo p '() `(val_ ,p)) )
 )
+
+(report_counters)

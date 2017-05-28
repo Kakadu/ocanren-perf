@@ -1,7 +1,10 @@
 open Ocamlbuild_plugin;;
 open Command;;
 
-dispatch begin function
+let () = dispatch begin function
+  | Before_options ->
+      Options.ocamldep   := S[A"ocamlfind";A"ocamldep";A"-verbose"]
+
   | After_rules -> begin
       flag ["ocaml";"compile";"native";"keep_asm"] (S [ A "-S"]);
     end
