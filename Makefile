@@ -24,10 +24,10 @@ MEASURE_MUSCM ?=
 define AVG_MEASURE
 	$(RM) .avg
 	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
+	# OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
+	# OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
+	# OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
+	# OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
 	@sh avg.awk .avg | xargs echo -n >> $(2)
 	@echo -n " " >> $(2)
 	@$(RM)  .avg

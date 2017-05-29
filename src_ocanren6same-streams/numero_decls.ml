@@ -18,28 +18,28 @@ let unify_int a b =
   unitrace (fun h x -> GT.(show logic string_of_int)
                                   (ManualReifiers.int_reifier h x))
             a b
+let unify_int_list = (===)
+let unify_int = (===)
 
 let rec appendo l s out =
   let (===) = unify_int_list in
   conde [
-    (List.nullo l) &&& (s === out);
+    (nil() ===  l) &&& (s === out);
     fresh (a d res)
       ((a % d) === l)
-      (appendo d s res)
       ((a % res) === out)
+      (appendo d s res)
   ]
 
-
-
-let poso q =
+let poso n =
   let (===) = unify_int_list in
   fresh (h t)
-    (q === h % t)
+    ((h % t) === n)
 
-let gt1o q =
+let gt1o n =
   let (===) = unify_int_list in
   fresh (h t tt)
-    (q === h % (t % tt))
+    (h % (t % tt) === n)
 
 let (!) = fun x -> inj@@lift x
 let full_addero b x y r c =
@@ -58,6 +58,7 @@ let full_addero b x y r c =
 let rec addero d n m r =
   let (====) = unify_int in
   let (===) = unify_int_list in
+
   conde [
     (!0 ==== d) &&& (nil() === m) &&& (n === r);
     (!0 ==== d) &&& (nil() === n) &&& (m === r) &&& (poso m);
@@ -93,7 +94,7 @@ let minuso n m k = pluso m k n
 
 let rec bound_multo q p n m =
   conde [
-    (List.nullo q) &&& (poso p);
+    (nil () === q) &&& (poso p);
     fresh (x y z)
       (List.tlo q x)
       (List.tlo p y)

@@ -185,9 +185,10 @@ let rec proper_listo es env rs =
         (map_evalo es' env rs')
     ] *)
 and evalo (term: fterm) (env: fenv) (r: fresult) =
-  let (===)  = unitrace show_reif_term in
-  let (===!) = unitrace show_reif_result in
-
+  (* let (===)  = unitrace show_reif_term in
+  let (===!) = unitrace show_reif_result in *)
+  let (===!) = (===) in
+  
   conde
   [ fresh (t)
     (term === seq ((symb !!"quote") %< t))

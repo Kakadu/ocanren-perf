@@ -6,7 +6,7 @@
 (define poso
   (lambda (n)
     (fresh (a d)
-      (=== `(,a . ,d) n))))
+      (== `(,a . ,d) n))))
 
 (include "numbers.scm")
 
