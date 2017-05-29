@@ -84,7 +84,6 @@ module Gresult = struct
     | Closure (a,b,c) -> Closure (f a, g b, h c)
     | Val b -> Val (g b)
 
-    (* let (_:int) = t *)
     let t = {t with
       gcata = ();
       plugins = object
@@ -167,7 +166,7 @@ let show_reif_env h e =
 let show_reif_term h t = show_lterm @@ gterm_reifier h t
 let show_reif_result h t = show_lresult @@ gresult_reifier h t
 
-(* let rec proper_listo es env rs =
+let rec proper_listo es env rs =
   conde
     [ (es === nil ()) &&& (rs === nil ())
     ; fresh (e d te td)
@@ -175,8 +174,8 @@ let show_reif_result h t = show_lresult @@ gresult_reifier h t
         (rs === te % td)
         (delay @@ fun () -> evalo e env (val_ te))
         (delay @@ fun () -> proper_listo d env td)
-    ] *)
-let rec map_evalo es env rs =
+    ]
+(* let rec map_evalo es env rs =
   conde
     [ (es === nil ()) &&& (rs === nil ())
     ; fresh (e es' r rs')
@@ -184,21 +183,21 @@ let rec map_evalo es env rs =
         (rs === r % rs')
         (evalo e env (val_ r))
         (map_evalo es' env rs')
-    ]
+    ] *)
 and evalo (term: fterm) (env: fenv) (r: fresult) =
-  (* let (===)  = unitrace show_reif_term in *)
-  (* let (===================================) = unitrace show_reif_result in *)
+  let (===)  = unitrace show_reif_term in
+  let (===!) = unitrace show_reif_result in
 
   conde
   [ fresh (t)
     (term === seq ((symb !!"quote") %< t))
-    (r === (val_ t))
+    (r ===! (val_ t))
     (not_in_envo !!"quote" env)
   ; fresh (es rs)
       (term === seq ((symb !!"list") % es) )
-      (r === val_ (seq rs))
+      (r ===! val_ (seq rs))
       (not_in_envo !!"list" env)
-      (map_evalo es env rs)
+      (proper_listo es env rs)
   ; fresh (s)
       (term === (symb s))
       (lookupo s env r)
@@ -212,7 +211,7 @@ and evalo (term: fterm) (env: fenv) (r: fresult) =
                       (seq (!< (symb x)) %< body)
                     ) )
       (not_in_envo !!"lambda" env)
-      (r === (closure x body env))
+      (r ===! (closure x body env))
   ]
 
   (* trace "entering evalo" @@ *)

@@ -105,3 +105,5 @@
 ;
 ;    )
 ;))
+
+(report_counters)
