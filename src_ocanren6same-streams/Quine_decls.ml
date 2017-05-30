@@ -137,83 +137,119 @@ let (!!) x = inj @@ lift x
 open Gterm
 open Gresult
 
-let rec lookupo x env t =
-  fresh (rest y v)
-    ((inj_pair y v) % rest === env)
-    (conde [
-        (y === x) &&& (v === t);
-        (y =/= x) &&& (lookupo x rest t)
-      ])
-
-let rec not_in_envo x env =
-  conde
-    [ fresh (y v rest)
-        (env === (inj_pair y v) % rest)
-        (y =/= x)
-        (delay @@ fun () -> not_in_envo x rest)
-    ; (env === nil ())
-    ]
-
 type fenv = ( (string * rresult) List.ground,
               (string logic * lresult) logic List.logic) injected
+
+(* let (_:int) = unitrace *)
 
 let show_reif_env h e =
   GT.(show List.logic @@ show logic @@
         show pair  (show logic (fun s -> s)) show_lresult) @@
   (List.reify ManualReifiers.(pair_reifier string_reifier gresult_reifier))
   h e
+let unienv ?loc = unitrace ?loc @@ show_reif_env
 
 let show_reif_term h t = show_lterm @@ gterm_reifier h t
 let show_reif_result h t = show_lresult @@ gresult_reifier h t
+let uniresult ?loc = unitrace ?loc @@ show_reif_result
+let uniterm ?loc = unitrace ?loc @@ show_reif_term
+let uni_term_list ?loc =
+  unitrace ?loc
+    (fun h t -> GT.(fun t -> show List.logic Gterm.show_lterm t) @@
+      (List.reify gterm_reifier h t)
+    )
+(* let (_:int) = uniterm *)
 
-let rec proper_listo es env rs =
+let show_reif_string h t = GT.(show logic @@ show string) @@
+  ManualReifiers.string_reifier h t
+let unistring ?loc = unitrace ?loc @@ show_reif_string
+
+let rec lookupo x env t =
+  let (=/=) = diseqtrace show_reif_string in
+  let (===) ?loc = unienv ?loc in
+  let (===!) ?loc = unistring ?loc in
+  let (===!!) ?loc = uniresult ?loc in
+  fresh (rest y v)
+    ((inj_pair y v) % rest === env)
+    (conde [
+        (y ===! x) &&& (v ===!! t);
+        (y =/= x) &&& (lookupo x rest t)
+      ])
+
+let rec not_in_envo x env =
+  let (=/=) = diseqtrace show_reif_string in
+  let (===) ?loc = unienv ?loc in
+  fun st ->
+  printfn "entering not_in_envo";
   conde
-    [ (es === nil ()) &&& (rs === nil ())
+    [ fresh (y v rest)
+        (env === (inj_pair y v) % rest)
+        (y =/= x)
+        (not_in_envo x rest)
+    ; (nil () === env)
+    ] st
+
+and evalo (term: fterm) (env: fenv) (r: fresult) =
+  let (===)  ?loc = unitrace ?loc show_reif_term in
+  let (===!) ?loc = unitrace ?loc show_reif_result in
+  fun st ->
+    mylog (fun () -> printfn "entering evalo");
+    conde
+    [ fresh (t)
+        (term === seq ((symb !!"quote") %< t))
+        (not_in_envo !!"quote" env)
+    ; fresh (func arge arg x body env')
+        (evalo arge env arg)
+        (evalo func env (closure x body env') )
+    ] st
+
+(*
+let rec proper_listo es env rs =
+  let (===) ?loc = uni_term_list ?loc in
+  conde
+    [ ((nil ()) === es) &&& ((nil ()) === rs)
     ; fresh (e d te td)
         (es === e  % d)
         (rs === te % td)
-        (delay @@ fun () -> evalo e env (val_ te))
-        (delay @@ fun () -> proper_listo d env td)
+        (evalo e env (val_ te))
+        (proper_listo d env td)
     ]
-(* let rec map_evalo es env rs =
-  conde
-    [ (es === nil ()) &&& (rs === nil ())
-    ; fresh (e es' r rs')
-        (es === e % es')
-        (rs === r % rs')
-        (evalo e env (val_ r))
-        (map_evalo es' env rs')
-    ] *)
+
 and evalo (term: fterm) (env: fenv) (r: fresult) =
-  (* let (===)  = unitrace show_reif_term in
-  let (===!) = unitrace show_reif_result in *)
-  let (===!) = (===) in
-  
+  let (===)  ?loc = unitrace ?loc show_reif_term in
+  let (===!) ?loc = unitrace ?loc show_reif_result in
+  (* let (===!) = (===) in *)
+  (* fun st -> *)
+    (* let () = printfn "entering into evalo %s %s %s"
+      (show_reif_term term) (show_reif_env env) (show_reif_result r) in *)
   conde
   [ fresh (t)
     (term === seq ((symb !!"quote") %< t))
-    (r ===! (val_ t))
+    (* (r ===! (val_ t)) *)
     (not_in_envo !!"quote" env)
-  ; fresh (es rs)
+  (* ; fresh (es rs)
       (term === seq ((symb !!"list") % es) )
       (r ===! val_ (seq rs))
       (not_in_envo !!"list" env)
-      (proper_listo es env rs)
-  ; fresh (s)
+      (proper_listo es env rs) *)
+  (* ; fresh (s)
       (term === (symb s))
-      (lookupo s env r)
+      (lookupo s env r) *)
   ; fresh (func arge arg x body env')
-      (term === seq (func %< arge))
+      (* (term === seq (func %< arge)) *)
       (evalo arge env arg)
       (evalo func env (closure x body env') )
-      (evalo body ((inj_pair x arg) % env') r)
-  ; fresh (x body)
+      (* (evalo body ((inj_pair x arg) % env') r) *)
+
+  (* ; fresh (x body)
       (term === seq ( (symb !!"lambda") %
                       (seq (!< (symb x)) %< body)
                     ) )
       (not_in_envo !!"lambda" env)
-      (r ===! (closure x body env))
+      (r ===! (closure x body env)) *)
   ]
+*)
+
 
   (* trace "entering evalo" @@ *)
   (* conde [
@@ -242,6 +278,8 @@ and evalo (term: fterm) (env: fenv) (r: fresult) =
         (delay_goal @@ map_evalo es env rs) *)
       end
     ] *)
+
+(* let (_:int) = proper_listo *)
 
 let ( ~~ ) s  = symb @@ inj @@ lift s
 let s      tl = seq (inj_list tl)

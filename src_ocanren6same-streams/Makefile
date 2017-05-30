@@ -5,7 +5,7 @@ all:
 
 ALL_TEST_MLS = $(shell ls test*.ml -1 | sort -n)
 ALL_TEST_MLS := $(filter-out test900_trees.ml,$(ALL_TEST_MLS))
-$(info $(ALL_TEST_MLS))
+# $(info $(ALL_TEST_MLS))
 
 define XXX
 IDX  :=
@@ -16,7 +16,7 @@ NAME :=
 NAME := $(shell echo $(1) | sed 's/^test\([0-9]*\)_\([a-zA-Z0-9]*\).ml/\2/')
 
 ALL_NATIVES += $$(patsubst %.ml,%.native,$(1))
-$(info $(ALL_NATIVES))
+
 .PHONY: test$$(IDX)
 test$$(IDX): $(1)
 	OCAMLPATH=`pwd`/../ocanren6same-streams/_build/bundle \
@@ -29,7 +29,7 @@ endef
 $(foreach i,$(ALL_TEST_MLS), $(eval $(call XXX,$(i)) ) )
 
 .SUFFIX: .native
-.PHONY: all clean $(natives)
+.PHONY: all clean $(ALL_NATIVES)
 
 all:
 	OCAMLPATH=`pwd`/../ocanren6same-streams/_build/bundle \

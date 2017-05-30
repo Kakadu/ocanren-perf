@@ -2,10 +2,11 @@
 (include "../faster-miniKanren/mk.scm")
 
 (include "q.scm")
+(include "list-display.scm")
 
 ; quines
 (list-display
-  (run 1 (q)
+  (myrun1 1 (q)
     (fresh (temp q1)
       (== q1
               '(seq ((seq ((symb 'lambda)
@@ -22,13 +23,13 @@
                     (seq ((symb 'quote)
                           (seq ((symb 'lambda)
                                 ;(seq ((symb temp)))
-                                (seq ((symb 'list)
-                                      (symb temp)
-                                      (seq ((symb 'list)
-                                            (seq  ( (symb 'quote)
-                                                    (symb 'quote)
-                                                  ))
-                                            (symb temp)))))
+                                ;(seq ((symb 'list)
+                                ;      (symb temp)
+                                ;      (seq ((symb 'list)
+                                ;            (seq  ( (symb 'quote)
+                                ;                    (symb 'quote)
+                                ;                  ))
+                                ;            (symb temp)))))
                                             ))))
                     )) )
       (eval-expo q1 '() `(val_ ,q))
