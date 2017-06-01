@@ -188,7 +188,7 @@ let rec not_in_envo x env =
         (not_in_envo x rest)
     ; (nil () === env)
     ] st
-
+(*
 and evalo (term: fterm) (env: fenv) (r: fresult) =
   let (===)  ?loc = unitrace ?loc show_reif_term in
   let (===!) ?loc = unitrace ?loc show_reif_result in
@@ -202,8 +202,9 @@ and evalo (term: fterm) (env: fenv) (r: fresult) =
         (evalo arge env arg)
         (evalo func env (closure x body env') )
     ] st
+*)
 
-(*
+
 let rec proper_listo es env rs =
   let (===) ?loc = uni_term_list ?loc in
   conde
@@ -225,30 +226,30 @@ and evalo (term: fterm) (env: fenv) (r: fresult) =
   conde
   [ fresh (t)
     (term === seq ((symb !!"quote") %< t))
-    (* (r ===! (val_ t)) *)
+    (r ===! (val_ t))
     (not_in_envo !!"quote" env)
-  (* ; fresh (es rs)
+  ; fresh (es rs)
       (term === seq ((symb !!"list") % es) )
       (r ===! val_ (seq rs))
       (not_in_envo !!"list" env)
-      (proper_listo es env rs) *)
-  (* ; fresh (s)
+      (proper_listo es env rs)
+  ; fresh (s)
       (term === (symb s))
-      (lookupo s env r) *)
+      (lookupo s env r)
   ; fresh (func arge arg x body env')
-      (* (term === seq (func %< arge)) *)
+      (term === seq (func %< arge))
       (evalo arge env arg)
       (evalo func env (closure x body env') )
-      (* (evalo body ((inj_pair x arg) % env') r) *)
+      (evalo body ((inj_pair x arg) % env') r)
 
-  (* ; fresh (x body)
+  ; fresh (x body)
       (term === seq ( (symb !!"lambda") %
                       (seq (!< (symb x)) %< body)
                     ) )
       (not_in_envo !!"lambda" env)
-      (r ===! (closure x body env)) *)
+      (r ===! (closure x body env))
   ]
-*)
+
 
 
   (* trace "entering evalo" @@ *)
