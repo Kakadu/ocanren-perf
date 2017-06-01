@@ -9,11 +9,13 @@
 (define logged_unif_counter 0)
 
 (define === (lambda (x y) (lambda (s)
-  (set! logged_unif_counter (+ 1 logged_unif_counter))
+  (log_unif)
   (printf "~a: unify '~a' and '~a'\n" logged_unif_counter x y)
-  ((== x y) s) )))
+  ((== x y) s)
+)))
 
 (define =//= (lambda (x y) (lambda (s)
-  (set! logged_diseq_counter (+ 1 logged_diseq_counter))
+  (log_diseq)
   (printf "~a: (=/=) '~a' and '~a'\n" logged_diseq_counter x y)
-  ((=/= x y) s) )))
+  ((=/= x y) s)
+)))
