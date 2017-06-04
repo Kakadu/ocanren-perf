@@ -28,3 +28,7 @@
 	path = ocanren6same-streams
 	url = https://github.com/Kakadu/OCanren.git
 	branch = same-streams
+[submodule "ocanren7more-inline"]
+	path = ocanren7more-inline
+	url = https://github.com/Kakadu/ocanren.git
+	branch = more-inline

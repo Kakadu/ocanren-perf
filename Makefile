@@ -11,6 +11,7 @@ MEASURE_OC3   ?= y
 MEASURE_OC4   ?= y
 MEASURE_OC5   ?= y
 MEASURE_OC6   ?= y
+MEASURE_OC7   ?= y
 MEASURE_RKT   ?=
 MEASURE_SCM   ?= y
 MEASURE_MUSCM ?=
@@ -105,6 +106,12 @@ MLOC6_NATIVE_$(1) := $$(wildcard src_ocanren6same-streams/test$(1)*.native)
 
 measure$(1)_MLOC6:
 $(call DOUBLE_IF_OC_AVG,$$(MLOC6_NATIVE_$(1)),$(MEASURE_OC6),.$(1).data)
+
+# ML OCanren 7 same-streams + more-inline
+MLOC7_NATIVE_$(1) := $$(wildcard src_ocanren7more-inline/test$(1)*.native)
+
+measure$(1)_MLOC7:
+$(call DOUBLE_IF_OC_AVG,$$(MLOC7_NATIVE_$(1)),$(MEASURE_OC7),.$(1).data)
 ###################################### finish measuring ocanren ################
 
 # miniKanren in Scheme
@@ -153,7 +160,7 @@ measure$(1)_prepare:
 do_measure: measure$(1)
 
 measure$(1): measure$(1)_prepare \
-	measure$(1)_MLOC1 measure$(1)_MLOC3 measure$(1)_MLOC4 measure$(1)_MLOC5 measure$(1)_MLOC6 \
+	measure$(1)_MLOC1 measure$(1)_MLOC3 measure$(1)_MLOC4 measure$(1)_MLOC5 measure$(1)_MLOC6 measure$(1)_MLOC7 \
 		measure$(1)_scm #measure$(1)_simple_scm
 
 	printf "$$(TEST$(1)_NAME) " >> $(DATAFILE)
@@ -166,7 +173,7 @@ $(foreach i,$(TESTS), $(eval $(call XXX,$(i)) ) )
 
 .PHONY: prepare_header do_measure
 prepare_header:
-	echo "x      OCanren1master Ocanren3MKstreams ocanren4fastDiseq Ocanren5Mset-var-val ocanren6streamsAgain faster-miniKanren/Scheme" \
+	echo "x      OCanren1master Ocanren3MKstreams ocanren4fastDiseq Ocanren5Mset-var-val ocanren6streamsAgain ocanren7streamsAgain+more-inline faster-miniKanren/Scheme" \
 		> $(DATAFILE)
 
 prepare_ocanren1master:
@@ -193,12 +200,17 @@ prepare_ocanren6same-streams:
 	$(MAKE) -C ocanren6same-streams all
 	$(MAKE) -C ocanren6same-streams bundle
 
+prepare_ocanren7more-inline:
+	$(MAKE) -C ocanren7more-inline all
+	$(MAKE) -C ocanren7more-inline bundle
+
 .PHONY: prepare_ocanren1master \
 	prepare_ocanren2patTree \
 	prepare_ocanren3MKstreams \
 	prepare_ocanren4fastDiseq \
 	prepare_ocanren5setvarval \
 	prepare_ocanren6same-streams \
+	prepare_ocanren7more-inline \
 	prepare_ocanren
 
 prepare_ocanren: \
@@ -208,6 +220,7 @@ prepare_ocanren: \
 	prepare_ocanren4fastDiseq \
 	prepare_ocanren5setvarval \
 	prepare_ocanren6same-streams \
+	prepare_ocanren7more-inline \
 	#prepare_ocanren1default \
 	#prepare_ocanren2fancy \
 	#prepare_ocanren4fancy \
@@ -219,7 +232,8 @@ prepare_ocanren: \
 	compile_ocanren3tests \
 	compile_ocanren4tests \
 	compile_ocanren5tests \
-	compile_ocanren6 tests
+	compile_ocanren6tests \
+	compile_ocanren7tests \
 
 compile_ocanren1tests:
 	$(MAKE) -C src_ocanren1master all
@@ -233,6 +247,8 @@ compile_ocanren5tests:
 	$(MAKE) -C src_ocanren5set-var-val all
 compile_ocanren6tests:
 	$(MAKE) -C src_ocanren6same-streams all
+compile_ocanren7tests:
+	$(MAKE) -C src_ocanren7more-inline all
 
 .PHONY: check_submodules
 check_submodules:
@@ -249,10 +265,11 @@ compile: prepare_ocanren \
 	compile_ocanren4tests \
 	compile_ocanren5tests \
 	compile_ocanren6tests \
+	compile_ocanren7tests \
 	compile_scm \
-	compile_simple_scm \
-	compile_muscm \
-	compile_rkt \
+	#compile_simple_scm \
+	#compile_muscm \
+	#compile_rkt \
 
 
 format_as_column:
@@ -278,6 +295,7 @@ clean:
 	$(MAKE) -C ocanren4fastDiseq    clean
 	$(MAKE) -C ocanren5set-var-val  clean
 	$(MAKE) -C ocanren6same-streams clean
+	$(MAKE) -C ocanren6more-inline  clean
 	$(MAKE) -C src_lisps            clean
 	$(MAKE) -C src_ocanren1master   clean
 	$(MAKE) -C src_ocanren2patTree  clean
