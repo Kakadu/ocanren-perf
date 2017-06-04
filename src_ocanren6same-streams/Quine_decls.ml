@@ -158,17 +158,21 @@ let uni_term_list ?loc =
     (fun h t -> GT.(fun t -> show List.logic Gterm.show_lterm t) @@
       (List.reify gterm_reifier h t)
     )
-(* let (_:int) = uniterm *)
 
 let show_reif_string h t = GT.(show logic @@ show string) @@
   ManualReifiers.string_reifier h t
 let unistring ?loc = unitrace ?loc @@ show_reif_string
 
+let (=/=) = MiniKanren.(=/=)
+let (===) = MiniKanren.(===)
+let (===!) = (===)
+let (===!!) = (===)
+
 let rec lookupo x env t =
-  let (=/=) = diseqtrace show_reif_string in
+  (* let (=/=) = diseqtrace show_reif_string in
   let (===) ?loc = unienv ?loc in
   let (===!) ?loc = unistring ?loc in
-  let (===!!) ?loc = uniresult ?loc in
+  let (===!!) ?loc = uniresult ?loc in *)
   fresh (rest y v)
     ((inj_pair y v) % rest === env)
     (conde [
@@ -177,17 +181,17 @@ let rec lookupo x env t =
       ])
 
 let rec not_in_envo x env =
-  let (=/=) = diseqtrace show_reif_string in
-  let (===) ?loc = unienv ?loc in
-  fun st ->
-  printfn "entering not_in_envo";
+  (* let (=/=) = diseqtrace show_reif_string in
+  let (===) ?loc = unienv ?loc in *)
+
+  (* printfn "entering not_in_envo"; *)
   conde
     [ fresh (y v rest)
         (env === (inj_pair y v) % rest)
         (y =/= x)
         (not_in_envo x rest)
     ; (nil () === env)
-    ] st
+    ]
 (*
 and evalo (term: fterm) (env: fenv) (r: fresult) =
   let (===)  ?loc = unitrace ?loc show_reif_term in
@@ -206,7 +210,7 @@ and evalo (term: fterm) (env: fenv) (r: fresult) =
 
 
 let rec proper_listo es env rs =
-  let (===) ?loc = uni_term_list ?loc in
+  (* let (===) ?loc = uni_term_list ?loc in *)
   conde
     [ ((nil ()) === es) &&& ((nil ()) === rs)
     ; fresh (e d te td)
@@ -217,8 +221,8 @@ let rec proper_listo es env rs =
     ]
 
 and evalo (term: fterm) (env: fenv) (r: fresult) =
-  let (===)  ?loc = unitrace ?loc show_reif_term in
-  let (===!) ?loc = unitrace ?loc show_reif_result in
+  (* let (===)  ?loc = unitrace ?loc show_reif_term in
+  let (===!) ?loc = unitrace ?loc show_reif_result in *)
   (* let (===!) = (===) in *)
   (* fun st -> *)
     (* let () = printfn "entering into evalo %s %s %s"

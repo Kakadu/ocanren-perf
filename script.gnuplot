@@ -1,4 +1,4 @@
-set terminal pdf enhanced
+set terminal pdf enhanced font "Monaco,6"
 set output 'graph.pdf'
 
 set style data histogram
@@ -15,3 +15,4 @@ plot 'data.gnuplot' using 2:xtic(1) title col \
       , '' using 5:xtic(1) title col \
       , '' using 6:xtic(1) title col \
       , '' using 7:xtic(1) title col \
+      

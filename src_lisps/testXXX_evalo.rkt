@@ -1,12 +1,15 @@
-(include "../faster-miniKanren/mk-vicare.scm")
-(include "../faster-miniKanren/mk.scm")
+#lang racket/base
+(require racket/include)
 
-(include "q.scm")
-(include "list-display.scm")
+(require "../faster-miniKanren/mk.rkt")
+;(include "../faster-miniKanren/mk.scm")
+
+(require "q.rkt")
+;(include "list-display.scm")
 
 ; quines
-(list-display
-  (run  1 (q)
+;(list-display
+  (myrun1 1 (q)
     (fresh (temp q1)
       (== q1
               '(seq ((seq ((symb 'lambda)
@@ -34,6 +37,7 @@
                     )) )
       (eval-expo q1 '() `(val_ ,q))
     )
-))
+)
+;)
 
-;(report_counters)
+(report_counters)

@@ -15,7 +15,7 @@
       (== `(,p ,q ,r) x)))
 )
 
-(report_counters)
+;(report_counters)
 ;
 ;(define evalo2 (lambda (exp)
 ;  (conde

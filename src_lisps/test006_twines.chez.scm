@@ -13,4 +13,4 @@
       (== `(,p ,q) x)))
 )
 
-;(printf "unif-counter = ~a\n" unif-counter)
+;()

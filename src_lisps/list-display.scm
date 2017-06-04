@@ -8,14 +8,16 @@
 
 (define logged_unif_counter 0)
 
+; TODO: how to check variable is bound
+
 (define === (lambda (x y) (lambda (s)
-  (log_unif)
-  (printf "~a: unify '~a' and '~a'\n" logged_unif_counter x y)
+  ;(if log_unif (log_unif) (void) )
+  ;(printf "~a: unify '~a' and '~a'\n" logged_unif_counter x y)
   ((== x y) s)
 )))
 
 (define =//= (lambda (x y) (lambda (s)
-  (log_diseq)
-  (printf "~a: (=/=) '~a' and '~a'\n" logged_diseq_counter x y)
+  ;(log_diseq)
+  ;(printf "~a: (=/=) '~a' and '~a'\n" logged_diseq_counter x y)
   ((=/= x y) s)
 )))

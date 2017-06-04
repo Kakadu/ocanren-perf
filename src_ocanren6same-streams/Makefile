@@ -5,6 +5,10 @@ all:
 
 ALL_TEST_MLS = $(shell ls test*.ml -1 | sort -n)
 ALL_TEST_MLS := $(filter-out test900_trees.ml,$(ALL_TEST_MLS))
+ALL_TEST_MLS := $(filter-out test600_order.ml,$(ALL_TEST_MLS))
+ALL_TEST_MLS := $(filter-out test601_order.ml,$(ALL_TEST_MLS))
+ALL_TEST_MLS := $(filter-out test602_order.ml,$(ALL_TEST_MLS))
+ALL_TEST_MLS := $(filter-out test603_order.ml,$(ALL_TEST_MLS))
 # $(info $(ALL_TEST_MLS))
 
 define XXX

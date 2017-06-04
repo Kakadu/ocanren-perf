@@ -5,11 +5,11 @@ TESTS=001 002 003 005 006 007
 MEASURE=/usr/bin/time -f "%U"
 DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
-MEASURE_OC1   ?=
+MEASURE_OC1   ?= y
 MEASURE_OC2   ?=
 MEASURE_OC3   ?= y
-MEASURE_OC4   ?=
-MEASURE_OC5   ?=
+MEASURE_OC4   ?= y
+MEASURE_OC5   ?= y
 MEASURE_OC6   ?= y
 MEASURE_RKT   ?=
 MEASURE_SCM   ?= y
@@ -24,10 +24,10 @@ MEASURE_MUSCM ?=
 define AVG_MEASURE
 	$(RM) .avg
 	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	# OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	# OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	# OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	# OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
+	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
+	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
+	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
+	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
 	@sh avg.awk .avg | xargs echo -n >> $(2)
 	@echo -n " " >> $(2)
 	@$(RM)  .avg
@@ -145,24 +145,6 @@ endif
 measure$(1)_simple_scm:
 $(call DOUBLE_IF_RKT_AVG,$$(SIMPLESCM_FILE_$(1)),$(MEASURE_SCM),.$(1).data,scheme --program $$(SIMPLESCM_NATIVE_$(1)))
 
-# microKanren in Scheme
-MUSCM_FILE_$(1) = $(wildcard src_lisps/test$(1)*.mu.scm)
-MUSCM_NATIVE_$(1) = $$(MUSCM_FILE_$(1):.scm=).so
-MUSCM_FILE_$(1)_BASENAME = $$(shell basename $$(MUSCM_FILE_$(1)))
-
-.PHONY: compile$(1)_muscm measure$(1)_muscm
-ifeq "$$(MUSCM_FILE_$(1))" ""
-compile$(1)_muscm:
-else
-compile_muscm: compile$(1)_muscm
-compile$(1)_muscm: $$(MUSCM_NATIVE_$(1))
-$$(MUSCM_NATIVE_$(1)): $$(MUSCM_FILE_$(1))
-	(cd src_lisps  && echo '(compile-file "$$(MUSCM_FILE_$(1)_BASENAME)")' | scheme -q)
-endif
-
-measure$(1)_muscm:
-$(call DOUBLE_IF_RKT_AVG,$$(MUSCM_FILE_$(1)),$(MEASURE_MUSCM),.$(1).data,scheme --program $$(MUSCM_NATIVE_$(1)))
-
 ################################################################################
 .PHONY: measure$(1) measure$(1)_prepare do_measure
 measure$(1)_prepare:
@@ -171,7 +153,7 @@ measure$(1)_prepare:
 do_measure: measure$(1)
 
 measure$(1): measure$(1)_prepare \
-	measure$(1)_MLOC1 measure$(1)_MLOC2 measure$(1)_MLOC3 measure$(1)_MLOC4 measure$(1)_MLOC5 \
+	measure$(1)_MLOC1 measure$(1)_MLOC3 measure$(1)_MLOC4 measure$(1)_MLOC5 measure$(1)_MLOC6 \
 		measure$(1)_scm #measure$(1)_simple_scm
 
 	printf "$$(TEST$(1)_NAME) " >> $(DATAFILE)
@@ -184,7 +166,7 @@ $(foreach i,$(TESTS), $(eval $(call XXX,$(i)) ) )
 
 .PHONY: prepare_header do_measure
 prepare_header:
-	echo "x      OCanren1master OCanren2patTrees Ocanren3MKstreams ocanren4fastDiseq Ocanren5Mset-var-val f-mK/Scheme" \
+	echo "x      OCanren1master Ocanren3MKstreams ocanren4fastDiseq Ocanren5Mset-var-val ocanren6streamsAgain faster-miniKanren/Scheme" \
 		> $(DATAFILE)
 
 prepare_ocanren1master:
