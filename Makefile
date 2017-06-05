@@ -295,11 +295,12 @@ clean:
 	$(MAKE) -C ocanren4fastDiseq    clean
 	$(MAKE) -C ocanren5set-var-val  clean
 	$(MAKE) -C ocanren6same-streams clean
-	$(MAKE) -C ocanren6more-inline  clean
+	$(MAKE) -C ocanren7more-inline  clean
 	$(MAKE) -C src_lisps            clean
 	$(MAKE) -C src_ocanren1master   clean
 	$(MAKE) -C src_ocanren2patTree  clean
 	$(MAKE) -C src_ocanren3MKstreams clean
 	$(MAKE) -C src_ocanren4fastDiseq clean
 	$(MAKE) -C src_ocanren5set-var-val  clean
-	$(MAKE) -C src_ocanren5same-streams clean
+	$(MAKE) -C src_ocanren6same-streams clean
+	$(MAKE) -C src_ocanren7more-inline clean
