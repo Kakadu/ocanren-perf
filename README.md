@@ -1,8 +1,10 @@
 In the beginning please do
 
 ```
-  git submodule init
-  git submodule update --remote
+  git clone https://github.com/Kakadu/ocanren-perf.git -b makeItFaster  
+  git submodule update --init
+  # install Chez scheme somehow
+  make # to build graph
 ```
 
 and install `gnuplot` using your package manager.
