@@ -5,7 +5,7 @@
 
 ; quines
 (list-display
-  (run 1 (p)
+  (run 100 (p)
     (eval-expo p '() `(val_ ,p)) )
 )
 
