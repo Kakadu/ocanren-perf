@@ -3,7 +3,7 @@ In the beginning please do
 ```
   git clone https://github.com/Kakadu/ocanren-perf.git -b makeItFaster  
   git submodule update --init
-  # install Chez scheme somehow
+  # install Chez scheme somehow from https://github.com/cisco/ChezScheme
   make # to build graph
 ```
 
