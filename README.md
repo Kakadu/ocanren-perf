@@ -1,8 +1,12 @@
 In the beginning please do
 
 ```
+  # ocaml 4.04.0
   git clone https://github.com/Kakadu/ocanren-perf.git -b makeItFaster  
   git submodule update --init
+  opam update # if necessary
+  opam install ppx_tools_versioned ppx_deriving
+  opam pin add GT https://github.com/Kakadu/GT.git\#ppx
   # install Chez scheme somehow from https://github.com/cisco/ChezScheme
   make # to build graph
 ```
