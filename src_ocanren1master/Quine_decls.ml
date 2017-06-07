@@ -144,23 +144,14 @@ let show_reif_env h e =
 let show_reif_term h t = show_lterm @@ gterm_reifier h t
 let show_reif_result h t = show_lresult @@ gresult_reifier h t
 
-(* let rec proper_listo es env rs =
+let rec proper_listo es env rs =
   conde
     [ (es === nil ()) &&& (rs === nil ())
     ; fresh (e d te td)
         (es === e  % d)
         (rs === te % td)
-        (delay @@ fun () -> evalo e env (val_ te))
-        (delay @@ fun () -> proper_listo d env td)
-    ] *)
-let rec map_evalo es env rs =
-  conde
-    [ (es === nil ()) &&& (rs === nil ())
-    ; fresh (e es' r rs')
-        (es === e % es')
-        (rs === r % rs')
-        (evalo e env (val_ r))
-        (map_evalo es' env rs')
+        (evalo e env (val_ te))
+        (proper_listo d env td)
     ]
 and evalo (term: fterm) (env: fenv) (r: fresult) =
   (* let (===)  = unitrace show_reif_term in *)
@@ -175,7 +166,7 @@ and evalo (term: fterm) (env: fenv) (r: fresult) =
       (term === seq ((symb !!"list") % es) )
       (r === val_ (seq rs))
       (not_in_envo !!"list" env)
-      (map_evalo es env rs)
+      (proper_listo es env rs)
   ; fresh (s)
       (term === (symb s))
       (lookupo s env r)
@@ -191,34 +182,6 @@ and evalo (term: fterm) (env: fenv) (r: fresult) =
       (not_in_envo !!"lambda" env)
       (r === (closure x body env))
   ]
-
-  (* trace "entering evalo" @@ *)
-  (* conde [
-    (* begin *)
-      call_fresh_named "t" (fun t ->
-        let () = printf "creating inc when creating 't'\n%!" in
-        delay (fun () ->
-          let () = Printf.printf "created vagbwrthbwterr t\n%!" in
-          (term === seq ((symb !!"quote") %< t)))
-        )
-        (* (r ==== (val_ t)) *)
-        (* (delay_goal @@ not_in_envo !!"quote" env) *)
-      end
-    (* ; *)
-      |||
-      begin
-      call_fresh_named "es" (fun es ->
-        let () = printf "creating inc when creating 'es'\n%!" in
-        delay @@ fun () ->
-          let () = Printf.printf "created var es\n%!" in
-        (* (term === seq ((symb !!"list") % es) ) *)
-          success
-        )
-        (* (r ==== val_ (seq rs)) *)
-        (* (delay_goal @@ not_in_envo !!"list" env)
-        (delay_goal @@ map_evalo es env rs) *)
-      end
-    ] *)
 
 let ( ~~ ) s  = symb @@ inj @@ lift s
 let s      tl = seq (inj_list tl)

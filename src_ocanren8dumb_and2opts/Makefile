@@ -1,13 +1,9 @@
 .DEFAULT_GOAL: all
+all:
+
 .SUFFIX: .native .byte .ml
 
 ALL_TEST_MLS = $(shell ls test*.ml -1 | sort -n)
-ALL_TEST_MLS := $(filter-out test900_trees.ml,$(ALL_TEST_MLS))
-ALL_TEST_MLS := $(filter-out test600_order.ml,$(ALL_TEST_MLS))
-ALL_TEST_MLS := $(filter-out test601_order.ml,$(ALL_TEST_MLS))
-ALL_TEST_MLS := $(filter-out test602_order.ml,$(ALL_TEST_MLS))
-ALL_TEST_MLS := $(filter-out test603_order.ml,$(ALL_TEST_MLS))
-# $(info $(ALL_TEST_MLS))
 
 define XXX
 IDX  :=
@@ -22,7 +18,7 @@ ALL_NATIVES += $$(NATIVE_$(1))
 
 .PHONY: test$$(IDX) $(1)
 $$(NATIVE_$(1)):
-	OCAMLPATH=`pwd`/../ocanren7more-inline/_build/bundle \
+	OCAMLPATH=`pwd`/../ocanren8dumb_and2opts/_build/bundle \
 	ocamlbuild -use-ocamlfind $$@
 
 test$$(IDX): $$(NATIVE_$(1))
@@ -33,11 +29,12 @@ endef
 #$(info $(call XXX,test011_quinesNoDiseq.ml) )
 $(foreach i,$(ALL_TEST_MLS), $(eval $(call XXX,$(i)) ) )
 
+.SUFFIX: .native
 .PHONY: all clean $(ALL_NATIVES)
 
 all:
-	OCAMLPATH=`pwd`/../ocanren7more-inline/_build/bundle \
+	OCAMLPATH=`pwd`/../ocanren8dumb_and2opts/_build/bundle \
 	ocamlbuild -use-ocamlfind $(ALL_NATIVES)
 
 clean:
-	$(RM) -fr _build test*.native
+	$(RM) -r _build test*.native
