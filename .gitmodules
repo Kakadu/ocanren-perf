@@ -36,3 +36,7 @@
 	path = ocanren8dumb_and2opts
 	url = https://github.com/Kakadu/OCanren.git
 	branch = dumb-stream-and2opts
+[submodule "ocanren9same-steams+2opts"]
+	path = ocanren9same-steams+2opts
+	url = https://github.com/Kakadu/OCanren.git
+	branch = same-steams+2opts
