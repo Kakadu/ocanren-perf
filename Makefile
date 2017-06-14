@@ -339,4 +339,5 @@ clean:
 	$(MAKE) -C src_ocanren5set-var-val   clean
 	$(MAKE) -C src_ocanren6same-streams  clean
 	$(MAKE) -C src_ocanren7more-inline   clean
+	$(MAKE) -C src_ocanren8dumb_and2opts     clean
 	$(MAKE) -C src_ocanren9same-steams+2opts clean
