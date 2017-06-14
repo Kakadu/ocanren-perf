@@ -192,22 +192,6 @@ let rec not_in_envo x env =
         (not_in_envo x rest)
     ; (nil () === env)
     ]
-(*
-and evalo (term: fterm) (env: fenv) (r: fresult) =
-  let (===)  ?loc = unitrace ?loc show_reif_term in
-  let (===!) ?loc = unitrace ?loc show_reif_result in
-  fun st ->
-    mylog (fun () -> printfn "entering evalo");
-    conde
-    [ fresh (t)
-        (term === seq ((symb !!"quote") %< t))
-        (not_in_envo !!"quote" env)
-    ; fresh (func arge arg x body env')
-        (evalo arge env arg)
-        (evalo func env (closure x body env') )
-    ] st
-*)
-
 
 let rec proper_listo es env rs =
   (* let (===) ?loc = uni_term_list ?loc in *)
@@ -223,7 +207,7 @@ let rec proper_listo es env rs =
 and evalo (term: fterm) (env: fenv) (r: fresult) =
   (* let (===)  ?loc = unitrace ?loc show_reif_term in
   let (===!) ?loc = unitrace ?loc show_reif_result in *)
-  (* let (===!) = (===) in *)
+
   (* fun st -> *)
     (* let () = printfn "entering into evalo %s %s %s"
       (show_reif_term term) (show_reif_env env) (show_reif_result r) in *)
