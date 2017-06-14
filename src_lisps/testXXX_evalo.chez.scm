@@ -6,7 +6,7 @@
 
 ; quines
 (list-display
-  (run  1 (q)
+  (myrun1 1 (q)
     (fresh (temp q1)
       (== q1
               '(seq ((seq ((symb 'lambda)

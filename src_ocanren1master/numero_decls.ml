@@ -13,9 +13,9 @@ let rec appendo l s out =
   conde [
     (List.nullo l) &&& (s === out);
     fresh (a d res)
-      ((a % d) === l)
+      (a%d === l)
+      (a%res === out)
       (appendo d s res)
-      ((a % res) === out)
   ]
 
 let poso q =

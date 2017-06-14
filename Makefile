@@ -8,11 +8,12 @@ DUMMY_MEASURE=printf "%10.3f\t" 0.0
 MEASURE_OC1   ?= y
 MEASURE_OC2   ?=
 MEASURE_OC3   ?= y
-MEASURE_OC4   ?= y
+MEASURE_OC4   ?=
 MEASURE_OC5   ?= y
-MEASURE_OC6   ?= y
+MEASURE_OC6   ?=
 MEASURE_OC7   ?= y
-MEASURE_OC8   ?= y
+MEASURE_OC8   ?=
+MEASURE_OC9   ?= y
 MEASURE_RKT   ?=
 MEASURE_SCM   ?= y
 MEASURE_MUSCM ?=
@@ -115,11 +116,18 @@ measure$(1)_MLOC7:
 $(call DOUBLE_IF_OC_AVG,$$(MLOC7_NATIVE_$(1)),$(MEASURE_OC7),.$(1).data)
 ###################################### finish measuring ocanren ################
 
-# ML OCanren 8 = 3 + 4
+# ML OCanren 8 = 3 + 4 + 5 with some bugs
 MLOC8_NATIVE_$(1) := $$(wildcard src_ocanren8dumb_and2opts/test$(1)*.native)
 
 measure$(1)_MLOC8:
 $(call DOUBLE_IF_OC_AVG,$$(MLOC8_NATIVE_$(1)),$(MEASURE_OC8),.$(1).data)
+
+# ML OCanren 9 = 6 + 4 + 5
+MLOC9_NATIVE_$(1) := $$(wildcard src_ocanren9same-steams+2opts/test$(1)*.native)
+
+measure$(1)_MLOC9:
+$(call DOUBLE_IF_OC_AVG,$$(MLOC9_NATIVE_$(1)),$(MEASURE_OC9),.$(1).data)
+
 ###################################### finish measuring ocanren ################
 
 # miniKanren in Scheme
@@ -145,7 +153,6 @@ compile_simple_scm:
 SIMPLESCM_FILE_$(1) = $(wildcard src_lisps/test$(1)*.simplechez.scm)
 SIMPLESCM_NATIVE_$(1) = $$(SIMPLESCM_FILE_$(1):.scm=).so
 SIMPLESCM_FILE_$(1)_BASENAME = $$(shell basename $$(SIMPLESCM_FILE_$(1)))
-$(info $$(SIMPLESCM_FILE_$(1)) )
 
 .PHONY: compile$(1)_simple_scm measure$(1)_simple_scm
 ifeq "$$(SIMPLESCM_FILE_$(1))" ""
@@ -169,7 +176,7 @@ do_measure: measure$(1)
 
 measure$(1): measure$(1)_prepare \
 	measure$(1)_MLOC1 measure$(1)_MLOC3 measure$(1)_MLOC4 measure$(1)_MLOC5 measure$(1)_MLOC6 measure$(1)_MLOC7 \
-		 measure$(1)_MLOC8 measure$(1)_scm #measure$(1)_simple_scm
+	measure$(1)_MLOC8 measure$(1)_MLOC9 measure$(1)_scm #measure$(1)_simple_scm
 
 	printf "$$(TEST$(1)_NAME) " >> $(DATAFILE)
 	tr '\n' ' ' < .$(1).data >> $(DATAFILE)
@@ -181,7 +188,7 @@ $(foreach i,$(TESTS), $(eval $(call XXX,$(i)) ) )
 
 .PHONY: prepare_header do_measure
 prepare_header:
-	echo "x      OCanren1master Ocanren3MKstreams ocanren4fastDiseq Ocanren5Mset-var-val ocanren6streamsAgain ocanren7streamsAgain+more-inline ocanren8MKstreams+set-var-val+fastDiseq faster-miniKanren/Scheme" \
+	echo "x      OCanren1master Ocanren3MKstreams ocanren4fastDiseq Ocanren5Mset-var-val ocanren6streamsAgain ocanren7streamsAgain+more-inline ocanren8MKstreams+set-var-val+fastDiseq ocanren9 faster-miniKanren/Scheme" \
 		> $(DATAFILE)
 
 prepare_ocanren1master:
@@ -216,6 +223,11 @@ prepare_ocanren8dumb_and2opts:
 	$(MAKE) -C ocanren8dumb_and2opts all
 	$(MAKE) -C ocanren8dumb_and2opts bundle
 
+prepare_ocanren9same-steams+2opts:
+	$(MAKE) -C ocanren9same-steams+2opts all
+	$(MAKE) -C ocanren9same-steams+2opts bundle
+
+
 .PHONY: prepare_ocanren1master \
 	prepare_ocanren2patTree \
 	prepare_ocanren3MKstreams \
@@ -224,6 +236,7 @@ prepare_ocanren8dumb_and2opts:
 	prepare_ocanren6same-streams \
 	prepare_ocanren7more-inline \
 	prepare_ocanren8dumb_and2opts \
+	prepare_ocanren9same-steams+2opts \
 	prepare_ocanren
 
 prepare_ocanren: \
@@ -235,6 +248,7 @@ prepare_ocanren: \
 	prepare_ocanren6same-streams \
 	prepare_ocanren7more-inline \
 	prepare_ocanren8dumb_and2opts \
+	prepare_ocanren9same-steams+2opts \
 
 
 .PHONY: \
@@ -246,6 +260,7 @@ prepare_ocanren: \
 	compile_ocanren6tests \
 	compile_ocanren7tests \
 	compile_ocanren8tests \
+	compile_ocanren9tests \
 
 compile_ocanren1tests:
 	$(MAKE) -C src_ocanren1master all
@@ -263,6 +278,8 @@ compile_ocanren7tests:
 	$(MAKE) -C src_ocanren7more-inline all
 compile_ocanren8tests:
 	$(MAKE) -C src_ocanren8dumb_and2opts all
+compile_ocanren9tests:
+	$(MAKE) -C src_ocanren9same-steams+2opts all
 
 .PHONY: check_submodules
 check_submodules:
@@ -281,6 +298,7 @@ compile: prepare_ocanren \
 	compile_ocanren6tests \
 	compile_ocanren7tests \
 	compile_ocanren8tests \
+	compile_ocanren9tests \
 	compile_scm \
 	#compile_simple_scm \
 	#compile_muscm \
@@ -312,6 +330,7 @@ clean:
 	$(MAKE) -C ocanren6same-streams  clean
 	$(MAKE) -C ocanren7more-inline   clean
 	$(MAKE) -C ocanren8dumb_and2opts clean
+	$(MAKE) -C ocanren9same-steams+2opts clean
 	$(MAKE) -C src_lisps               clean
 	$(MAKE) -C src_ocanren1master        clean
 	$(MAKE) -C src_ocanren2patTree       clean
@@ -320,4 +339,4 @@ clean:
 	$(MAKE) -C src_ocanren5set-var-val   clean
 	$(MAKE) -C src_ocanren6same-streams  clean
 	$(MAKE) -C src_ocanren7more-inline   clean
-	$(MAKE) -C src_ocanren8dumb_and2opts clean
+	$(MAKE) -C src_ocanren9same-steams+2opts clean
