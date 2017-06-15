@@ -11,5 +11,13 @@
 
 
 ; without display REPL prints the result but compiled code doesn't
+(define do_measure (lambda ()
 (run* (q)
   (logo '(0 0 0 0 0 0 0 0 0 0 1) '(0 1) q '(1)))
+))
+
+(if (not (getenv "DONT_RUN_CHEZ"))
+  (begin
+    (list-display (do_measure))
+    (exit)
+      ))

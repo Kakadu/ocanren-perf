@@ -9,8 +9,14 @@
 
 (include "numbers.scm")
 
-
 ; without display REPL prints the result but compiled code doesn't
-(map (lambda (x) (printf "~a\n" x))
+(define do_measure (lambda ()
   (run* (q)
-    (logo '(1 1 0 0 1 1 1 1) '(1 1) q '() )))
+    (logo '(1 1 0 0 1 1 1 1) '(1 1) q '() ))
+))
+
+(if (not (getenv "DONT_RUN_CHEZ"))
+  (begin
+    (list-display (do_measure))
+    (exit)
+      ))

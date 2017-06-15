@@ -7,13 +7,13 @@ DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
 MEASURE_OC1   ?= y
 MEASURE_OC2   ?=
-MEASURE_OC3   ?= y
+MEASURE_OC3   ?=
 MEASURE_OC4   ?=
-MEASURE_OC5   ?= y
+MEASURE_OC5   ?=
 MEASURE_OC6   ?=
-MEASURE_OC7   ?= y
+MEASURE_OC7   ?=
 MEASURE_OC8   ?=
-MEASURE_OC9   ?= y
+MEASURE_OC9   ?=
 MEASURE_RKT   ?=
 MEASURE_SCM   ?= y
 MEASURE_MUSCM ?=
@@ -29,8 +29,8 @@ define AVG_MEASURE
 	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
 	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
 	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
+	#OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
+	#OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
 	@sh avg.awk .avg | xargs echo -n >> $(2)
 	@echo -n " " >> $(2)
 	@$(RM)  .avg
@@ -142,11 +142,12 @@ else
 compile_scm: compile$(1)_scm
 compile$(1)_scm: $$(SCM_NATIVE_$(1))
 $$(SCM_NATIVE_$(1)):
-	(cd src_lisps && echo '(compile-file "$$(SCM_FILE_$(1)_BASENAME)")' | scheme -q)
+	(cd src_lisps && cat `basename $$(SCM_FILE_$(1))` > work$(1).chez.scm && cat hack.scm | sed 's/FILENAME/$$(SCM_FILE_$(1)_BASENAME)/' >> work$(1).chez.scm && echo '(compile-file "work$(1).chez.scm")' | scheme -q && rm -v work$(1).chez.scm)
 endif
 
 measure$(1)_scm:
-$(call DOUBLE_IF_RKT_AVG,$$(SCM_FILE_$(1)),$(MEASURE_SCM),.$(1).data,scheme --program $$(SCM_NATIVE_$(1)))
+	(cd src_lisps && DONT_RUN_CHEZ=y scheme --program "work$(1).chez.so" >> ../.$(1).data)
+
 
 # simple-miniKanren in Scheme
 compile_simple_scm:

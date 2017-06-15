@@ -123,7 +123,7 @@ let rec sorto x y = conde [
                  (newline)
                  (list-display (cdr lis)))))
 
-(list-display
+(define do_measure (lambda ()
   (run* (r)
     (sorto r '(
           z
@@ -136,4 +136,12 @@ let rec sorto x y = conde [
           ;(s (s (s (s (s (s (s z)))))))  ; 7
           )
         ))
-)
+))
+
+
+
+(if (not (getenv "DONT_RUN_CHEZ"))
+  (begin
+    (list-display (do_measure))
+    (exit)
+      ))

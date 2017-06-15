@@ -3,7 +3,7 @@
 
 (include "q.scm")
 
-(list-display
+(define do_measure (lambda ()
   (run 2 (x)
     (fresh (p q r)
       (=/= p q)
@@ -13,8 +13,13 @@
       (eval-expo q '() `(val_ ,r))
       (eval-expo r '() `(val_ ,p))
       (== `(,p ,q ,r) x)))
-)
+))
 
+(if (not (getenv "DONT_RUN_CHEZ"))
+  (begin
+    (list-display (do_measure))
+    (exit)
+      ))
 ;(report_counters)
 ;
 ;(define evalo2 (lambda (exp)

@@ -1,7 +1,7 @@
 (define filename "FILENAME")
 ;(define filename "test001_pow.chez.scm")
 
-(load filename)
+;(load filename)
 
 ; warmum
 (do_measure)
@@ -14,7 +14,7 @@
       ( (= n 0) (void) )
       ( else
           (let ( (ans (do_measure)) )
-              (printf "~a\n" ans)
+              ;(printf "~a\n" ans)
               (iter (- n 1))
                 ))
       )
