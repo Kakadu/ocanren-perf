@@ -190,28 +190,28 @@ prepare_ocanren1master:
 	$(MAKE) -C ocanren-master bundle
 
 prepare_ocanren3MKstreams:
-	$(MAKE) -C ocanren3MKstreams all
-	$(MAKE) -C ocanren3MKstreams bundle
+	# $(MAKE) -C ocanren3MKstreams all
+	# $(MAKE) -C ocanren3MKstreams bundle
 
 prepare_ocanren4fastDiseq:
-	$(MAKE) -C ocanren4fastDiseq all
-	$(MAKE) -C ocanren4fastDiseq bundle
+	# $(MAKE) -C ocanren4fastDiseq all
+	# $(MAKE) -C ocanren4fastDiseq bundle
 
 prepare_ocanren5setvarval:
-	$(MAKE) -C ocanren5set-var-val all
-	$(MAKE) -C ocanren5set-var-val bundle
+	# $(MAKE) -C ocanren5set-var-val all
+	# $(MAKE) -C ocanren5set-var-val bundle
 
 prepare_ocanren6same-streams:
-	$(MAKE) -C ocanren6same-streams all
-	$(MAKE) -C ocanren6same-streams bundle
+	# $(MAKE) -C ocanren6same-streams all
+	# $(MAKE) -C ocanren6same-streams bundle
 
 prepare_ocanren7more-inline:
-	$(MAKE) -C ocanren7more-inline all
-	$(MAKE) -C ocanren7more-inline bundle
+	# $(MAKE) -C ocanren7more-inline all
+	# $(MAKE) -C ocanren7more-inline bundle
 
 prepare_ocanren8dumb_and2opts:
-	$(MAKE) -C ocanren8dumb_and2opts all
-	$(MAKE) -C ocanren8dumb_and2opts bundle
+	# $(MAKE) -C ocanren8dumb_and2opts all
+	# $(MAKE) -C ocanren8dumb_and2opts bundle
 
 prepare_ocanren9same-steams+2opts:
 	$(MAKE) -C ocanren9same-steams+2opts all
@@ -252,17 +252,17 @@ prepare_ocanren: \
 compile_ocanren1tests:
 	$(MAKE) -C src_ocanren1master all
 compile_ocanren3tests:
-	$(MAKE) -C src_ocanren3MKstreams all
+	# $(MAKE) -C src_ocanren3MKstreams all
 compile_ocanren4tests:
-	$(MAKE) -C src_ocanren4fastDiseq all
+	# $(MAKE) -C src_ocanren4fastDiseq all
 compile_ocanren5tests:
-	$(MAKE) -C src_ocanren5set-var-val all
+	# $(MAKE) -C src_ocanren5set-var-val all
 compile_ocanren6tests:
-	$(MAKE) -C src_ocanren6same-streams all
+	# $(MAKE) -C src_ocanren6same-streams all
 compile_ocanren7tests:
-	$(MAKE) -C src_ocanren7more-inline all
+	# $(MAKE) -C src_ocanren7more-inline all
 compile_ocanren8tests:
-	$(MAKE) -C src_ocanren8dumb_and2opts all
+	# $(MAKE) -C src_ocanren8dumb_and2opts all
 compile_ocanren9tests:
 	$(MAKE) -C src_ocanren9same-steams+2opts all
 

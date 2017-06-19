@@ -11,13 +11,15 @@
 ; TODO: how to check variable is bound
 
 (define === (lambda (x y) (lambda (s)
-  (if log_unif (log_unif) (void) )
-  (printf "~a: unify '~a' and '~a'" logged_unif_counter x y)
+  ;(if log_unif (log_unif) (void) )
+  ;(printf "~a: unify '~a' and '~a'" logged_unif_counter x y)
+
+  ; gives a very weird text
   ;(printf "~a: unify '~a' and '~a'\n" logged_unif_counter
   ;    (reify-S x s)
   ;     y)
   (let* ( (ans ((== x y) s) ) )
-    (if ans (printf "  +\n") (printf "   -\n"))
+    ;(if ans (printf "  +\n") (printf "   -\n"))
     ans
   )
 

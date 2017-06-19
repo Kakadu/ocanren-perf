@@ -4,7 +4,7 @@
 (include "q_nodiseq.scm")
 
 (define do_measure (lambda ()
-  (run 1 (q)
+  (run 100 (q)
     (ev '()
         q
         `(code ,q)
