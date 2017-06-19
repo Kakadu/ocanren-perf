@@ -14,13 +14,7 @@
 
 ;;; Syntax
 
-(define ===
-  (lambda (x y)
-    (lambda (s)
-      (let ((x2 (walk x s))
-            (y2 (walk y s)))
-        (printf "unify '~a' and '~a'\n" x2 y2)
-        ((== x y) s) ))))
+(include "list-display.scm")
 
 ;; Peano numbers
 (define nat
@@ -40,7 +34,7 @@
          (nat n)))
       ((== o 'quote))
       ((fresh (n t)
-         (== o `(lambda ((vr ,n)) ,t))
+         (== o `(lambda (vr ,n) ,t))
          (nat n)
          (tm t)))
       ((fresh (t1 t2)
@@ -127,7 +121,7 @@
          (=== t `(vr ,x))
          (vlookup e x v)))
       ((fresh (x t0)
-         (=== t `(lambda ((vr ,x)) ,t0))
+         (=== t `(lambda (vr ,x) ,t0))
          (=== v `(clo ,e ,x ,t0))))
       ((fresh (t0)
          (=== t `(quote ,t0))
@@ -139,7 +133,7 @@
          (ev (cons `(,x0 ,v2) e0) t0 v)))
       ((fresh (t1 t2 c1 c2)
          (=== t `(list ,t1 ,t2))
-         (=== v `(code ,(list c1 c2)))
+         (=== v `(code (,c1 ,c2)))
          (ev e t1 `(code ,c1))
          (ev e t2 `(code ,c2))))
          )))
@@ -180,15 +174,19 @@
     r))
 
 ;; Quine verification.
-(define quine
-  '((lambda ((vr z)) (list (vr z) (list (quote quote) (vr z))))
-    (quote (lambda ((vr z)) (list (vr z) (list (quote quote) (vr z)))))))
+;(define quine
+;  '((lambda ((vr z)) (list (vr z) (list (quote quote) (vr z))))
+;    (quote (lambda ((vr z)) (list (vr z) (list (quote quote) (vr z)))))))
+
 ;(ok
-; (normalize
-;  (run* (q)
-;    (ev '()
+;(list-display
+;  ;(normalize
+;    (run* (q)
+;      (ev '()
 ;        quine
-;        `(code ,quine)))))
+;        `(code ,q)))
+;        ;)
+;)
 
 ;; Quine generation.
 ;(ok

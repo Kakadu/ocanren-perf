@@ -12,7 +12,6 @@
 (if (not (getenv "DONT_RUN_CHEZ"))
   (begin
     (list-display (do_measure))
+    (report_counters)
     (exit)
       ))
-
-;(report_counters)

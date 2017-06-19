@@ -10,8 +10,6 @@
 
 (include "numbers.scm")
 
-
-; without display REPL prints the result but compiled code doesn't
 (define do_measure (lambda ()
   (run* (q)
     ;(expo '(1 1) '(1) q)))
@@ -22,7 +20,6 @@
 (if (not (getenv "DONT_RUN_CHEZ"))
   (begin
     (list-display (do_measure))
+    (report_counters)
     (exit)
-      ))
-
-;(report_counters)
+  ))
