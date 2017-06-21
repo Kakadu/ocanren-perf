@@ -162,6 +162,7 @@ let show_reif_string h t = GT.(show logic @@ show string) @@
 let unistring ?loc = unitrace ?loc @@ show_reif_string
 
 let (=/=) = MiniKanren.(=/=)
+let (=//=) = (=/=)
 let (===) = MiniKanren.(===)
 let (===!) = (===)
 let (===!!) = (===)
