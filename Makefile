@@ -71,9 +71,29 @@ endef
 
 # https://www.gnu.org/software/make/manual/html_node/Conditional-Functions.html
 define XXX
+
+# miniKanren in Scheme
+SCM_FILE_$(1) = $(wildcard src_lisps/test$(1)*.chez.scm)
+TEST$(1)_NAME := $$(SCM_FILE_$(1):src_lisps/test$(1)_%.chez.scm=%)
+
+SCM_NATIVE_$(1) = $$(SCM_FILE_$(1):.scm=).so
+SCM_FILE_$(1)_BASENAME = $$(shell basename $$(SCM_FILE_$(1)))
+
+.PHONY: compile$(1)_scm measure$(1)_scm
+ifeq "$$(SCM_FILE_$(1))" ""
+compile$(1)_scm:
+else
+compile_scm: compile$(1)_scm
+compile$(1)_scm: $$(SCM_NATIVE_$(1))
+$$(SCM_NATIVE_$(1)):
+	(cd src_lisps && cat `basename $$(SCM_FILE_$(1))` > work$(1).chez.scm && cat hack.scm | sed 's/FILENAME/$$(SCM_FILE_$(1)_BASENAME)/' >> work$(1).chez.scm && echo '(compile-file "work$(1).chez.scm")' | scheme -q && rm -v work$(1).chez.scm)
+endif
+
+measure$(1)_scm:
+	(cd src_lisps && DONT_RUN_CHEZ=y scheme --program "work$(1).chez.so" >> ../.$(1).data)
+
 # ML OCanren 1 Fancy-speedup
 MLOC1_NATIVE_$(1) := $$(wildcard src_ocanren1master/test$(1)*.native)
-TEST$(1)_NAME := $$(MLOC1_NATIVE_$(1):src_ocanren1master/test$(1)_%.native=%)
 
 measure$(1)_MLOC1:
 $(call DOUBLE_IF_OC_AVG,$$(MLOC1_NATIVE_$(1)),$(MEASURE_OC1),.$(1).data)
@@ -122,24 +142,6 @@ measure$(1)_MLOC9:
 $(call DOUBLE_IF_OC_AVG,$$(MLOC9_NATIVE_$(1)),$(MEASURE_OC9),.$(1).data)
 
 ###################################### finish measuring ocanren ################
-
-# miniKanren in Scheme
-SCM_FILE_$(1) = $(wildcard src_lisps/test$(1)*.chez.scm)
-SCM_NATIVE_$(1) = $$(SCM_FILE_$(1):.scm=).so
-SCM_FILE_$(1)_BASENAME = $$(shell basename $$(SCM_FILE_$(1)))
-
-.PHONY: compile$(1)_scm measure$(1)_scm
-ifeq "$$(SCM_FILE_$(1))" ""
-compile$(1)_scm:
-else
-compile_scm: compile$(1)_scm
-compile$(1)_scm: $$(SCM_NATIVE_$(1))
-$$(SCM_NATIVE_$(1)):
-	(cd src_lisps && cat `basename $$(SCM_FILE_$(1))` > work$(1).chez.scm && cat hack.scm | sed 's/FILENAME/$$(SCM_FILE_$(1)_BASENAME)/' >> work$(1).chez.scm && echo '(compile-file "work$(1).chez.scm")' | scheme -q && rm -v work$(1).chez.scm)
-endif
-
-measure$(1)_scm:
-	(cd src_lisps && DONT_RUN_CHEZ=y scheme --program "work$(1).chez.so" >> ../.$(1).data)
 
 
 # simple-miniKanren in Scheme
