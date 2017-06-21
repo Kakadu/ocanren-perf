@@ -140,8 +140,6 @@ open Gresult
 type fenv = ( (string * rresult) List.ground,
               (string logic * lresult) logic List.logic) injected
 
-(* let (_:int) = unitrace *)
-
 let show_reif_env h e =
   GT.(show List.logic @@ show logic @@
         show pair  (show logic (fun s -> s)) show_lresult) @@
@@ -194,7 +192,7 @@ let rec not_in_envo x env =
     ]
 
 let rec proper_listo es env rs =
-  (* let (===) ?loc = uni_term_list ?loc in *)
+  let (===) ?loc = uni_term_list ?loc in
   conde
     [ ((nil ()) === es) &&& ((nil ()) === rs)
     ; fresh (e d te td)
@@ -318,17 +316,23 @@ let quineso q = (evalo q nil (val_ q))
 let twineso q p =
   (q =/= p) &&& (evalo q nil (val_ p)) &&& (evalo p nil (val_ q))
 
-let thrineso q p r =
-  (q =/= p) &&& (p =/= r) &&& (r =/= q) &&&
-  (evalo p nil (val_ q)) &&&
-  (evalo q nil (val_ r)) &&&
-  (evalo r nil (val_ p))
+let thrineso x =
+  (* let (=//=) = diseqtrace @@ show_reif_term in *)
+  fresh (p q r)
+    (p =//= q)
+    (q =//= r)
+    (r =//= p)
+    (evalo p nil (val_ q))
+    (evalo q nil (val_ r))
+    (evalo r nil (val_ p))
+    ((inj_tuple3 p q r) === x)
 
 let wrap_term rr = rr#refine gterm_reifier ~inj:Gterm.to_logic |> show_lterm
 let wrap_result rr = rr#refine gresult_reifier ~inj:Gresult.to_logic |> show_lresult
 
 let find_quines n = run q quineso @@ fun qs ->
   Stream.take ~n qs |> List.map wrap_term |> List.iter (printf "%s\n\n")
+
 
 let find_twines n =
   run qr (fun q r -> twineso q r)
@@ -337,12 +341,25 @@ let find_twines n =
         (Stream.take ~n qs) (Stream.take ~n rs)
     )
 
-let find_thrines n =
-  run qrs thrineso @@
-    fun qs rs ss ->
-      list_iter3 (fun (q,r,s) -> printf "%s,\n\t%s,\n\t%s\n\n" (wrap_term q) (wrap_term r) (wrap_term s))
-        (Stream.take ~n qs) (Stream.take ~n rs) (Stream.take ~n ss)
+let wrap3terms t =
+  t#refine
+    (ManualReifiers.tuple3 gterm_reifier gterm_reifier gterm_reifier)
+    ~inj:(fun (a,b,c) ->
+        Value (Gterm.to_logic a,Gterm.to_logic b,Gterm.to_logic a) )
+  |> (function
+      | Var _ -> assert false
+      | Value (a,b,c) ->
+          printfn "* %s\n  %s\n  %s\n"
+          (Gterm.show_lterm a)
+          (Gterm.show_lterm b)
+          (Gterm.show_lterm c)
+      )
 
+let find_thrines n =
+  run q thrineso @@
+    fun xs ->
+      Stream.take ~n xs |>
+      List.iter (fun t -> wrap3terms t; print_newline ())
 
 (*
 let _ =

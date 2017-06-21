@@ -26,7 +26,11 @@
 )))
 
 (define =//= (lambda (x y) (lambda (s)
-  ;(log_diseq)
-  ;(printf "~a: (=/=) '~a' and '~a'\n" logged_diseq_counter x y)
-  ((=/= x y) s)
+  ;(if log_diseq (log_diseq) (void) )
+
+  ;(printf "~a: (=/=) '~a' and '~a'" logged_diseq_counter x y)
+  (let* ( (ans ((=/= x y) s) ) )
+    ;(if ans (printf "  +\n") (printf "   -\n"))
+    ans
+  )
 )))
