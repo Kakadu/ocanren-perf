@@ -40,3 +40,7 @@
 	path = ocanren9same-steams+2opts
 	url = https://github.com/Kakadu/OCanren.git
 	branch = same-steams+2opts
+[submodule "ocanren10tagful"]
+	path = ocanren10tagful
+	url = https://github.com/Kakadu/OCanren.git
+	branch = 10tagful
