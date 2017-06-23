@@ -6,22 +6,6 @@
 open Printf
 open GT
 open MiniKanren
-(*
-let list_combine3 xs ys zs =
-  let rec helper acc = function
-    | (x::xs, y::ys, z::zs) -> helper ((x,y,z)::acc) (xs,ys,zs)
-    | ([],[],[]) -> List.rev acc
-    | _ -> failwith "bad argument of list_combine3"
-  in
-  helper [] (xs,ys,zs)
-
-let list_iter3 f xs ys zs =
-  let rec helper = function
-    | (x::xs, y::ys, z::zs) -> f (x,y,z); helper (xs,ys,zs)
-    | ([],[],[]) -> ()
-    | _ -> failwith "bad argument of list_combine3"
-  in
-  helper (xs,ys,zs) *)
 
 let (===<) = (===)
 let (====) = (===)
@@ -109,8 +93,8 @@ let (!!) x = inj @@ lift x
 open Gterm
 
 (* TODO: put that into miniKanren mli *)
-let zero : Nat.groundi = Obj.magic @@ !!O
-let s n  : Nat.groundi = Obj.magic (S n)
+let zero : Nat.groundi = Nat.o
+let s n  : Nat.groundi = Nat.s n
 
 let rec nat o =
   let (===) ?loc = unitrace ?loc (fun h t -> GT.show Nat.logic @@   Nat.reify h t) in

@@ -1,20 +1,14 @@
 print-%: ; @echo $*=$($*)
 
 DATAFILE=data.gnuplot
-TESTS=001 002 003 005 006 007 011
+TESTS=001 002 005 006 007 011
 MEASURE=/usr/bin/time -f "%U"
 DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
-MEASURE_OC1   ?= y
-MEASURE_OC3   ?=
-MEASURE_OC4   ?=
-MEASURE_OC5   ?=
-MEASURE_OC6   ?=
-MEASURE_OC7   ?=
-MEASURE_OC8   ?=
 MEASURE_OC9   ?= y
-MEASURE_RKT   ?=
+MEASURE_OC10  ?= y
 MEASURE_SCM   ?= y
+MEASURE_RKT   ?=
 MEASURE_MUSCM ?=
 
 .DEFAULT_GOAL := all
@@ -92,54 +86,17 @@ endif
 measure$(1)_scm:
 	(cd src_lisps && DONT_RUN_CHEZ=y scheme --program "work$(1).chez.so" >> ../.$(1).data)
 
-# ML OCanren 1 Fancy-speedup
-MLOC1_NATIVE_$(1) := $$(wildcard src_ocanren1master/test$(1)*.native)
-
-measure$(1)_MLOC1:
-$(call DOUBLE_IF_OC_AVG,$$(MLOC1_NATIVE_$(1)),$(MEASURE_OC1),.$(1).data)
-
-# ML OCanren 3 MK streams
-MLOC3_NATIVE_$(1) := $$(wildcard src_ocanren3MKstreams/test$(1)*.native)
-
-measure$(1)_MLOC3:
-$(call DOUBLE_IF_OC_AVG,$$(MLOC3_NATIVE_$(1)),$(MEASURE_OC3),.$(1).data)
-
-# ML OCanren 4 fastDiseq
-MLOC4_NATIVE_$(1) := $$(wildcard src_ocanren4fastDiseq/test$(1)*.native)
-
-measure$(1)_MLOC4:
-$(call DOUBLE_IF_OC_AVG,$$(MLOC4_NATIVE_$(1)),$(MEASURE_OC4),.$(1).data)
-
-# ML OCanren 5 set-var-val!
-MLOC5_NATIVE_$(1) := $$(wildcard src_ocanren5set-var-val/test$(1)*.native)
-
-measure$(1)_MLOC5:
-$(call DOUBLE_IF_OC_AVG,$$(MLOC5_NATIVE_$(1)),$(MEASURE_OC5),.$(1).data)
-
-# ML OCanren 6 same-streams
-MLOC6_NATIVE_$(1) := $$(wildcard src_ocanren6same-streams/test$(1)*.native)
-
-measure$(1)_MLOC6:
-$(call DOUBLE_IF_OC_AVG,$$(MLOC6_NATIVE_$(1)),$(MEASURE_OC6),.$(1).data)
-
-# ML OCanren 7 same-streams + more-inline
-MLOC7_NATIVE_$(1) := $$(wildcard src_ocanren7more-inline/test$(1)*.native)
-
-measure$(1)_MLOC7:
-$(call DOUBLE_IF_OC_AVG,$$(MLOC7_NATIVE_$(1)),$(MEASURE_OC7),.$(1).data)
-###################################### finish measuring ocanren ################
-
-# ML OCanren 8 = 3 + 4 + 5 with some bugs
-MLOC8_NATIVE_$(1) := $$(wildcard src_ocanren8dumb_and2opts/test$(1)*.native)
-
-measure$(1)_MLOC8:
-$(call DOUBLE_IF_OC_AVG,$$(MLOC8_NATIVE_$(1)),$(MEASURE_OC8),.$(1).data)
-
 # ML OCanren 9 = 6 + 4 + 5
 MLOC9_NATIVE_$(1) := $$(wildcard src_ocanren9same-steams+2opts/test$(1)*.native)
 
 measure$(1)_MLOC9:
 $(call DOUBLE_IF_OC_AVG,$$(MLOC9_NATIVE_$(1)),$(MEASURE_OC9),.$(1).data)
+
+# ML OCanren 10 = 9 + tagfull
+MLOC10_NATIVE_$(1) := $$(wildcard src_ocanren10tagful/test$(1)*.native)
+
+measure$(1)_MLOC10:
+$(call DOUBLE_IF_OC_AVG,$$(MLOC10_NATIVE_$(1)),$(MEASURE_OC10),.$(1).data)
 
 ###################################### finish measuring ocanren ################
 
@@ -171,8 +128,7 @@ measure$(1)_prepare:
 do_measure: measure$(1)
 
 measure$(1): measure$(1)_prepare \
-	measure$(1)_MLOC1 measure$(1)_MLOC3 measure$(1)_MLOC4 measure$(1)_MLOC5 measure$(1)_MLOC6 measure$(1)_MLOC7 \
-	measure$(1)_MLOC8 measure$(1)_MLOC9 measure$(1)_scm #measure$(1)_simple_scm
+	measure$(1)_MLOC9 measure$(1)_MLOC10 measure$(1)_scm
 
 	printf "$$(TEST$(1)_NAME) " >> $(DATAFILE)
 	tr '\n' ' ' < .$(1).data >> $(DATAFILE)
@@ -184,112 +140,42 @@ $(foreach i,$(TESTS), $(eval $(call XXX,$(i)) ) )
 
 .PHONY: prepare_header do_measure
 prepare_header:
-	echo "x      OCanren1master Ocanren3MKstreams ocanren4fastDiseq Ocanren5Mset-var-val ocanren6streamsAgain ocanren7streamsAgain+more-inline ocanren8MKstreams+set-var-val+fastDiseq ocanren9 faster-miniKanren/Scheme" \
+	echo "x      ocanren9 ocanren10=9+tagful faster-miniKanren/Scheme" \
 		> $(DATAFILE)
-
-prepare_ocanren1master:
-	$(MAKE) -C ocanren-master all
-	$(MAKE) -C ocanren-master bundle
-
-prepare_ocanren3MKstreams:
-	# $(MAKE) -C ocanren3MKstreams all
-	# $(MAKE) -C ocanren3MKstreams bundle
-
-prepare_ocanren4fastDiseq:
-	# $(MAKE) -C ocanren4fastDiseq all
-	# $(MAKE) -C ocanren4fastDiseq bundle
-
-prepare_ocanren5setvarval:
-	# $(MAKE) -C ocanren5set-var-val all
-	# $(MAKE) -C ocanren5set-var-val bundle
-
-prepare_ocanren6same-streams:
-	# $(MAKE) -C ocanren6same-streams all
-	# $(MAKE) -C ocanren6same-streams bundle
-
-prepare_ocanren7more-inline:
-	# $(MAKE) -C ocanren7more-inline all
-	# $(MAKE) -C ocanren7more-inline bundle
-
-prepare_ocanren8dumb_and2opts:
-	# $(MAKE) -C ocanren8dumb_and2opts all
-	# $(MAKE) -C ocanren8dumb_and2opts bundle
 
 prepare_ocanren9same-steams+2opts:
 	$(MAKE) -C ocanren9same-steams+2opts all
 	$(MAKE) -C ocanren9same-steams+2opts bundle
 
-
-.PHONY: prepare_ocanren1master \
-	prepare_ocanren3MKstreams \
-	prepare_ocanren4fastDiseq \
-	prepare_ocanren5setvarval \
-	prepare_ocanren6same-streams \
-	prepare_ocanren7more-inline \
-	prepare_ocanren8dumb_and2opts \
-	prepare_ocanren9same-steams+2opts \
-	prepare_ocanren
-
-prepare_ocanren: \
-	prepare_ocanren1master \
-	prepare_ocanren3MKstreams \
-	prepare_ocanren4fastDiseq \
-	prepare_ocanren5setvarval \
-	prepare_ocanren6same-streams \
-	prepare_ocanren7more-inline \
-	prepare_ocanren8dumb_and2opts \
-	prepare_ocanren9same-steams+2opts \
+prepare_ocanren10tagful:
+	$(MAKE) -C ocanren10tagful all
+	$(MAKE) -C ocanren10tagful bundle
 
 
 .PHONY: \
-	compile_ocanren1tests \
-	compile_ocanren3tests \
-	compile_ocanren4tests \
-	compile_ocanren5tests \
-	compile_ocanren6tests \
-	compile_ocanren7tests \
-	compile_ocanren8tests \
-	compile_ocanren9tests \
+	prepare_ocanren9same-steams+2opts \
+	prepare_ocanren10tagful \
+	prepare_ocanren
 
-compile_ocanren1tests:
-	$(MAKE) -C src_ocanren1master all
-compile_ocanren3tests:
-	# $(MAKE) -C src_ocanren3MKstreams all
-compile_ocanren4tests:
-	# $(MAKE) -C src_ocanren4fastDiseq all
-compile_ocanren5tests:
-	# $(MAKE) -C src_ocanren5set-var-val all
-compile_ocanren6tests:
-	# $(MAKE) -C src_ocanren6same-streams all
-compile_ocanren7tests:
-	# $(MAKE) -C src_ocanren7more-inline all
-compile_ocanren8tests:
-	# $(MAKE) -C src_ocanren8dumb_and2opts all
+prepare_ocanren: \
+	prepare_ocanren9same-steams+2opts \
+	prepare_ocanren10tagful \
+
+
+.PHONY: \
+	compile_ocanren9tests \
+	compile_ocanren10tests \
+
 compile_ocanren9tests:
 	$(MAKE) -C src_ocanren9same-steams+2opts all
 
-.PHONY: check_submodules
-check_submodules:
-#	if [ -d "faster-miniKanren" ]; then (git submodule init && git submodule update --remote); fi
-#	if [ -d "microKanren" ];       then (git submodule init && git submodule update --remote); fi
-#	if [ -d "ocanrendefault" ];    then (git submodule init && git submodule update --remote); fi
-#	if [ -d "ocanrenflat" ];       then (git submodule init && git submodule update --remote); fi
+compile_ocanren10tests:
+	$(MAKE) -C src_ocanren10tagful all
 
-compile: check_submodules
 compile: prepare_ocanren \
-	compile_ocanren1tests \
-	compile_ocanren3tests \
-	compile_ocanren4tests \
-	compile_ocanren5tests \
-	compile_ocanren6tests \
-	compile_ocanren7tests \
-	compile_ocanren8tests \
 	compile_ocanren9tests \
+	compile_ocanren10tests \
 	compile_scm \
-	#compile_simple_scm \
-	#compile_muscm \
-	#compile_rkt \
-
 
 format_as_column:
 	@column -t $(DATAFILE) > .datafile.temp
@@ -308,20 +194,8 @@ perf:
 .PHONY: clean
 clean:
 	$(RM) *~ .*.data
-	$(MAKE) -C ocanren-master        clean
-	$(MAKE) -C ocanren3MKstreams     clean
-	$(MAKE) -C ocanren4fastDiseq     clean
-	$(MAKE) -C ocanren5set-var-val   clean
-	$(MAKE) -C ocanren6same-streams  clean
-	$(MAKE) -C ocanren7more-inline   clean
-	$(MAKE) -C ocanren8dumb_and2opts clean
 	$(MAKE) -C ocanren9same-steams+2opts clean
-	$(MAKE) -C src_lisps               clean
-	$(MAKE) -C src_ocanren1master        clean
-	$(MAKE) -C src_ocanren3MKstreams     clean
-	$(MAKE) -C src_ocanren4fastDiseq     clean
-	$(MAKE) -C src_ocanren5set-var-val   clean
-	$(MAKE) -C src_ocanren6same-streams  clean
-	$(MAKE) -C src_ocanren7more-inline   clean
-	$(MAKE) -C src_ocanren8dumb_and2opts     clean
+	$(MAKE) -C ocanren10tagful           clean
+	$(MAKE) -C src_lisps                 clean
 	$(MAKE) -C src_ocanren9same-steams+2opts clean
+	$(MAKE) -C src_ocanren10tagful     clean

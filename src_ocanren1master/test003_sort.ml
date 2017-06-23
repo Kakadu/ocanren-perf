@@ -3,6 +3,7 @@ open MiniKanren
 open Tester
 
 let show_nat_list = GT.(show List.ground @@ show Nat.ground)
+let show_lnat_llist = GT.(show List.logic @@ show Nat.logic)
 let show_nat      = GT.(show Nat.ground)
 
 (* Relational minimum/maximum (for nats only) *)
@@ -41,5 +42,6 @@ let rec sorto x y =
     ]
 
 open Tester
+let runL n = runR (List.reify Nat.reify) show_nat_list show_lnat_llist n
 let () =
-  run_exn show_nat_list  (-1)  q qh (REPR (fun q -> sorto q (inj_nat_list [0;1;2;3;4;5]) ))
+  runL  (-1)  q qh (REPR (fun q -> sorto q (inj_nat_list [0;1;2;3;4;5]) ))
