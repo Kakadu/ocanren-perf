@@ -3,3 +3,4 @@ perf.data*
 perf.hist*
 /data.gnuplot
 /graph.pdf
+/graph.png
