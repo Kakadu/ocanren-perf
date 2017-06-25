@@ -44,3 +44,7 @@
 	path = ocanren10tagful
 	url = https://github.com/Kakadu/OCanren.git
 	branch = 10tagful
+[submodule "ocanren11no_opts"]
+	path = ocanren11no_opts
+	url = https://github.com/Kakadu/ocanren.git
+	branch = 11no_opts
