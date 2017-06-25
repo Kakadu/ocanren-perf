@@ -7,6 +7,9 @@ DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
 MEASURE_OC9   ?= y
 MEASURE_OC10  ?= y
+MEASURE_OC11  ?= y
+MEASURE_OC12  ?= y
+MEASURE_OC13  ?= y
 MEASURE_SCM   ?= y
 MEASURE_RKT   ?=
 MEASURE_MUSCM ?=
@@ -22,8 +25,8 @@ define AVG_MEASURE
 	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
 	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
 	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	#OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	#OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
+	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
+	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
 	@sh avg.awk .avg | xargs echo -n >> $(2)
 	@echo -n " " >> $(2)
 	@$(RM)  .avg
@@ -98,6 +101,24 @@ MLOC10_NATIVE_$(1) := $$(wildcard src_ocanren10tagful/test$(1)*.native)
 measure$(1)_MLOC10:
 $(call DOUBLE_IF_OC_AVG,$$(MLOC10_NATIVE_$(1)),$(MEASURE_OC10),.$(1).data)
 
+# ML OCanren 11
+MLOC11_NATIVE_$(1) := $$(wildcard src_ocanren11no_opts/test$(1)*.native)
+
+measure$(1)_MLOC11:
+$(call DOUBLE_IF_OC_AVG,$$(MLOC11_NATIVE_$(1)),$(MEASURE_OC11),.$(1).data)
+
+# ML OCanren 12
+MLOC12_NATIVE_$(1) := $$(wildcard src_ocanren12only-set-var-val/test$(1)*.native)
+
+measure$(1)_MLOC12:
+$(call DOUBLE_IF_OC_AVG,$$(MLOC12_NATIVE_$(1)),$(MEASURE_OC12),.$(1).data)
+
+# ML OCanren 13
+MLOC13_NATIVE_$(1) := $$(wildcard src_ocanren13only-fast-constraints/test$(1)*.native)
+
+measure$(1)_MLOC13:
+$(call DOUBLE_IF_OC_AVG,$$(MLOC13_NATIVE_$(1)),$(MEASURE_OC13),.$(1).data)
+
 ###################################### finish measuring ocanren ################
 
 
@@ -128,7 +149,12 @@ measure$(1)_prepare:
 do_measure: measure$(1)
 
 measure$(1): measure$(1)_prepare \
-	measure$(1)_MLOC9 measure$(1)_MLOC10 measure$(1)_scm
+	measure$(1)_MLOC9  \
+	measure$(1)_MLOC10 \
+	measure$(1)_MLOC11 \
+	measure$(1)_MLOC12 \
+	measure$(1)_MLOC13 \
+	measure$(1)_scm
 
 	printf "$$(TEST$(1)_NAME) " >> $(DATAFILE)
 	tr '\n' ' ' < .$(1).data >> $(DATAFILE)
@@ -140,42 +166,44 @@ $(foreach i,$(TESTS), $(eval $(call XXX,$(i)) ) )
 
 .PHONY: prepare_header do_measure
 prepare_header:
-	echo "x      ocanren9 ocanren10=9+tagful faster-miniKanren/Scheme" \
+	echo "x      ocanren9 ocanren10=9+tagful ocanren11no-opts ocanren12only-set-var-val ocanren13only-fast-constraints faster-miniKanren/Scheme" \
 		> $(DATAFILE)
 
-prepare_ocanren9same-steams+2opts:
-	$(MAKE) -C ocanren9same-steams+2opts all
-	$(MAKE) -C ocanren9same-steams+2opts bundle
-
-prepare_ocanren10tagful:
-	$(MAKE) -C ocanren10tagful all
-	$(MAKE) -C ocanren10tagful bundle
-
+.PHONY: clean
+clean:
+	$(RM) *~ .*.data
+	$(MAKE) -C src_lisps                 clean
 
 .PHONY: \
-	prepare_ocanren9same-steams+2opts \
-	prepare_ocanren10tagful \
 	prepare_ocanren
 
-prepare_ocanren: \
-	prepare_ocanren9same-steams+2opts \
-	prepare_ocanren10tagful \
+compile: prepare_ocanren
 
+define DO_PREPARE
+.PHONY: prepare_ocanren$(1) compile_ocanren$(1)tests clean$(1)
+prepare_ocanren$(1):
+	$$(MAKE) -C $$(shell echo ocanren$(1)*) all
+	$$(MAKE) -C $$(shell echo ocanren$(1)*) bundle
 
-.PHONY: \
-	compile_ocanren9tests \
-	compile_ocanren10tests \
+prepare_ocanren: prepare_ocanren$(1)
 
-compile_ocanren9tests:
-	$(MAKE) -C src_ocanren9same-steams+2opts all
+compile: compile_ocanren$(1)tests
+compile_ocanren$(1)tests:
+	$$(MAKE) -C $$(shell echo src_ocanren$(1)*) all
 
-compile_ocanren10tests:
-	$(MAKE) -C src_ocanren10tagful all
+clean$(1):
+	$$(MAKE) -C $$(shell echo     ocanren$(1)*) clean
+	$$(MAKE) -C $$(shell echo src_ocanren$(1)*) clean
+clean: clean$(1)
+endef
 
-compile: prepare_ocanren \
-	compile_ocanren9tests \
-	compile_ocanren10tests \
-	compile_scm \
+$(eval $(call DO_PREPARE,9))
+$(eval $(call DO_PREPARE,10))
+$(eval $(call DO_PREPARE,11))
+$(eval $(call DO_PREPARE,12))
+$(eval $(call DO_PREPARE,13))
+
+compile: compile_scm
 
 format_as_column:
 	@column -t $(DATAFILE) > .datafile.temp
@@ -187,15 +215,3 @@ all:
 	$(MAKE) measure graph
 graph:
 	gnuplot script.gnuplot && xdg-open graph.pdf
-
-perf:
-	$(MAKE) -C ../../ -f Makefile.ob plugin
-
-.PHONY: clean
-clean:
-	$(RM) *~ .*.data
-	$(MAKE) -C ocanren9same-steams+2opts clean
-	$(MAKE) -C ocanren10tagful           clean
-	$(MAKE) -C src_lisps                 clean
-	$(MAKE) -C src_ocanren9same-steams+2opts clean
-	$(MAKE) -C src_ocanren10tagful     clean
