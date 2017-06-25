@@ -5,37 +5,6 @@
 	path = ocanren-master
 	url = https://github.com/Kakadu/OCanren.git
 	branch = master
-[submodule "ocanren2patTree"]
-	path = ocanren2patTree
-	url = https://github.com/Kakadu/OCanren.git
-	branch = patTree
-[submodule "ocanren3MKstreams"]
-	path = ocanren3MKstreams
-	url = https://github.com/Kakadu/OCanren.git
-	branch = dumb-streams
-[submodule "simple-miniKanren"]
-	path = simple-miniKanren
-	url = https://github.com/miniKanren/simple-miniKanren.git
-[submodule "ocanren4fastDiseq"]
-	path = ocanren4fastDiseq
-	url = https://github.com/Kakadu/OCanren.git
-	branch = faster-diseq
-[submodule "ocanren5set-var-val"]
-	path = ocanren5set-var-val
-	url = https://github.com/Kakadu/OCanren.git
-	branch = set-var-val
-[submodule "ocanren6same-streams"]
-	path = ocanren6same-streams
-	url = https://github.com/Kakadu/OCanren.git
-	branch = same-streams
-[submodule "ocanren7more-inline"]
-	path = ocanren7more-inline
-	url = https://github.com/Kakadu/ocanren.git
-	branch = more-inline
-[submodule "ocanren8dumb_and2opts"]
-	path = ocanren8dumb_and2opts
-	url = https://github.com/Kakadu/OCanren.git
-	branch = dumb-stream-and2opts
 [submodule "ocanren9same-steams+2opts"]
 	path = ocanren9same-steams+2opts
 	url = https://github.com/Kakadu/OCanren.git
@@ -48,3 +17,11 @@
 	path = ocanren11no_opts
 	url = https://github.com/Kakadu/ocanren.git
 	branch = 11no_opts
+[submodule "ocanren13only-fast-constraints"]
+	path = ocanren13only-fast-constraints
+	url = https://github.com/Kakadu/ocanren.git
+	branch = 13only-fast-constraints
+[submodule "ocanren12only-set-var-val"]
+	path = ocanren12only-set-var-val
+	url = https://github.com/Kakadu/ocanren.git
+	branch = 12only-set-var-val
