@@ -321,8 +321,13 @@ let wrap_term rr =
 let wrap_result rr =
   rr#refine gresult_reifier ~inj:Gresult.to_logic |> show_lresult
 
-let find_quines n = run q quineo @@ fun qs ->
-  Stream.take ~n qs |> List.map wrap_term |> List.iter (printf "%s\n\n")
+let find_quines ~verbose n = run q quineo @@ fun qs ->
+  Stream.take ~n qs |> List.iter (fun q ->
+    if verbose
+    then printf "%s\n\n" (wrap_term q)
+    else ()
+  )
+
 (*
 let find_twines n =
   run qr (fun q r -> twineso q r)

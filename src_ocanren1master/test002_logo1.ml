@@ -1,8 +1,15 @@
-open Numero_decls
 open MiniKanren
-open Tester
+open TimeHelper
+
+let do_measure rel ~verbose =
+  let open Numero_decls in
+  TimeHelper.wrap_run one rel
+    ~reifier:num_reifier
+    ~inj:(List.to_logic (fun x -> Value x) )
+    ~verbose
+    (fun term -> Printf.printf "%s\n" (show_num_logic term))
 
 let () =
-  runNum (-1)   q qh (REPR (fun q -> logo (build_num 243) (build_num 3) q (build_num 0) ))
-
-let () = MiniKanren.report_counters ()
+  let open Numero_decls in
+  TimeHelper.wrap @@ do_measure
+    (fun q -> logo (build_num 243) (build_num 3) q (build_num 0) )

@@ -1,8 +1,4 @@
 open MiniKanren
-open Tester
-open Quine_decls
+open TimeHelper
 
-let () = find_thrines 2
-
-let () = MiniKanren.report_counters ()
-let () = Gc.print_stat stdout
+let () = TimeHelper.wrap (Quine_decls.find_thrines 2)

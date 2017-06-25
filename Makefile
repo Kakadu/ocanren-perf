@@ -18,15 +18,17 @@ MEASURE_MUSCM ?=
 .PHONY: compile_rkt compile_ml compile_scm compile_muscm \
 	measure_rkt measure_ml measure_scm measure_muscm
 
+#OCAML_GC_CFG=OCAMLRUNPARAM='s=250M,h=250M'
+OCAML_GC_CFG=
 ####### AVG_MEASURE(what-to-run,where-to-put-avg)
 ####### we need to measure 20 times to have 1-2% error
 define AVG_MEASURE
 	$(RM) .avg
-	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
+	DONT_RUN_CHEZ=y OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
+	#OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
+	#OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
+	#OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
+	#OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
 	@sh avg.awk .avg | xargs echo -n >> $(2)
 	@echo -n " " >> $(2)
 	@$(RM)  .avg
@@ -45,23 +47,10 @@ endif
 endif
 endef
 
-########## DOUBLE_IF_RKT_AVG(SOURCE,FLAG,DATA_FILE,EXE_FILE)
-define DOUBLE_IF_RKT_AVG
-ifeq "$(1)" ""
-	$(DUMMY_MEASURE) >> $(3)
-else
-ifeq "$(2)" ""
-	$(DUMMY_MEASURE) >> $(3)
-else
-	$(call AVG_MEASURE,$(4),$(3))
-endif
-endif
-endef
-
 # TEST_OCAMLRUNPARAM=OCAMLRUNPARAM='s=250M,h=250M'
-define DOUBLE_IF_OC
-$(call DOUBLE_IF,$1,$2,$3,$$(TEST_OCAMLRUNPARAM) $$(MEASURE) --append -o $(3) $(1) )
-endef
+# define DOUBLE_IF_OC
+# $(call DOUBLE_IF,$1,$2,$3,$$(TEST_OCAMLRUNPARAM) $$(MEASURE) --append -o $(3) $(1) )
+# endef
 define DOUBLE_IF_OC_AVG
 $(call DOUBLE_IF,$1,$2,$3,$(call AVG_MEASURE,$(1),$(3)))
 endef
@@ -93,53 +82,34 @@ measure$(1)_scm:
 MLOC9_NATIVE_$(1) := $$(wildcard src_ocanren9same-steams+2opts/test$(1)*.native)
 
 measure$(1)_MLOC9:
-$(call DOUBLE_IF_OC_AVG,$$(MLOC9_NATIVE_$(1)),$(MEASURE_OC9),.$(1).data)
+	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC9_NATIVE_$(1)) >> .$(1).data
 
 # ML OCanren 10 = 9 + tagfull
 MLOC10_NATIVE_$(1) := $$(wildcard src_ocanren10tagful/test$(1)*.native)
 
 measure$(1)_MLOC10:
-$(call DOUBLE_IF_OC_AVG,$$(MLOC10_NATIVE_$(1)),$(MEASURE_OC10),.$(1).data)
+	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC10_NATIVE_$(1)) >> .$(1).data
 
 # ML OCanren 11
 MLOC11_NATIVE_$(1) := $$(wildcard src_ocanren11no_opts/test$(1)*.native)
 
 measure$(1)_MLOC11:
-$(call DOUBLE_IF_OC_AVG,$$(MLOC11_NATIVE_$(1)),$(MEASURE_OC11),.$(1).data)
+	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC11_NATIVE_$(1)) >> .$(1).data
 
 # ML OCanren 12
 MLOC12_NATIVE_$(1) := $$(wildcard src_ocanren12only-set-var-val/test$(1)*.native)
 
 measure$(1)_MLOC12:
-$(call DOUBLE_IF_OC_AVG,$$(MLOC12_NATIVE_$(1)),$(MEASURE_OC12),.$(1).data)
+	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC12_NATIVE_$(1)) >> .$(1).data
 
 # ML OCanren 13
 MLOC13_NATIVE_$(1) := $$(wildcard src_ocanren13only-fast-constraints/test$(1)*.native)
 
 measure$(1)_MLOC13:
-$(call DOUBLE_IF_OC_AVG,$$(MLOC13_NATIVE_$(1)),$(MEASURE_OC13),.$(1).data)
+	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC13_NATIVE_$(1)) >> .$(1).data
+
 
 ###################################### finish measuring ocanren ################
-
-
-# simple-miniKanren in Scheme
-compile_simple_scm:
-SIMPLESCM_FILE_$(1) = $(wildcard src_lisps/test$(1)*.simplechez.scm)
-SIMPLESCM_NATIVE_$(1) = $$(SIMPLESCM_FILE_$(1):.scm=).so
-SIMPLESCM_FILE_$(1)_BASENAME = $$(shell basename $$(SIMPLESCM_FILE_$(1)))
-
-.PHONY: compile$(1)_simple_scm measure$(1)_simple_scm
-ifeq "$$(SIMPLESCM_FILE_$(1))" ""
-compile$(1)_simple_scm:
-else
-compile_simple_scm: compile$(1)_simple_scm
-compile$(1)_simple_scm: $$(SIMPLESCM_NATIVE_$(1))
-$$(SIMPLESCM_NATIVE_$(1)): $$(SIMPLESCM_FILE_$(1))
-	(cd src_lisps && echo '(compile-file "$$(SIMPLESCM_FILE_$(1)_BASENAME)")' | scheme -q)
-endif
-
-measure$(1)_simple_scm:
-$(call DOUBLE_IF_RKT_AVG,$$(SIMPLESCM_FILE_$(1)),$(MEASURE_SCM),.$(1).data,scheme --program $$(SIMPLESCM_NATIVE_$(1)))
 
 ################################################################################
 .PHONY: measure$(1) measure$(1)_prepare do_measure

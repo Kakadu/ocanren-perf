@@ -331,15 +331,23 @@ let thrineso x =
 let wrap_term rr = rr#refine gterm_reifier ~inj:Gterm.to_logic |> show_lterm
 let wrap_result rr = rr#refine gresult_reifier ~inj:Gresult.to_logic |> show_lresult
 
-let find_quines n = run q quineso @@ fun qs ->
-  Stream.take ~n qs |> List.map wrap_term |> List.iter (printf "%s\n\n")
+let find_quines ~verbose n = run q quineso @@ fun qs ->
+  Stream.take ~n qs |> List.iter (fun q ->
+    if verbose
+    then printf "%s\n\n" (wrap_term q)
+    else ()
+  )
 
-
-let find_twines n =
+let find_twines ~verbose n =
   run qr (fun q r -> twineso q r)
     (fun qs rs ->
-      List.iter2 (fun q r -> printf "%s,\n%s\n\n%!" (wrap_term q) (wrap_term r))
-        (Stream.take ~n qs) (Stream.take ~n rs)
+      let s1 = Stream.take ~n qs in
+      let s2 = Stream.take ~n rs in
+      List.iter2 (fun q r ->
+        if verbose
+        then printf "%s,\n%s\n\n" (wrap_term q) (wrap_term r)
+        else ()
+      ) s1 s2
     )
 
 let wrap3terms t =
@@ -356,11 +364,15 @@ let wrap3terms t =
           (Gterm.show_lterm c)
       )
 
-let find_thrines n =
-  run q thrineso @@
-    fun xs ->
+let find_thrines ~verbose n =
+  run q thrineso @@ fun xs ->
       Stream.take ~n xs |>
-      List.iter (fun t -> wrap3terms t; print_newline ())
+      List.iter (fun t ->
+          if verbose then
+            let () = wrap3terms t in
+            print_newline ()
+          else ()
+        )
 
 (*
 let _ =
