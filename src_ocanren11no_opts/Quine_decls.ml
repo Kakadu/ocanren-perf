@@ -1,1 +1,1 @@
-../src_ocanren7more-inline/Quine_decls.ml
+../src_ocanren9same-steams+2opts/Quine_decls.ml
