@@ -1,6 +1,0 @@
-true: rectypes, short_paths, keep_asm, debug, safe_string
-#true: runtime_variant(i)
-
-#<*.ml>: syntax(camlp5o), package(logger.syntax,GT.syntax.all,ocanren.tester,ocanren.ppx)
-<*.ml>: package(ocanren,ocanren.ppx,GT.ppx)
-<*.native>: package(GT,ocanren.tester)

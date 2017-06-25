@@ -1,1 +1,0 @@
-../src_ocanren6same-streams/test007_quines.ml

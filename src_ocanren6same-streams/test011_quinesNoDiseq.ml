@@ -1,1 +1,0 @@
-../src_ocanren1master/test011_quinesNoDiseq.ml
