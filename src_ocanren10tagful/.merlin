@@ -2,6 +2,7 @@ FINDLIB_PATH ../ocanren10tagful/_build/bundle
 PKG ocanren
 PKG GT
 PKG GT.ppx
+PKG mtime.clock.os
 S .
 B _build
 FLG -rectypes

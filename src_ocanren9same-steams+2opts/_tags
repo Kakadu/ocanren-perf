@@ -1,4 +1,4 @@
-true: rectypes, short_paths, keep_asm, debug, safe_string, package(unix)
+true: rectypes, short_paths, keep_asm, debug, safe_string, package(unix,mtime.clock.os)
 #true: runtime_variant(i)
 
 true: package(ocanren,ocanren.tester)

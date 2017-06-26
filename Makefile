@@ -18,8 +18,8 @@ MEASURE_MUSCM ?=
 .PHONY: compile_rkt compile_ml compile_scm compile_muscm \
 	measure_rkt measure_ml measure_scm measure_muscm
 
-#OCAML_GC_CFG=OCAMLRUNPARAM='s=250M,h=250M'
-OCAML_GC_CFG=
+OCAML_GC_CFG=OCAMLRUNPARAM='s=250M,h=250M'
+#OCAML_GC_CFG=
 ####### AVG_MEASURE(what-to-run,where-to-put-avg)
 ####### we need to measure 20 times to have 1-2% error
 define AVG_MEASURE
@@ -82,31 +82,31 @@ measure$(1)_scm:
 MLOC9_NATIVE_$(1) := $$(wildcard src_ocanren9same-steams+2opts/test$(1)*.native)
 
 measure$(1)_MLOC9:
-	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC9_NATIVE_$(1)) >> .$(1).data
+	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC9_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
 
 # ML OCanren 10 = 9 + tagfull
 MLOC10_NATIVE_$(1) := $$(wildcard src_ocanren10tagful/test$(1)*.native)
 
 measure$(1)_MLOC10:
-	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC10_NATIVE_$(1)) >> .$(1).data
+	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC10_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
 
 # ML OCanren 11
 MLOC11_NATIVE_$(1) := $$(wildcard src_ocanren11no_opts/test$(1)*.native)
 
 measure$(1)_MLOC11:
-	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC11_NATIVE_$(1)) >> .$(1).data
+	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC11_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
 
 # ML OCanren 12
 MLOC12_NATIVE_$(1) := $$(wildcard src_ocanren12only-set-var-val/test$(1)*.native)
 
 measure$(1)_MLOC12:
-	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC12_NATIVE_$(1)) >> .$(1).data
+	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC12_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
 
 # ML OCanren 13
 MLOC13_NATIVE_$(1) := $$(wildcard src_ocanren13only-fast-constraints/test$(1)*.native)
 
 measure$(1)_MLOC13:
-	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC13_NATIVE_$(1)) >> .$(1).data
+	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC13_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
 
 
 ###################################### finish measuring ocanren ################
