@@ -1,6 +1,7 @@
 (* Relational arithmentics using binary numbers *)
 open Printf
 open MiniKanren
+open MiniKanrenStd
 open Tester
 
 let rec build_num =
@@ -43,8 +44,8 @@ let rec addero d n m r =
   conde [
     (!0 === d) &&& (nil() === m) &&& (n === r);
     (!0 === d) &&& (nil() === n) &&& (m === r) &&& (poso m);
-    (!1 === d) &&& (nil() === m) &&& (defer (addero !0 n (!< !1) r));
-    (!1 === d) &&& (nil() === n) &&& (poso m) &&& (defer (addero !0 m (!< !1) r));
+    (!1 === d) &&& (nil() === m) &&& ((addero !0 n (!< !1) r));
+    (!1 === d) &&& (nil() === n) &&& (poso m) &&& ((addero !0 m (!< !1) r));
     ?& [
       ((!< !1) === n);
       ((!< !1) === m);
@@ -53,7 +54,7 @@ let rec addero d n m r =
         (full_addero d !1 !1 a c)
     ];
     ((!< !1) === n) &&& (gen_addero d n m r);
-    ((!< !1) === m) &&& (gt1o n) &&& (gt1o r) &&& (defer (addero d (!< !1) n r));
+    ((!< !1) === m) &&& (gt1o n) &&& (gt1o r) &&& ( (addero d (!< !1) n r));
     (gt1o n) &&& (gen_addero d n m r)
   ]
 and gen_addero d n m r =
@@ -330,4 +331,5 @@ let show_num_logic = GT.(show List.logic @@ show logic @@ show int)
   run_exn show_num (-1)   q  qh (REPR (fun q       -> expo (build_num 3) (build_num 5) q               ));
   () *)
 
-let runL n = runR (List.reify ManualReifiers.int_reifier) show_num show_num_logic n
+let num_reifier h  = List.reify ManualReifiers.int h
+let runL n = runR num_reifier show_num show_num_logic n

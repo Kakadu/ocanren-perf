@@ -6,6 +6,7 @@
 open Printf
 open GT
 open MiniKanren
+open MiniKanrenStd
 
 let (===<) = (===)
 let (====) = (===)
@@ -61,12 +62,12 @@ module Gterm = struct
 
   let rec to_logic : rterm -> lterm = fun term ->
     Value (fmap (fun s -> Value s)
-                Nat.inj_ground
+                Nat.to_logic
                 (List.to_logic to_logic) term)
 
   let vr  n   : fterm = inj @@ distrib @@ VR n
   let symb s  : fterm = inj @@ distrib @@ Symb s
-  let tuple xs: fterm = inj @@ distrib @@ Tuple (inj_list xs)
+  let tuple xs: fterm = inj @@ distrib @@ Tuple (inj_listi xs)
   let quote xs  = inj @@ distrib @@ Tuple ((symb !!"quote") % xs)
   let quotequote : fterm = quote (!< (symb !!"quote"))
 
@@ -84,7 +85,7 @@ module Gterm = struct
 end
 
 let rec gterm_reifier c : Gterm.fterm -> Gterm.lterm =
-  Gterm.reify ManualReifiers.string_reifier
+  Gterm.reify ManualReifiers.string
               Nat.reify
               (List.reify gterm_reifier) c
 
@@ -92,16 +93,12 @@ let (!!) x = inj @@ lift x
 
 open Gterm
 
-(* TODO: put that into miniKanren mli *)
-let zero : Nat.groundi = Nat.o
-let s n  : Nat.groundi = Nat.s n
-
 let rec nat o =
   let (===) ?loc = unitrace ?loc (fun h t -> GT.show Nat.logic @@   Nat.reify h t) in
   conde
-    [ o === zero
+    [ o === Nat.zero
     ; fresh (n)
-        (o === (s n))
+        (o === (Nat.succ n))
         (nat n)
     ]
 
@@ -168,9 +165,9 @@ module Gresult = struct
 
   let pair_to_logic f g = fun (a,b) -> Value (f a, g b)
   let rec to_logic : rresult -> lresult = fun res ->
-    Value (fmap env_to_logic Nat.inj_ground Gterm.to_logic res)
+    Value (fmap env_to_logic Nat.to_logic Gterm.to_logic res)
   and env_to_logic: renv -> lenv = fun e ->
-    List.inj_ground (pair_to_logic Nat.inj_ground to_logic) e
+    List.to_logic (pair_to_logic Nat.to_logic to_logic) e
 end
 
 let var_reifier = Nat.reify
@@ -179,22 +176,22 @@ let rec gresult_reifier c : Gresult.fresult -> Gresult.lresult =
   let open ManualReifiers in
   Gresult.reify env_reifier var_reifier gterm_reifier c
 and env_reifier e =
-  List.reify ManualReifiers.(pair_reifier var_reifier gresult_reifier) e
+  List.reify ManualReifiers.(pair var_reifier gresult_reifier) e
 
 open Gresult
 
 (* TODO: move to miniKanren.mli *)
 let rec neq n1 n2 =
   conde
-    [ (n1 === zero) &&&
+    [ (n1 === Nat.zero) &&&
       (fresh (prev)
-        (n2 === s prev))
-    ; (n2 === zero) &&&
+        (n2 === Nat.succ prev))
+    ; (n2 === Nat.zero) &&&
       (fresh (prev)
-        (n1 === s prev))
+        (n1 === Nat.succ prev))
     ; fresh (p1 p2)
-        (n1 === s p1)
-        (n2 === s p2)
+        (n1 === Nat.succ p1)
+        (n2 === Nat.succ p2)
         (neq p1 p2)
     ]
 

@@ -25,3 +25,7 @@
 	path = ocanren1tagless
 	url = https://github.com/Kakadu/OCanren.git
 	branch = bench-main1
+[submodule "ocanren2tagful"]
+	path = ocanren2tagful
+	url = https://github.com/Kakadu/OCanren.git
+	branch = bench-main2tagful

@@ -19,6 +19,7 @@
 open Printf
 open GT
 open MiniKanren
+open MiniKanrenStd
 
 module Tree = struct
   module X = struct
@@ -96,7 +97,7 @@ let insert : int -> inttree -> inttree = fun a t ->
    has to be inserted to convert t into t' *)
 let insert' t t' =
   run q (fun q  -> inserto q (inj_tree t) (inj_tree t'))
-        (fun qs -> Nat.prj_ground (Stream.hd qs)#prj)
+        (fun qs -> Nat.to_int (Stream.hd qs)#prj)
 
 (* Entry point *)
 let _ =

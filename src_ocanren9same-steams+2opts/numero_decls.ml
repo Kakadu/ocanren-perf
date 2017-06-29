@@ -9,41 +9,25 @@ let rec build_num =
   | n when n mod 2 == 0 -> (inj@@lift 0) % build_num (n / 2)
   | n                   -> (inj@@lift 1) % build_num (n / 2)
 
-let unify_int_list a b =
-  unitrace (fun h x -> GT.(show List.logic @@ (show logic string_of_int))
-                                  (List.reify ManualReifiers.int_reifier h x))
-            a b
-
-let unify_int a b =
-  unitrace (fun h x -> GT.(show logic string_of_int)
-                                  (ManualReifiers.int_reifier h x))
-            a b
-let unify_int_list = (===)
-let unify_int = (===)
-
 let rec appendo l s out =
-  let (===) = unify_int_list in
   conde [
-    (nil() ===  l) &&& (s === out);
+    (List.nullo l) &&& (s === out);
     fresh (a d res)
-      ((a % d) === l)
-      ((a % res) === out)
+      (a%d === l)
+      (a%res === out)
       (appendo d s res)
   ]
 
-let poso n =
-  let (===) = unify_int_list in
+let poso q =
   fresh (h t)
-    ((h % t) === n)
+    (q === h % t)
 
-let gt1o n =
-  let (===) = unify_int_list in
+let gt1o q =
   fresh (h t tt)
-    (h % (t % tt) === n)
+    (q === h % (t % tt))
 
 let (!) = fun x -> inj@@lift x
 let full_addero b x y r c =
-  let (===) = unify_int in
   conde [
     (!0 === b) &&& (!0 === x) &&& (!0 === y) &&& (!0 === r) &&& (!0 === c);
     (!1 === b) &&& (!0 === x) &&& (!0 === y) &&& (!1 === r) &&& (!0 === c);
@@ -56,14 +40,11 @@ let full_addero b x y r c =
   ]
 
 let rec addero d n m r =
-  let (====) = unify_int in
-  let (===) = unify_int_list in
-
   conde [
-    (!0 ==== d) &&& (nil() === m) &&& (n === r);
-    (!0 ==== d) &&& (nil() === n) &&& (m === r) &&& (poso m);
-    (!1 ==== d) &&& (nil() === m) &&& ((*defer*) (addero !0 n (!< !1) r));
-    (!1 ==== d) &&& (nil() === n) &&& (poso m) &&& ((*defer*) (addero !0 m (!< !1) r));
+    (!0 === d) &&& (nil() === m) &&& (n === r);
+    (!0 === d) &&& (nil() === n) &&& (m === r) &&& (poso m);
+    (!1 === d) &&& (nil() === m) &&& (defer (addero !0 n (!< !1) r));
+    (!1 === d) &&& (nil() === n) &&& (poso m) &&& (defer (addero !0 m (!< !1) r));
     ?& [
       ((!< !1) === n);
       ((!< !1) === m);
@@ -72,11 +53,10 @@ let rec addero d n m r =
         (full_addero d !1 !1 a c)
     ];
     ((!< !1) === n) &&& (gen_addero d n m r);
-    ((!< !1) === m) &&& (gt1o n) &&& (gt1o r) &&& ((*defer*) (addero d (!< !1) n r));
+    ((!< !1) === m) &&& (gt1o n) &&& (gt1o r) &&& (defer (addero d (!< !1) n r));
     (gt1o n) &&& (gen_addero d n m r)
   ]
 and gen_addero d n m r =
-  let (===) = unify_int_list in
   fresh (a b c e x y z)
     ((a % x) === n)
     ((b % y) === m)
@@ -86,15 +66,13 @@ and gen_addero d n m r =
     (full_addero d a b c e)
     (addero e x y z)
 
-
-
 let pluso n m k = addero !0 n m k
 
 let minuso n m k = pluso m k n
 
 let rec bound_multo q p n m =
   conde [
-    (nil () === q) &&& (poso p);
+    (List.nullo q) &&& (poso p);
     fresh (x y z)
       (List.tlo q x)
       (List.tlo p y)
@@ -105,7 +83,6 @@ let rec bound_multo q p n m =
   ]
 
 let rec multo n m p =
-  let (===) = unify_int_list in
   conde [
     (nil() === n) &&& (nil() === p);
     (poso n) &&& (nil() === m) &&& (nil() === p);
@@ -139,7 +116,6 @@ and odd_multo x n m p =
   )
 
 let rec eqlo n m =
-  let (===) = unify_int_list in
   conde [
     (nil() === n) &&& (nil() === m);
     ((!< !1) === n) &&& ((!< !1) === m);
@@ -152,7 +128,6 @@ let rec eqlo n m =
   ]
 
 let rec ltlo n m =
-  let (===) = unify_int_list in
   conde [
     (nil() === n) &&& (poso m);
     ((!< !1) === n) &&& (gt1o m);
@@ -182,7 +157,6 @@ let rec lto n m =
   ]
 
 let leo n m =
-  let (===) = unify_int_list in
   conde [
     (n === m);
     (lto n m)
@@ -282,7 +256,6 @@ let rec exp2 n b q =
   ]
 
 let rec logo n b q r =
-  let (===) = unify_int_list in
   conde [
     ((!< !1) === n) &&& (poso b) &&& (nil() === q) &&& (nil() === r);
     (nil() === q) &&& (lto n b) &&& (pluso r (!< !1) n);
@@ -357,5 +330,4 @@ let show_num_logic = GT.(show List.logic @@ show logic @@ show int)
   run_exn show_num (-1)   q  qh (REPR (fun q       -> expo (build_num 3) (build_num 5) q               ));
   () *)
 
-let num_reifier = List.reify ManualReifiers.int_reifier
-let runNum n = runR num_reifier show_num show_num_logic n
+let runL n = runR (List.reify ManualReifiers.int_reifier) show_num show_num_logic n

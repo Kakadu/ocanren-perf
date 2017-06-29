@@ -41,7 +41,7 @@ $(foreach i,$(ALL_TEST_MLS), $(eval $(call XXX,$(i)) ) )
 
 all:
 	OCAMLPATH=`pwd`/../$(OCANREN_WHERE)/_build/bundle \
-	ocamlbuild -use-ocamlfind $(VERBOSE_OB) $(ALL_NATIVES)
+	ocamlbuild -use-ocamlfind -lib str $(VERBOSE_OB) $(ALL_NATIVES)
 
 clean:
 	$(RM) -r _build test*.native

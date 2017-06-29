@@ -6,6 +6,7 @@
 open Printf
 open GT
 open MiniKanren
+open MiniKanrenStd
 
 let list_combine3 xs ys zs =
   let rec helper acc = function
@@ -25,10 +26,10 @@ let list_iter3 f xs ys zs =
 
 module Gterm = struct
   module X = struct
-    @type ('s, 'xs) t =
+    type ('s, 'xs) t =
       | Symb  of 's
-      | Seq   of 'xs with show,gmap
-      ;;
+      | Seq   of 'xs [@@deriving gt {show}]
+
     let fmap f g = function
     | Symb s -> Symb (f s)
     | Seq xs -> Seq (g xs)
@@ -36,11 +37,11 @@ module Gterm = struct
     let t = {t with
       gcata = ();
       plugins = object
-        method gmap = t.plugins#gmap
+        method gmap = fmap (* t.plugins#gmap *)
         method show fa fb bx =
            GT.transform(t)
               (GT.lift fa) (GT.lift fb)
-              (object inherit ['a,'b] @t[show]
+              (object inherit ['a,'b] show_t
                 method c_Symb _ s str =
                   sprintf "(symb '%s)" (str.GT.fx ())
                 method c_Seq  _ _ xs =
@@ -64,25 +65,43 @@ module Gterm = struct
     fun x -> GT.(show logic @@ show X.t (show logic (fun s -> s)) (show List.logic show_lterm) ) x
 
   let rec to_logic : rterm -> lterm = fun term ->
-    Value (GT.(gmap X.t) (fun s -> Value s) (List.inj_ground to_logic) term)
+    Value (GT.(gmap X.t) (fun s -> Value s) (List.to_logic to_logic) term)
 
   let symb s : fterm = inj @@ distrib @@ Symb s
   let seq xs : fterm = inj @@ distrib @@ Seq xs
 end
 
 let rec gterm_reifier c : Gterm.fterm -> Gterm.lterm =
-  Gterm.reify ManualReifiers.string_reifier (List.reify gterm_reifier) c
+  Gterm.reify ManualReifiers.string (List.reify gterm_reifier) c
 
 module Gresult = struct
   module X = struct
-    @type ('s, 't, 'xs) t =
+    type ('s, 't, 'xs) t =
     | Closure of 's * 't * 'xs
     | Val     of 't
-    with show;;
+    [@@deriving gt {show}]
 
     let fmap f g h = function
     | Closure (a,b,c) -> Closure (f a, g b, h c)
     | Val b -> Val (g b)
+
+    let t = {t with
+      gcata = ();
+      plugins = object
+        method gmap = fmap (* t.plugins#gmap *)
+        method show = t.plugins#show
+           (* GT.transform(t)
+              (GT.lift fa) (GT.lift fb)
+              (object inherit ['a,'b] show_t
+                method c_Clos _ _ a b c  =
+                  sprintf "(closure %s %s %s)" (a.GT.fx ()) (b.GT.fx ()) (c.GT.fx ())
+                method c_Val  _ _ t =
+                  sprintf "(val %s)" (t.GT.fx ())
+               end)
+              ()
+              bx *)
+       end
+    }
   end
 
   include Fmap3(X)
@@ -101,13 +120,17 @@ module Gresult = struct
   let rec show_lresult r = GT.(show logic @@ show X.t show_stringl Gterm.show_lterm
     @@ show List.logic (show logic @@ show pair show_stringl show_lresult)) r
 
+  let rec to_logic : rresult -> lresult = fun res ->
+    let arg3 xs = List.to_logic (fun (a,b) -> Value (Value a, to_logic b)) xs in
+    Value (GT.(gmap X.t) (fun s -> Value s) (Gterm.to_logic) arg3 res)
+
 end
 
 
 let rec gresult_reifier c : Gresult.fresult -> Gresult.lresult =
   let open ManualReifiers in
-  Gresult.reify string_reifier gterm_reifier
-    (List.reify (pair_reifier string_reifier gresult_reifier))
+  Gresult.reify string gterm_reifier
+    (List.reify (pair string gresult_reifier))
     c
 
 let (!!) x = inj @@ lift x
@@ -115,56 +138,87 @@ let (!!) x = inj @@ lift x
 open Gterm
 open Gresult
 
-let rec lookupo x env t =
-  fresh (rest y v)
-    ((inj_pair y v) % rest === env)
-    (conde [
-        (y === x) &&& (v === t);
-        (y =/= x) &&& (lookupo x rest t)
-      ])
-
-let rec not_in_envo x env =
-  conde
-    [ fresh (y v rest)
-        (env === (inj_pair y v) % rest)
-        (y =/= x)
-        (delay @@ fun () -> not_in_envo x rest)
-    ; (env === nil ())
-    ]
-
 type fenv = ( (string * rresult) List.ground,
               (string logic * lresult) logic List.logic) injected
 
 let show_reif_env h e =
   GT.(show List.logic @@ show logic @@
         show pair  (show logic (fun s -> s)) show_lresult) @@
-  (List.reify ManualReifiers.(pair_reifier string_reifier gresult_reifier))
+  (List.reify ManualReifiers.(pair string gresult_reifier))
   h e
+let unienv ?loc = unitrace ?loc @@ show_reif_env
 
 let show_reif_term h t = show_lterm @@ gterm_reifier h t
 let show_reif_result h t = show_lresult @@ gresult_reifier h t
+let uniresult ?loc = unitrace ?loc @@ show_reif_result
+let uniterm ?loc = unitrace ?loc @@ show_reif_term
+let uni_term_list ?loc =
+  unitrace ?loc
+    (fun h t -> GT.(fun t -> show List.logic Gterm.show_lterm t) @@
+      (List.reify gterm_reifier h t)
+    )
+
+let show_reif_string h t = GT.(show logic @@ show string) @@
+  ManualReifiers.string h t
+let unistring ?loc = unitrace ?loc @@ show_reif_string
+
+let (=/=) = MiniKanren.(=/=)
+let (=//=) = (=/=)
+let (===) = MiniKanren.(===)
+let (===!) = (===)
+let (===!!) = (===)
+
+let rec lookupo x env t =
+  (* let (=/=) = diseqtrace show_reif_string in
+  let (===) ?loc = unienv ?loc in
+  let (===!) ?loc = unistring ?loc in
+  let (===!!) ?loc = uniresult ?loc in *)
+  fresh (rest y v)
+    ((inj_pair y v) % rest === env)
+    (conde [
+        (y ===! x) &&& (v ===!! t);
+        (y =/= x) &&& (lookupo x rest t)
+      ])
+
+let rec not_in_envo x env =
+  (* let (=/=) = diseqtrace show_reif_string in
+  let (===) ?loc = unienv ?loc in *)
+
+  (* printfn "entering not_in_envo"; *)
+  conde
+    [ fresh (y v rest)
+        (env === (inj_pair y v) % rest)
+        (y =/= x)
+        (not_in_envo x rest)
+    ; (nil () === env)
+    ]
 
 let rec proper_listo es env rs =
+  (* let (===) ?loc = uni_term_list ?loc in *)
   conde
-    [ (es === nil ()) &&& (rs === nil ())
+    [ ((nil ()) === es) &&& ((nil ()) === rs)
     ; fresh (e d te td)
         (es === e  % d)
         (rs === te % td)
         (evalo e env (val_ te))
         (proper_listo d env td)
     ]
-and evalo (term: fterm) (env: fenv) (r: fresult) =
-  (* let (===)  = unitrace show_reif_term in *)
-  (* let (===================================) = unitrace show_reif_result in *)
 
+and evalo (term: fterm) (env: fenv) (r: fresult) =
+  (* let (===)  ?loc = unitrace ?loc show_reif_term in
+  let (===!) ?loc = unitrace ?loc show_reif_result in *)
+
+  (* fun st -> *)
+    (* let () = printfn "entering into evalo %s %s %s"
+      (show_reif_term term) (show_reif_env env) (show_reif_result r) in *)
   conde
   [ fresh (t)
     (term === seq ((symb !!"quote") %< t))
-    (r === (val_ t))
+    (r ===! (val_ t))
     (not_in_envo !!"quote" env)
   ; fresh (es rs)
       (term === seq ((symb !!"list") % es) )
-      (r === val_ (seq rs))
+      (r ===! val_ (seq rs))
       (not_in_envo !!"list" env)
       (proper_listo es env rs)
   ; fresh (s)
@@ -175,16 +229,17 @@ and evalo (term: fterm) (env: fenv) (r: fresult) =
       (evalo arge env arg)
       (evalo func env (closure x body env') )
       (evalo body ((inj_pair x arg) % env') r)
+
   ; fresh (x body)
       (term === seq ( (symb !!"lambda") %
                       (seq (!< (symb x)) %< body)
                     ) )
       (not_in_envo !!"lambda" env)
-      (r === (closure x body env))
+      (r ===! (closure x body env))
   ]
 
 let ( ~~ ) s  = symb @@ inj @@ lift s
-let s      tl = seq (inj_list tl)
+let s      tl = seq (inj_listi tl)
 
 let nil = nil ()
 
@@ -231,30 +286,62 @@ let quineso q = (evalo q nil (val_ q))
 let twineso q p =
   (q =/= p) &&& (evalo q nil (val_ p)) &&& (evalo p nil (val_ q))
 
-let thrineso q p r =
-  (q =/= p) &&& (p =/= r) &&& (r =/= q) &&&
-  (evalo p nil (val_ q)) &&&
-  (evalo q nil (val_ r)) &&&
-  (evalo r nil (val_ p))
+let thrineso x =
+  (* let (=//=) = diseqtrace @@ show_reif_term in *)
+  fresh (p q r)
+    (p =//= q)
+    (q =//= r)
+    (r =//= p)
+    (evalo p nil (val_ q))
+    (evalo q nil (val_ r))
+    (evalo r nil (val_ p))
+    ((inj_triple p q r) === x)
 
 let wrap_term rr = rr#refine gterm_reifier ~inj:Gterm.to_logic |> show_lterm
+let wrap_result rr = rr#refine gresult_reifier ~inj:Gresult.to_logic |> show_lresult
 
-let find_quines n = run q quineso @@ fun qs ->
-  Stream.take ~n qs |> List.map wrap_term |> List.iter (printf "%s\n\n")
+let find_quines ~verbose n = run q quineso @@ fun qs ->
+  Stream.take ~n qs |> List.iter (fun q ->
+    if verbose
+    then printf "%s\n\n" (wrap_term q)
+    else ()
+  )
 
-let find_twines n =
+let find_twines ~verbose n =
   run qr (fun q r -> twineso q r)
     (fun qs rs ->
-      List.iter2 (fun q r -> printf "%s,\n%s\n\n%!" (wrap_term q) (wrap_term r))
-        (Stream.take ~n qs) (Stream.take ~n rs)
+      let s1 = Stream.take ~n qs in
+      let s2 = Stream.take ~n rs in
+      List.iter2 (fun q r ->
+        if verbose
+        then printf "%s,\n%s\n\n" (wrap_term q) (wrap_term r)
+        else ()
+      ) s1 s2
     )
 
-let find_thrines n =
-  run qrs thrineso @@
-    fun qs rs ss ->
-      list_iter3 (fun (q,r,s) -> printf "%s,\n\t%s,\n\t%s\n\n" (wrap_term q) (wrap_term r) (wrap_term s))
-        (Stream.take ~n qs) (Stream.take ~n rs) (Stream.take ~n ss)
+let wrap3terms t =
+  t#refine
+    (ManualReifiers.triple gterm_reifier gterm_reifier gterm_reifier)
+    ~inj:(fun (a,b,c) ->
+        Value (Gterm.to_logic a,Gterm.to_logic b,Gterm.to_logic a) )
+  |> (function
+      | Var _ -> assert false
+      | Value (a,b,c) ->
+          printfn "* %s\n  %s\n  %s\n"
+          (Gterm.show_lterm a)
+          (Gterm.show_lterm b)
+          (Gterm.show_lterm c)
+      )
 
+let find_thrines ~verbose n =
+  run q thrineso @@ fun xs ->
+      Stream.take ~n xs |>
+      List.iter (fun t ->
+          if verbose then
+            let () = wrap3terms t in
+            print_newline ()
+          else ()
+        )
 
 (*
 let _ =

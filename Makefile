@@ -5,11 +5,13 @@ TESTS=001 002 005 006 007 011
 MEASURE=/usr/bin/time -f "%U"
 DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
-MEASURE_OC9   ?= y
-MEASURE_OC10  ?= y
-MEASURE_OC11  ?= y
-MEASURE_OC12  ?= y
-MEASURE_OC13  ?= y
+MEASURE_OC1   ?= y
+
+MEASURE_OC9   ?=
+MEASURE_OC10  ?=
+MEASURE_OC11  ?=
+MEASURE_OC12  ?=
+MEASURE_OC13  ?=
 MEASURE_SCM   ?= y
 MEASURE_RKT   ?=
 MEASURE_MUSCM ?=
@@ -78,6 +80,12 @@ endif
 measure$(1)_scm:
 	(cd src_lisps && DONT_RUN_CHEZ=y scheme --program "work$(1).chez.so" >> ../.$(1).data)
 
+# ******************************************************************************
+MLOC1_NATIVE_$(1) := $$(wildcard src_ocanren1tagless/test$(1)*.native)
+
+measure$(1)_MLOC1:
+	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC1_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
+
 # ML OCanren 9 = 6 + 4 + 5
 MLOC9_NATIVE_$(1) := $$(wildcard src_ocanren9same-steams+2opts/test$(1)*.native)
 
@@ -136,7 +144,7 @@ $(foreach i,$(TESTS), $(eval $(call XXX,$(i)) ) )
 
 .PHONY: prepare_header do_measure
 prepare_header:
-	echo "x      ocanren9 ocanren10=9+tagful ocanren11no-opts ocanren12only-set-var-val ocanren13only-fast-constraints faster-miniKanren/Scheme" \
+	echo "x   1tagless   ocanren9 ocanren10=9+tagful ocanren11no-opts ocanren12only-set-var-val ocanren13only-fast-constraints faster-miniKanren/Scheme" \
 		> $(DATAFILE)
 
 .PHONY: clean

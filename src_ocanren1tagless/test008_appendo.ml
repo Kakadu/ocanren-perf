@@ -1,4 +1,5 @@
 open MiniKanren
+open MiniKanrenStd
 open Tester
 open Quine_decls
 
@@ -8,4 +9,4 @@ let () = assert (nels == List.length input_ints)
 
 let show_int_list = GT.(show List.ground @@ show int)
 let () =
-  run_exn show_int_list  (-1)  qr qrh (REPR (fun q r -> List.appendo q r (inj_list input_ints) ))
+  run_exn show_int_list  (-1)  qr qrh (REPR (fun q r -> List.appendo q r (inj_listi input_ints) ))

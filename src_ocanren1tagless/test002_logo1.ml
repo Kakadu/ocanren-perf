@@ -1,4 +1,5 @@
 open MiniKanren
+open MiniKanrenStd
 open TimeHelper
 
 let do_measure rel ~verbose =

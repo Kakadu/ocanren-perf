@@ -1,1 +1,1 @@
-../src_ocanren1master/test004_logo2.ml
+../src_ocanren1tagless/test004_logo2.ml

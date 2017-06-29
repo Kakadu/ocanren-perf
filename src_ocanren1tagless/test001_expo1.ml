@@ -1,4 +1,5 @@
 open MiniKanren
+open MiniKanrenStd
 
 let do_measure rel ~verbose =
   let open Numero_decls in
