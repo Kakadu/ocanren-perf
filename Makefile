@@ -6,6 +6,10 @@ MEASURE=/usr/bin/time -f "%U"
 DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
 MEASURE_OC1   ?= y
+MEASURE_OC2   ?= y
+MEASURE_OC3   ?= y
+MEASURE_OC4   ?= y
+MEASURE_OC5   ?= y
 
 MEASURE_OC9   ?=
 MEASURE_OC10  ?=
@@ -81,10 +85,31 @@ measure$(1)_scm:
 	(cd src_lisps && DONT_RUN_CHEZ=y scheme --program "work$(1).chez.so" >> ../.$(1).data)
 
 # ******************************************************************************
-MLOC1_NATIVE_$(1) := $$(wildcard src_ocanren1tagless/test$(1)*.native)
+MLOC1_NATIVE_$(1) := $$(wildcard src_ocanren1*/test$(1)*.native)
 
 measure$(1)_MLOC1:
 	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC1_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
+
+MLOC2_NATIVE_$(1) := $$(wildcard src_ocanren2*/test$(1)*.native)
+
+measure$(1)_MLOC2:
+	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC2_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
+
+MLOC3_NATIVE_$(1) := $$(wildcard src_ocanren3*/test$(1)*.native)
+
+measure$(1)_MLOC3:
+	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC3_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
+
+MLOC4_NATIVE_$(1) := $$(wildcard src_ocanren4*/test$(1)*.native)
+
+measure$(1)_MLOC4:
+	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC4_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
+
+MLOC5_NATIVE_$(1) := $$(wildcard src_ocanren5*/test$(1)*.native)
+
+measure$(1)_MLOC5:
+	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC5_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
+
 
 # ML OCanren 9 = 6 + 4 + 5
 MLOC9_NATIVE_$(1) := $$(wildcard src_ocanren9same-steams+2opts/test$(1)*.native)
@@ -144,7 +169,7 @@ $(foreach i,$(TESTS), $(eval $(call XXX,$(i)) ) )
 
 .PHONY: prepare_header do_measure
 prepare_header:
-	echo "x   1tagless   ocanren9 ocanren10=9+tagful ocanren11no-opts ocanren12only-set-var-val ocanren13only-fast-constraints faster-miniKanren/Scheme" \
+	echo "x   1tagless  2 3 4 5 ocanren9 ocanren10=9+tagful ocanren11no-opts ocanren12only-set-var-val ocanren13only-fast-constraints faster-miniKanren/Scheme" \
 		> $(DATAFILE)
 
 .PHONY: clean
@@ -175,11 +200,17 @@ clean$(1):
 clean: clean$(1)
 endef
 
-$(eval $(call DO_PREPARE,9))
-$(eval $(call DO_PREPARE,10))
-$(eval $(call DO_PREPARE,11))
-$(eval $(call DO_PREPARE,12))
-$(eval $(call DO_PREPARE,13))
+$(eval $(call DO_PREPARE,1))
+$(eval $(call DO_PREPARE,2))
+$(eval $(call DO_PREPARE,3))
+$(eval $(call DO_PREPARE,4))
+$(eval $(call DO_PREPARE,5))
+
+# $(eval $(call DO_PREPARE,9))
+# $(eval $(call DO_PREPARE,10))
+# $(eval $(call DO_PREPARE,11))
+# $(eval $(call DO_PREPARE,12))
+# $(eval $(call DO_PREPARE,13))
 
 compile: compile_scm
 
