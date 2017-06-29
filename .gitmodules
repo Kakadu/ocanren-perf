@@ -1,10 +1,6 @@
 [submodule "faster-miniKanren"]
 	path = faster-miniKanren
 	url = https://github.com/Kakadu/faster-miniKanren.git
-[submodule "ocanren-master"]
-	path = ocanren-master
-	url = https://github.com/Kakadu/OCanren.git
-	branch = master
 [submodule "ocanren9same-steams+2opts"]
 	path = ocanren9same-steams+2opts
 	url = https://github.com/Kakadu/OCanren.git
