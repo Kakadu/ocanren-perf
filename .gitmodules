@@ -37,3 +37,7 @@
 	path = ocanren5no-optimizations
 	url = https://github.com/Kakadu/OCanren.git
 	branch = bench-main5no-optimizations
+[submodule "ocanren01tagless"]
+	path = ocanren01tagless
+	url = https://github.com/Kakadu/OCanren.git
+	branch = bench-main1
