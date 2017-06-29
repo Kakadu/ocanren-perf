@@ -5,7 +5,7 @@
 
 ; quines
 (define do_measure (lambda ()
-  (run 100 (p)
+  (run 200 (p)
     (eval-expo p '() `(val_ ,p)) )
 ))
 

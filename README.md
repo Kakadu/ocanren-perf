@@ -6,7 +6,7 @@ In the beginning please do
   git submodule update --init
   opam update # if necessary
   opam pin add ppx_deriving https://github.com/whitequark/ppx_deriving.git
-  opam install ppx_tools_versioned ppx_deriving
+  opam install ppx_tools_versioned ppx_deriving mtime
   opam pin add GT https://github.com/Kakadu/GT.git\#ppx
   # install Chez scheme somehow from https://github.com/cisco/ChezScheme
   make # to build graph

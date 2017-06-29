@@ -5,7 +5,7 @@
 
 ; twines
 (define do_measure (lambda ()
-  (run 15 (x)
+  (run 30 (x)
     (fresh (p q)
       (=/= p q)
       (eval-expo p '() `(val_ ,q))

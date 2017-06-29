@@ -1,4 +1,1 @@
-open MiniKanren
-open Quine_decls
-
-let () = TimeHelper.wrap (Quine_decls.find_twines 15)
+../src_ocanren01tagless/test006_twines.ml

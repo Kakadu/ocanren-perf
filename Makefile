@@ -85,7 +85,7 @@ measure$(1)_scm:
 	(cd src_lisps && DONT_RUN_CHEZ=y scheme --program "work$(1).chez.so" >> ../.$(1).data)
 
 # ******************************************************************************
-MLOC1_NATIVE_$(1) := $$(wildcard src_ocanren1*/test$(1)*.native)
+MLOC1_NATIVE_$(1) := $$(wildcard src_ocanren01*/test$(1)*.native)
 
 measure$(1)_MLOC1:
 	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC1_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
@@ -152,6 +152,11 @@ measure$(1)_prepare:
 do_measure: measure$(1)
 
 measure$(1): measure$(1)_prepare \
+	measure$(1)_MLOC1  \
+	measure$(1)_MLOC2  \
+	measure$(1)_MLOC3  \
+	measure$(1)_MLOC4  \
+	measure$(1)_MLOC5  \
 	measure$(1)_MLOC9  \
 	measure$(1)_MLOC10 \
 	measure$(1)_MLOC11 \
@@ -185,8 +190,8 @@ compile: prepare_ocanren
 define DO_PREPARE
 .PHONY: prepare_ocanren$(1) compile_ocanren$(1)tests clean$(1)
 prepare_ocanren$(1):
-	$$(MAKE) -C $$(shell echo ocanren$(1)*) all
-	$$(MAKE) -C $$(shell echo ocanren$(1)*) bundle
+	$$(MAKE) -C $$(shell echo ocanren$(1)*) ppx all
+	#$$(MAKE) -C $$(shell echo ocanren$(1)*) bundle
 
 prepare_ocanren: prepare_ocanren$(1)
 
@@ -200,7 +205,7 @@ clean$(1):
 clean: clean$(1)
 endef
 
-$(eval $(call DO_PREPARE,1))
+$(eval $(call DO_PREPARE,01))
 $(eval $(call DO_PREPARE,2))
 $(eval $(call DO_PREPARE,3))
 $(eval $(call DO_PREPARE,4))

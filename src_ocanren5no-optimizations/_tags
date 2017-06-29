@@ -1,8 +1,1 @@
-true: rectypes, short_paths, keep_asm, debug, safe_string, package(unix,mtime.clock.os)
-#true: runtime_variant(i)
-
-true: package(ocanren,ocanren.tester)
-<numero_decls.ml>: package(ocanren.ppx)
-<Quine_decls.ml> or <Quines_NoDiseq.ml>: package(GT.ppx,ocanren.ppx)
-<test*.ml>: syntax(camlp5o), package(logger.syntax,GT.syntax.all,ocanren.tester,ocanren.syntax)
-<*.native>: package(GT,ocanren.tester)
+../src_ocanren01tagless/_tags

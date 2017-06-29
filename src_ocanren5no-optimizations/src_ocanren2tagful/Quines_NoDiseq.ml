@@ -1,1 +1,0 @@
-../src_ocanren1tagless/Quines_NoDiseq.ml

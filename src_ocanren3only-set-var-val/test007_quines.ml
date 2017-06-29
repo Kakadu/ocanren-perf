@@ -1,1 +1,1 @@
-let () = TimeHelper.wrap (Quine_decls.find_quines 100)
+../src_ocanren01tagless/test007_quines.ml
