@@ -29,3 +29,15 @@
 	path = ocanren2tagful
 	url = https://github.com/Kakadu/OCanren.git
 	branch = bench-main2tagful
+[submodule "ocanren3only-set-var-val"]
+	path = ocanren3only-set-var-val
+	url = https://github.com/Kakadu/OCanren.git
+	branch = bench-main3only-set-var-val
+[submodule "ocanren4only-fast-constraints"]
+	path = ocanren4only-fast-constraints
+	url = https://github.com/Kakadu/OCanren.git
+	branch = bench-main4only-fast-constraints
+[submodule "ocanren5no-optimizations"]
+	path = ocanren5no-optimizations
+	url = https://github.com/Kakadu/OCanren.git
+	branch = bench-main5no-optimizations
