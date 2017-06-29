@@ -21,10 +21,6 @@
 	path = ocanren12only-set-var-val
 	url = https://github.com/Kakadu/ocanren.git
 	branch = 12only-set-var-val
-[submodule "ocanren1tagless"]
-	path = ocanren01tagless
-	url = https://github.com/Kakadu/OCanren.git
-	branch = bench-main1
 [submodule "ocanren2tagful"]
 	path = ocanren2tagful
 	url = https://github.com/Kakadu/OCanren.git
