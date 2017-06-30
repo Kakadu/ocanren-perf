@@ -53,10 +53,6 @@ endif
 endif
 endef
 
-# TEST_OCAMLRUNPARAM=OCAMLRUNPARAM='s=250M,h=250M'
-# define DOUBLE_IF_OC
-# $(call DOUBLE_IF,$1,$2,$3,$$(TEST_OCAMLRUNPARAM) $$(MEASURE) --append -o $(3) $(1) )
-# endef
 define DOUBLE_IF_OC_AVG
 $(call DOUBLE_IF,$1,$2,$3,$(call AVG_MEASURE,$(1),$(3)))
 endef
@@ -110,41 +106,7 @@ MLOC5_NATIVE_$(1) := $$(wildcard src_ocanren5*/test$(1)*.native)
 measure$(1)_MLOC5:
 	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC5_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
 
-
-# ML OCanren 9 = 6 + 4 + 5
-MLOC9_NATIVE_$(1) := $$(wildcard src_ocanren9same-steams+2opts/test$(1)*.native)
-
-measure$(1)_MLOC9:
-	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC9_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
-
-# ML OCanren 10 = 9 + tagfull
-MLOC10_NATIVE_$(1) := $$(wildcard src_ocanren10tagful/test$(1)*.native)
-
-measure$(1)_MLOC10:
-	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC10_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
-
-# ML OCanren 11
-MLOC11_NATIVE_$(1) := $$(wildcard src_ocanren11no_opts/test$(1)*.native)
-
-measure$(1)_MLOC11:
-	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC11_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
-
-# ML OCanren 12
-MLOC12_NATIVE_$(1) := $$(wildcard src_ocanren12only-set-var-val/test$(1)*.native)
-
-measure$(1)_MLOC12:
-	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC12_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
-
-# ML OCanren 13
-MLOC13_NATIVE_$(1) := $$(wildcard src_ocanren13only-fast-constraints/test$(1)*.native)
-
-measure$(1)_MLOC13:
-	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC13_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
-
-
 ###################################### finish measuring ocanren ################
-
-################################################################################
 .PHONY: measure$(1) measure$(1)_prepare do_measure
 measure$(1)_prepare:
 	$(RM) .$(1).data .$(1).name
@@ -157,11 +119,6 @@ measure$(1): measure$(1)_prepare \
 	measure$(1)_MLOC3  \
 	measure$(1)_MLOC4  \
 	measure$(1)_MLOC5  \
-	measure$(1)_MLOC9  \
-	measure$(1)_MLOC10 \
-	measure$(1)_MLOC11 \
-	measure$(1)_MLOC12 \
-	measure$(1)_MLOC13 \
 	measure$(1)_scm
 
 	printf "$$(TEST$(1)_NAME) " >> $(DATAFILE)
@@ -174,7 +131,7 @@ $(foreach i,$(TESTS), $(eval $(call XXX,$(i)) ) )
 
 .PHONY: prepare_header do_measure
 prepare_header:
-	echo "x   1tagless  2 3 4 5 ocanren9 ocanren10=9+tagful ocanren11no-opts ocanren12only-set-var-val ocanren13only-fast-constraints faster-miniKanren/Scheme" \
+	echo "x   1tagless  2tagful 3only-set-var-val 4only-fast-Diseq 5no-opts faster-miniKanren/Scheme" \
 		> $(DATAFILE)
 
 .PHONY: clean
@@ -210,12 +167,6 @@ $(eval $(call DO_PREPARE,2))
 $(eval $(call DO_PREPARE,3))
 $(eval $(call DO_PREPARE,4))
 $(eval $(call DO_PREPARE,5))
-
-# $(eval $(call DO_PREPARE,9))
-# $(eval $(call DO_PREPARE,10))
-# $(eval $(call DO_PREPARE,11))
-# $(eval $(call DO_PREPARE,12))
-# $(eval $(call DO_PREPARE,13))
 
 compile: compile_scm
 
