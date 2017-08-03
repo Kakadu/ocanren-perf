@@ -1,1 +1,0 @@
-../src_ocanren01tagless/test002_logo1.ml

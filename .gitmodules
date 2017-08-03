@@ -41,3 +41,7 @@
 	path = ocanren01tagless
 	url = https://github.com/Kakadu/OCanren.git
 	branch = bench-main1
+[submodule "ocanren02master"]
+	path = ocanren02master
+	url = https://github.com/dboulytchev/OCanren.git
+	branch = master
