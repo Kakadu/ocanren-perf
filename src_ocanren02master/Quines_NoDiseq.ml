@@ -94,7 +94,7 @@ let (!!) x = inj @@ lift x
 open Gterm
 
 let rec nat o =
-  let (===) ?loc = unitrace ?loc (fun h t -> GT.show Nat.logic @@   Nat.reify h t) in
+(*  let (===) ?loc = unitrace ?loc (fun h t -> GT.show Nat.logic @@   Nat.reify h t) in *)
   conde
     [ o === Nat.zero
     ; fresh (n)
@@ -103,7 +103,7 @@ let rec nat o =
     ]
 
 let rec tm o =
-  let (===) ?loc = unitrace ?loc (fun h t -> show_lterm @@ gterm_reifier h t) in
+(*  let (===) ?loc = unitrace ?loc (fun h t -> show_lterm @@ gterm_reifier h t) in *)
   conde
     [ fresh (n)
         (o === (vr n))

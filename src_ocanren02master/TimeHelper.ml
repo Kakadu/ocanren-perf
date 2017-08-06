@@ -49,5 +49,5 @@ let wrap (do_measure : verbose:bool -> unit) =
   with Not_found ->
     (* do normal run *)
     let () = do_measure ~verbose:true in
-    let () = MiniKanren.report_counters () in
+    let () = (*MiniKanren.report_counters*) () in
     ()

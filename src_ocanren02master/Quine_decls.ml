@@ -146,10 +146,11 @@ let show_reif_env h e =
         show pair  (show logic (fun s -> s)) show_lresult) @@
   (List.reify ManualReifiers.(pair string gresult_reifier))
   h e
-let unienv ?loc = unitrace ?loc @@ show_reif_env
+(*let unienv ?loc = unitrace ?loc @@ show_reif_env*)
 
 let show_reif_term h t = show_lterm @@ gterm_reifier h t
 let show_reif_result h t = show_lresult @@ gresult_reifier h t
+(*
 let uniresult ?loc = unitrace ?loc @@ show_reif_result
 let uniterm ?loc = unitrace ?loc @@ show_reif_term
 let uni_term_list ?loc =
@@ -157,11 +158,12 @@ let uni_term_list ?loc =
     (fun h t -> GT.(fun t -> show List.logic Gterm.show_lterm t) @@
       (List.reify gterm_reifier h t)
     )
-
+*)
 let show_reif_string h t = GT.(show logic @@ show string) @@
   ManualReifiers.string h t
+(*
 let unistring ?loc = unitrace ?loc @@ show_reif_string
-
+*)
 let (=/=) = MiniKanren.(=/=)
 let (=//=) = (=/=)
 let (===) = MiniKanren.(===)
@@ -319,6 +321,7 @@ let find_twines ~verbose n =
       ) s1 s2
     )
 
+(*
 let wrap3terms t =
   t#reify
     (ManualReifiers.triple gterm_reifier gterm_reifier gterm_reifier)
@@ -332,13 +335,14 @@ let wrap3terms t =
           (Gterm.show_lterm b)
           (Gterm.show_lterm c)
       )
+*)
 
 let find_thrines ~verbose n =
   run q thrineso @@ fun xs ->
       Stream.take ~n xs |>
       List.iter (fun t ->
           if verbose then
-            let () = wrap3terms t in
+         (*   let () = wrap3terms t in*)
             print_newline ()
           else ()
         )
