@@ -313,10 +313,10 @@ let gen_terms n r = printf "> %s\n" (show_term r);
 *)
 *)
 let wrap_term rr =
-  rr#refine gterm_reifier ~inj:Gterm.to_logic |> show_lterm
+  rr#reify gterm_reifier ~inj:Gterm.to_logic |> show_lterm
 
 let wrap_result rr =
-  rr#refine gresult_reifier ~inj:Gresult.to_logic |> show_lresult
+  rr#reify gresult_reifier ~inj:Gresult.to_logic |> show_lresult
 
 let find_quines ~verbose n = run q quineo @@ fun qs ->
   Stream.take ~n qs |> List.iter (fun q ->

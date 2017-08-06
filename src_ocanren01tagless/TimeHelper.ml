@@ -7,7 +7,7 @@ let wrap_run num rel ?(n= -1) ~reifier ~inj ~verbose onVerbose =
     (fun s ->
       MiniKanren.Stream.take ~n s |>
       List.iter (fun r ->
-        let term = r#refine reifier ~inj in
+        let term = r#reify reifier ~inj in
         if verbose then onVerbose term else ()
         )
       )

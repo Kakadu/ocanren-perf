@@ -297,8 +297,8 @@ let thrineso x =
     (evalo r nil (val_ p))
     ((inj_triple p q r) === x)
 
-let wrap_term rr = rr#refine gterm_reifier ~inj:Gterm.to_logic |> show_lterm
-let wrap_result rr = rr#refine gresult_reifier ~inj:Gresult.to_logic |> show_lresult
+let wrap_term rr = rr#reify gterm_reifier ~inj:Gterm.to_logic |> show_lterm
+let wrap_result rr = rr#reify gresult_reifier ~inj:Gresult.to_logic |> show_lresult
 
 let find_quines ~verbose n = run q quineso @@ fun qs ->
   Stream.take ~n qs |> List.iter (fun q ->
@@ -320,7 +320,7 @@ let find_twines ~verbose n =
     )
 
 let wrap3terms t =
-  t#refine
+  t#reify
     (ManualReifiers.triple gterm_reifier gterm_reifier gterm_reifier)
     ~inj:(fun (a,b,c) ->
         Value (Gterm.to_logic a,Gterm.to_logic b,Gterm.to_logic a) )
