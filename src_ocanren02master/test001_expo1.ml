@@ -1,1 +1,13 @@
-../src_ocanren01tagless/test001_expo1.ml
+open MiniKanren
+open MiniKanrenStd
+
+let do_measure rel ~verbose =
+  let open Numero_decls in
+  TimeHelper.wrap_run one rel
+    ~reifier:num_reifier
+    ~inj:(List.inj to_logic)
+    ~verbose
+    (fun term -> Printf.printf "%s\n" (show_num_logic term))
+
+let () = TimeHelper.wrap @@
+  do_measure Numero_decls.(fun q -> expo (build_num 3) (build_num 5) q )

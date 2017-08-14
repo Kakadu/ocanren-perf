@@ -45,4 +45,4 @@ let rec sorto x y =
 open Tester
 let runL n = runR (List.reify Nat.reify) show_nat_list show_lnat_llist n
 let () =
-  runL  (-1)  q qh (REPR (fun q -> sorto q (inj_nat_list [0;1;2;3;4;5]) ))
+  runL  (-1)  q qh (REPR (fun q -> sorto q (inj_nat_list [0; 1; 2; 3; 4; 5]) ))

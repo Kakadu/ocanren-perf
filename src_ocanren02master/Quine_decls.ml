@@ -65,14 +65,14 @@ module Gterm = struct
     fun x -> GT.(show logic @@ show X.t (show logic (fun s -> s)) (show List.logic show_lterm) ) x
 
   let rec to_logic : rterm -> lterm = fun term ->
-    Value (GT.(gmap X.t) (fun s -> Value s) (List.to_logic to_logic) term)
+    MiniKanren.to_logic (GT.(gmap X.t) MiniKanren.to_logic (List.inj to_logic) term)
 
   let symb s : fterm = inj @@ distrib @@ Symb s
   let seq xs : fterm = inj @@ distrib @@ Seq xs
 end
 
 let rec gterm_reifier c : Gterm.fterm -> Gterm.lterm =
-  Gterm.reify ManualReifiers.string (List.reify gterm_reifier) c
+  Gterm.reify MiniKanren.reify (List.reify gterm_reifier) c
 
 module Gresult = struct
   module X = struct
@@ -121,16 +121,15 @@ module Gresult = struct
     @@ show List.logic (show logic @@ show pair show_stringl show_lresult)) r
 
   let rec to_logic : rresult -> lresult = fun res ->
-    let arg3 xs = List.to_logic (fun (a,b) -> Value (Value a, to_logic b)) xs in
-    Value (GT.(gmap X.t) (fun s -> Value s) (Gterm.to_logic) arg3 res)
+    let arg3 xs = List.inj (fun (a, b) -> MiniKanren.to_logic (MiniKanren.to_logic a, to_logic b)) xs in
+    MiniKanren.to_logic (GT.(gmap X.t) MiniKanren.to_logic (Gterm.to_logic) arg3 res)
 
 end
 
 
 let rec gresult_reifier c : Gresult.fresult -> Gresult.lresult =
-  let open ManualReifiers in
-  Gresult.reify string gterm_reifier
-    (List.reify (pair string gresult_reifier))
+  Gresult.reify MiniKanren.reify gterm_reifier
+    (List.reify (Pair.reify MiniKanren.reify gresult_reifier))
     c
 
 let (!!) x = inj @@ lift x
@@ -144,7 +143,7 @@ type fenv = ( (string * rresult) List.ground,
 let show_reif_env h e =
   GT.(show List.logic @@ show logic @@
         show pair  (show logic (fun s -> s)) show_lresult) @@
-  (List.reify ManualReifiers.(pair string gresult_reifier))
+  (List.reify @@ Pair.reify MiniKanren.reify gresult_reifier)
   h e
 (*let unienv ?loc = unitrace ?loc @@ show_reif_env*)
 
@@ -160,7 +159,7 @@ let uni_term_list ?loc =
     )
 *)
 let show_reif_string h t = GT.(show logic @@ show string) @@
-  ManualReifiers.string h t
+  MiniKanren.reify h t
 (*
 let unistring ?loc = unitrace ?loc @@ show_reif_string
 *)
@@ -176,7 +175,7 @@ let rec lookupo x env t =
   let (===!) ?loc = unistring ?loc in
   let (===!!) ?loc = uniresult ?loc in *)
   fresh (rest y v)
-    ((inj_pair y v) % rest === env)
+    ((pair y v) % rest === env)
     (conde [
         (y ===! x) &&& (v ===!! t);
         (y =/= x) &&& (lookupo x rest t)
@@ -189,7 +188,7 @@ let rec not_in_envo x env =
   (* printfn "entering not_in_envo"; *)
   conde
     [ fresh (y v rest)
-        (env === (inj_pair y v) % rest)
+        (env === (pair y v) % rest)
         (y =/= x)
         (not_in_envo x rest)
     ; (nil () === env)
@@ -230,7 +229,7 @@ and evalo (term: fterm) (env: fenv) (r: fresult) =
       (term === seq (func %< arge))
       (evalo arge env arg)
       (evalo func env (closure x body env') )
-      (evalo body ((inj_pair x arg) % env') r)
+      (evalo body ((pair x arg) % env') r)
 
   ; fresh (x body)
       (term === seq ( (symb !!"lambda") %
@@ -241,7 +240,7 @@ and evalo (term: fterm) (env: fenv) (r: fresult) =
   ]
 
 let ( ~~ ) s  = symb @@ inj @@ lift s
-let s      tl = seq (inj_listi tl)
+let s      tl = seq (List.list tl)
 
 let nil = nil ()
 
@@ -287,6 +286,19 @@ let quineso q = (evalo q nil (val_ q))
 
 let twineso q p =
   (q =/= p) &&& (evalo q nil (val_ p)) &&& (evalo p nil (val_ q))
+
+module Triple = 
+  struct
+    
+    include Fmap3 (
+      struct
+        type ('a, 'b, 'c) t = 'a * 'b * 'c
+        let fmap f g h (a, b, c) = (f a, g b, h c)
+      end)   
+
+  end
+
+let inj_triple p q r = inj @@ Triple.distrib (p, q, r)
 
 let thrineso x =
   (* let (=//=) = diseqtrace @@ show_reif_term in *)

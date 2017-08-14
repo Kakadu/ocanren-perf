@@ -61,13 +61,11 @@ module Gterm = struct
                               (show List.logic show_lterm)) x
 
   let rec to_logic : rterm -> lterm = fun term ->
-    Value (fmap (fun s -> Value s)
-                Nat.to_logic
-                (List.to_logic to_logic) term)
+     MiniKanren.to_logic (fmap MiniKanren.to_logic Nat.inj (List.inj to_logic) term)
 
   let vr  n   : fterm = inj @@ distrib @@ VR n
   let symb s  : fterm = inj @@ distrib @@ Symb s
-  let tuple xs: fterm = inj @@ distrib @@ Tuple (inj_listi xs)
+  let tuple xs: fterm = inj @@ distrib @@ Tuple (List.list xs)
   let quote xs  = inj @@ distrib @@ Tuple ((symb !!"quote") % xs)
   let quotequote : fterm = quote (!< (symb !!"quote"))
 
@@ -85,7 +83,7 @@ module Gterm = struct
 end
 
 let rec gterm_reifier c : Gterm.fterm -> Gterm.lterm =
-  Gterm.reify ManualReifiers.string
+  Gterm.reify MiniKanren.reify
               Nat.reify
               (List.reify gterm_reifier) c
 
@@ -163,20 +161,19 @@ module Gresult = struct
   and show_lenv e =
     GT.(show List.logic (show logic @@ show pair show_lvar show_lresult)) e
 
-  let pair_to_logic f g = fun (a,b) -> Value (f a, g b)
+  let pair_to_logic f g = fun (a,b) -> MiniKanren.to_logic (f a, g b)
   let rec to_logic : rresult -> lresult = fun res ->
-    Value (fmap env_to_logic Nat.to_logic Gterm.to_logic res)
+    MiniKanren.to_logic (fmap env_to_logic Nat.inj Gterm.to_logic res)
   and env_to_logic: renv -> lenv = fun e ->
-    List.to_logic (pair_to_logic Nat.to_logic to_logic) e
+    List.inj (pair_to_logic Nat.inj to_logic) e
 end
 
 let var_reifier = Nat.reify
 
 let rec gresult_reifier c : Gresult.fresult -> Gresult.lresult =
-  let open ManualReifiers in
   Gresult.reify env_reifier var_reifier gterm_reifier c
 and env_reifier e =
-  List.reify ManualReifiers.(pair var_reifier gresult_reifier) e
+  List.reify (Pair.reify var_reifier gresult_reifier) e
 
 open Gresult
 
@@ -210,7 +207,7 @@ and venv o =
   conde
     [ (o === nil ())
     ; fresh (n v e)
-        (o === ((inj_pair n v) % e))
+        (o === ((pair n v) % e))
         (nat n)
         (vl v)
         (venv e)
@@ -223,9 +220,9 @@ let rec vlookup env x v =
   (* trace "vlookup" @@ *)
   conde
     [ fresh (er)
-        (env ===< (inj_pair x v) % er)
+        (env ===< (pair x v) % er)
     ; fresh (y vy er)
-        (env ===< (inj_pair y vy) % er)
+        (env ===< (pair y vy) % er)
         (neq x y)
         (vlookup er x v)
     ]
@@ -247,7 +244,7 @@ let rec ev e t v =
         (t === (app t1 t2))
         (ev e t1 (clo e0 x0 t0))
         (ev e t2 v2)
-        (ev ((inj_pair x0 v2)%e0) t0 v)
+        (ev ((pair x0 v2)%e0) t0 v)
     ; fresh (t1 t2 c1 c2)
         (t ===  (list2 t1 t2))
         (v ==== (code (tuple [c1; c2])))
