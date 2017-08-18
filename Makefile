@@ -7,6 +7,7 @@ DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
 MEASURE_OC1   ?= y
 MEASURE_OC2   ?= y
+MEASURE_OC3   ?= y
 
 MEASURE_SCM   ?= y
 MEASURE_RKT   ?=
@@ -83,6 +84,11 @@ MLOC2_NATIVE_$(1) := $$(wildcard src_ocanren02*/test$(1)*.native)
 measure$(1)_MLOC2:
 	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC2_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
 
+MLOC3_NATIVE_$(1) := $$(wildcard src_ocanren03*/test$(1)*.native)
+
+measure$(1)_MLOC3:
+	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC3_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
+
 ###################################### finish measuring ocanren ################
 .PHONY: measure$(1) measure$(1)_prepare do_measure
 measure$(1)_prepare:
@@ -93,6 +99,7 @@ do_measure: measure$(1)
 measure$(1): measure$(1)_prepare \
 	measure$(1)_MLOC1  \
 	measure$(1)_MLOC2  \
+	measure$(1)_MLOC3  \
 	measure$(1)_scm
 
 	printf "$$(TEST$(1)_NAME) " >> $(DATAFILE)
@@ -105,7 +112,7 @@ $(foreach i,$(TESTS), $(eval $(call XXX,$(i)) ) )
 
 .PHONY: prepare_header do_measure
 prepare_header:
-	echo "x   1tagless  2master faster-miniKanren/Scheme" \
+	echo "x   1tagless  2master 3 faster-miniKanren/Scheme" \
 		> $(DATAFILE)
 
 .PHONY: clean
@@ -138,6 +145,7 @@ endef
 
 $(eval $(call DO_PREPARE,01))
 $(eval $(call DO_PREPARE,02))
+$(eval $(call DO_PREPARE,03))
 
 compile: compile_scm
 

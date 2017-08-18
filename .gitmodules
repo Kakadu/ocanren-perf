@@ -9,3 +9,7 @@
 	path = ocanren02master
 	url = https://github.com/dboulytchev/OCanren.git
 	branch = master
+[submodule "ocanren03eucpp"]
+	path = ocanren03eucpp
+	url = https://github.com/eucpp/OCanren.git
+	branch = master
