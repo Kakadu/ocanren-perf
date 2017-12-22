@@ -22,3 +22,6 @@
 [submodule "ocanren06spacetime"]
 	path = ocanren06spacetime
 	url = https://github.com/Kakadu/ocanren.git
+[submodule "ocanren11cunif"]
+	path = ocanren11cunif
+	url = https://github.com/Kakadu/ocanren.git

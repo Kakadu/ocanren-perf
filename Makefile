@@ -7,9 +7,10 @@ DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
 MEASURE_OC1   ?=
 MEASURE_OC2   ?= y
-MEASURE_OC3   ?= y
+MEASURE_OC3   ?=
 MEASURE_OC4   ?=
-MEASURE_OC5   ?= 
+MEASURE_OC5   ?=
+MEASURE_OC11  ?= y
 
 MEASURE_SCM   ?= y
 MEASURE_RKT   ?=
@@ -97,6 +98,11 @@ MLOC5_NATIVE_$(1) := $$(wildcard src_ocanren05*/test$(1)*.native)
 measure$(1)_MLOC5:
 	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC5_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
 
+MLOC11_NATIVE_$(1) := $$(wildcard src_ocanren11*/test$(1)*.native)
+
+measure$(1)_MLOC11:
+	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC11_NATIVE_$(1)) && cat /tmp/ocanren_time>> .$(1).data
+
 #MLOC6_NATIVE_$(1) := $$(wildcard src_ocanren06*/test$(1)*.native)
 
 #measure$(1)_MLOC6:
@@ -111,7 +117,7 @@ do_measure: measure$(1)
 
 measure$(1): measure$(1)_prepare \
 	measure$(1)_MLOC2  \
-	measure$(1)_MLOC3  \
+	measure$(1)_MLOC11 \
 	measure$(1)_scm
 
 	printf "$$(TEST$(1)_NAME) " >> $(DATAFILE)
@@ -124,7 +130,7 @@ $(foreach i,$(TESTS), $(eval $(call XXX,$(i)) ) )
 
 .PHONY: prepare_header do_measure
 prepare_header:
-	echo "x   2master 3eucpp faster-miniKanren/Scheme" \
+	echo "x   2master 11cunif faster-miniKanren/Scheme" \
 		> $(DATAFILE)
 
 .PHONY: clean
@@ -141,7 +147,6 @@ define DO_PREPARE
 .PHONY: prepare_ocanren$(1) compile_ocanren$(1)tests clean$(1)
 prepare_ocanren$(1):
 	$$(MAKE) -C $$(shell echo ocanren$(1)*) all
-	#$$(MAKE) -C $$(shell echo ocanren$(1)*) bundle
 
 prepare_ocanren: prepare_ocanren$(1)
 
@@ -157,10 +162,8 @@ endef
 
 #$(eval $(call DO_PREPARE,01))
 $(eval $(call DO_PREPARE,02))
-$(eval $(call DO_PREPARE,03))
-# $(eval $(call DO_PREPARE,04))
-# $(eval $(call DO_PREPARE,05))
-#$(eval $(call DO_PREPARE,06))
+$(eval $(call DO_PREPARE,11))
+
 
 compile: compile_scm
 
