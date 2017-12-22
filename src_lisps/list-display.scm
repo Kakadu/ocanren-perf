@@ -6,6 +6,22 @@
                  (newline)
                  (list-display (cdr lis)))))
 
+(define with_real_time
+  (lambda (foo)
+    (let ((tbegin (real-time) ))
+      (foo)
+      (let ((tend (real-time) ))
+        (printf "Whole time is ~a ms\n" (/ (- tend tbegin) 1000.0))
+))))
+
+; Use this, for example, like this
+;; (if (not (getenv "DONT_RUN_CHEZ"))
+;;     (begin
+;;       (with_real_time (lambda () (list-display (do_measure)) ))
+;;       ))
+
+
+
 (define logged_unif_counter 0)
 
 ; TODO: how to check variable is bound
