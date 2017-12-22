@@ -311,8 +311,8 @@ let thrineso x =
     (evalo r nil (val_ p))
     ((inj_triple p q r) === x)
 
-let wrap_term rr = rr#reify gterm_reifier ~inj:Gterm.to_logic |> show_lterm
-let wrap_result rr = rr#reify gresult_reifier ~inj:Gresult.to_logic |> show_lresult
+let wrap_term rr = rr#reify gterm_reifier |> show_lterm
+let wrap_result rr = rr#reify gresult_reifier |> show_lresult
 
 let find_quines ~verbose n = run q quineso @@ fun qs ->
   Stream.take ~n qs |> List.iter (fun q ->

@@ -2,12 +2,12 @@ open Printf
 
 let the_time_file = "/tmp/ocanren_time"
 
-let wrap_run num rel ?(n= -1) ~reifier ~inj ~verbose onVerbose =
+let wrap_run num rel ?(n= -1) ~reifier ~verbose onVerbose =
   MiniKanren.run num rel
     (fun s ->
       MiniKanren.Stream.take ~n s |>
       List.iter (fun r ->
-        let term = r#reify reifier ~inj in
+        let term = r#reify reifier in
         if verbose then onVerbose term else ()
         )
       )
@@ -24,7 +24,7 @@ let wrap (do_measure : verbose:bool -> unit) =
       let () = do_measure ~verbose:false in
 
       (* do benchmarking *)
-      let n = 10 in
+      let n = 20 in
       let acc = ref 0. in
       for i=1 to n do
         let () = Gc.compact () in
