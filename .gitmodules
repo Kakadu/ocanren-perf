@@ -13,3 +13,12 @@
 	path = ocanren03eucpp
 	url = https://github.com/eucpp/OCanren.git
 	branch = master
+[submodule "ocanren04O3"]
+	path = ocanren04O3
+	url = https://github.com/Kakadu/ocanren.git
+[submodule "ocanren05fix-diseq-speed"]
+	path = ocanren05fix-diseq-speed
+	url = https://github.com/Kakadu/ocanren.git
+[submodule "ocanren06spacetime"]
+	path = ocanren06spacetime
+	url = https://github.com/Kakadu/ocanren.git
