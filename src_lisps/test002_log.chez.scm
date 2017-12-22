@@ -17,7 +17,9 @@
 
 (if (not (getenv "DONT_RUN_CHEZ"))
   (begin
-    (list-display (do_measure))
+    ;; (with_real_time (lambda ()
+                      (list-display (do_measure))
+                      ;; ))
     (report_counters)
     (exit)
   ))

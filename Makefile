@@ -5,9 +5,11 @@ TESTS=001 002 005 006 007 011
 MEASURE=/usr/bin/time -f "%U"
 DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
-MEASURE_OC1   ?= y
+MEASURE_OC1   ?=
 MEASURE_OC2   ?= y
 MEASURE_OC3   ?= y
+MEASURE_OC4   ?=
+MEASURE_OC5   ?= 
 
 MEASURE_SCM   ?= y
 MEASURE_RKT   ?=
@@ -24,10 +26,6 @@ OCAML_GC_CFG=OCAMLRUNPARAM='s=250M,h=250M'
 define AVG_MEASURE
 	$(RM) .avg
 	DONT_RUN_CHEZ=y OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	#OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	#OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	#OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	#OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
 	@sh avg.awk .avg | xargs echo -n >> $(2)
 	@echo -n " " >> $(2)
 	@$(RM)  .avg
@@ -89,6 +87,21 @@ MLOC3_NATIVE_$(1) := $$(wildcard src_ocanren03*/test$(1)*.native)
 measure$(1)_MLOC3:
 	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC3_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
 
+MLOC4_NATIVE_$(1) := $$(wildcard src_ocanren04*/test$(1)*.native)
+
+measure$(1)_MLOC4:
+	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC4_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
+
+MLOC5_NATIVE_$(1) := $$(wildcard src_ocanren05*/test$(1)*.native)
+
+measure$(1)_MLOC5:
+	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC5_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
+
+#MLOC6_NATIVE_$(1) := $$(wildcard src_ocanren06*/test$(1)*.native)
+
+#measure$(1)_MLOC6:
+#	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC6_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
+
 ###################################### finish measuring ocanren ################
 .PHONY: measure$(1) measure$(1)_prepare do_measure
 measure$(1)_prepare:
@@ -97,7 +110,6 @@ measure$(1)_prepare:
 do_measure: measure$(1)
 
 measure$(1): measure$(1)_prepare \
-	measure$(1)_MLOC1  \
 	measure$(1)_MLOC2  \
 	measure$(1)_MLOC3  \
 	measure$(1)_scm
@@ -112,7 +124,7 @@ $(foreach i,$(TESTS), $(eval $(call XXX,$(i)) ) )
 
 .PHONY: prepare_header do_measure
 prepare_header:
-	echo "x   1tagless  2master 3 faster-miniKanren/Scheme" \
+	echo "x   2master 3eucpp faster-miniKanren/Scheme" \
 		> $(DATAFILE)
 
 .PHONY: clean
@@ -128,7 +140,7 @@ compile: prepare_ocanren
 define DO_PREPARE
 .PHONY: prepare_ocanren$(1) compile_ocanren$(1)tests clean$(1)
 prepare_ocanren$(1):
-	$$(MAKE) -C $$(shell echo ocanren$(1)*) ppx all
+	$$(MAKE) -C $$(shell echo ocanren$(1)*) all
 	#$$(MAKE) -C $$(shell echo ocanren$(1)*) bundle
 
 prepare_ocanren: prepare_ocanren$(1)
@@ -143,9 +155,12 @@ clean$(1):
 clean: clean$(1)
 endef
 
-$(eval $(call DO_PREPARE,01))
+#$(eval $(call DO_PREPARE,01))
 $(eval $(call DO_PREPARE,02))
 $(eval $(call DO_PREPARE,03))
+# $(eval $(call DO_PREPARE,04))
+# $(eval $(call DO_PREPARE,05))
+#$(eval $(call DO_PREPARE,06))
 
 compile: compile_scm
 
