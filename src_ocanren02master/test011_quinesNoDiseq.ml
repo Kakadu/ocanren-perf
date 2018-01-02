@@ -1,1 +1,1 @@
-../src_ocanren01tagless/test011_quinesNoDiseq.ml
+let _ = TimeHelper.wrap (Quines_NoDiseq.find_quines 200) 

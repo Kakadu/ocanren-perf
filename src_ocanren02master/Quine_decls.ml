@@ -300,64 +300,58 @@ module Triple =
 
 let inj_triple p q r = inj @@ Triple.distrib (p, q, r)
 
-let thrineso x =
+let thrineso p q r =
   (* let (=//=) = diseqtrace @@ show_reif_term in *)
-  fresh (p q r)
+  fresh (_tmp)
     (p =//= q)
     (q =//= r)
     (r =//= p)
     (evalo p nil (val_ q))
     (evalo q nil (val_ r))
     (evalo r nil (val_ p))
-    ((inj_triple p q r) === x)
 
 let wrap_term rr = rr#reify gterm_reifier |> show_lterm
 let wrap_result rr = rr#reify gresult_reifier |> show_lresult
 
-let find_quines ~verbose n = run q quineso @@ fun qs ->
+let find_quines ~verbose n = run q quineso (fun timings qs ->
   Stream.take ~n qs |> List.iter (fun q ->
     if verbose
     then printf "%s\n\n" (wrap_term q)
     else ()
-  )
+  );
+  timings
+)
 
 let find_twines ~verbose n =
+  (* let (_:int) =  run (succ @@ succ one) thrineso in *)
   run qr (fun q r -> twineso q r)
-    (fun qs rs ->
+    (fun timings qs rs ->
       let s1 = Stream.take ~n qs in
       let s2 = Stream.take ~n rs in
       List.iter2 (fun q r ->
         if verbose
         then printf "%s,\n%s\n\n" (wrap_term q) (wrap_term r)
         else ()
-      ) s1 s2
+      ) s1 s2;
+      timings
     )
 
-(*
-let wrap3terms t =
-  t#reify
-    (ManualReifiers.triple gterm_reifier gterm_reifier gterm_reifier)
-    ~inj:(fun (a,b,c) ->
-        Value (Gterm.to_logic a,Gterm.to_logic b,Gterm.to_logic a) )
-  |> (function
-      | Var _ -> assert false
-      | Value (a,b,c) ->
-          printfn "* %s\n  %s\n  %s\n"
-          (Gterm.show_lterm a)
-          (Gterm.show_lterm b)
-          (Gterm.show_lterm c)
-      )
-*)
-
 let find_thrines ~verbose n =
-  run q thrineso @@ fun xs ->
-      Stream.take ~n xs |>
-      List.iter (fun t ->
-          if verbose then
-         (*   let () = wrap3terms t in*)
-            print_newline ()
-          else ()
-        )
+  let open MiniKanren.RunCurried in
+  (* let () = *)
+  (*   MiniKanren.RunCurried.run (MiniKanren.RunCurried.succ @@ succ one) *)
+  (*     (fun q r s -> (q === !!5) &&& (s === r)  &&& (q === r)) *)
+  (*     (fun _timings ss -> ss) *)
+  (* in *)
+  (* let (_:int) =  run (succ @@ succ one) thrineso in *)
+  run (succ @@ succ one) thrineso (fun timings xs ->
+      List.iter (fun (q,(r,s)) ->
+        if verbose
+        then printf "%s,\n%s,\n%s\n\n" (wrap_term q) (wrap_term r) (wrap_term s)
+        else ()
+      ) (Stream.take ~n xs);
+      timings
+  )
 
 (*
 let _ =

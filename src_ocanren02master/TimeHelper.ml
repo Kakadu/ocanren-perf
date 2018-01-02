@@ -4,13 +4,14 @@ let the_time_file = "/tmp/ocanren_time"
 
 let wrap_run num rel ?(n= -1) ~reifier ~verbose onVerbose =
   MiniKanren.run num rel
-    (fun s ->
+    (fun timings s ->
       MiniKanren.Stream.take ~n s |>
       List.iter (fun r ->
         let term = r#reify reifier in
         if verbose then onVerbose term else ()
-        )
-      )
+      );
+      timings
+    )
 
 let time f =
   let t = Mtime_clock.counter () in
@@ -18,10 +19,10 @@ let time f =
   (Mtime_clock.count t |> Mtime.Span.to_s)
 ;;
 
-let wrap (do_measure : verbose:bool -> unit) =
+let wrap (do_measure : verbose:bool -> MiniKanren.Timings.t) =
   try ignore (Sys.getenv "DONT_RUN_CHEZ");
       (* warmup *)
-      let () = do_measure ~verbose:false in
+      let _ : MiniKanren.Timings.t = do_measure ~verbose:false in
 
       (* do benchmarking *)
       let n = 20 in
@@ -32,22 +33,11 @@ let wrap (do_measure : verbose:bool -> unit) =
         acc := !acc +. (time @@ fun () -> do_measure ~verbose:false);
       done;
       let ans =  (!acc /. (float_of_int n)) in
+      let unif_time = 0.0 in
       let (_:int) = Sys.command @@ sprintf "echo %f > %s" ans the_time_file in
       Printf.printf "%f\n" ans
 
-
-      (* let samples = Benchmark.latency1 (Int64.of_int n) (fun () -> do_measure ~verbose:false)  () in
-      match samples with
-      | [(_name,xs)] ->
-          assert (List.length xs = 1);
-          let h = List.hd xs in
-          let ans = h.Benchmark.utime /. (float_of_int n) in
-          let (_:int) = Sys.command @@ sprintf "echo %f > %s" ans the_time_file in
-          printf "%f\n" ans
-      | _ -> failwith "should not happen" *)
-
   with Not_found ->
     (* do normal run *)
-    let () = do_measure ~verbose:true in
-    let () = (*MiniKanren.report_counters*) () in
+    let _: MiniKanren.Timings.t = do_measure ~verbose:true in
     ()

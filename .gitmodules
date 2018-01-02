@@ -25,3 +25,11 @@
 [submodule "ocanren11cunif"]
 	path = ocanren11cunif
 	url = https://github.com/Kakadu/ocanren.git
+[submodule "ocanren03run_measure"]
+	path = ocanren03run_measure
+	url = https://github.com/Kakadu/ocanren.git
+	branch = run_measure
+[submodule "ocanren04unif_cps"]
+	path = ocanren04unif_cps
+	url = https://github.com/eucpp/ocanren.git
+	branch = opt2
