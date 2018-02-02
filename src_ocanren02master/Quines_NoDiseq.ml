@@ -313,13 +313,14 @@ let wrap_term   rr = rr#reify gterm_reifier |> show_lterm
 
 let wrap_result rr = rr#reify gresult_reifier |> show_lresult
 
-let find_quines ~verbose n = run q quineo @@ fun timings qs ->
-  Stream.take ~n qs |> List.iter (fun q ->
+let find_quines ~verbose n =
+  ignore @@ Stream.take ~n @@
+  run q quineo (fun q ->
     if verbose
     then printf "%s\n\n" (wrap_term q)
     else ()
-  );
-  timings
+  )
+
 
 (*
 let find_twines n =

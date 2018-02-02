@@ -7,7 +7,7 @@ DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
 MEASURE_OC1   ?=
 MEASURE_OC2   ?= y
-MEASURE_OC3   ?=
+MEASURE_OC3   ?= y
 MEASURE_OC4   ?= y
 MEASURE_OC5   ?=
 MEASURE_OC11  ?= y
@@ -83,10 +83,10 @@ MLOC2_NATIVE_$(1) := $$(wildcard src_ocanren02*/test$(1)*.native)
 measure$(1)_MLOC2:
 	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC2_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
 
-#MLOC3_NATIVE_$(1) := $$(wildcard src_ocanren03*/test$(1)*.native)
+MLOC3_NATIVE_$(1) := $$(wildcard src_ocanren03*/test$(1)*.native)
 
-#measure$(1)_MLOC3:
-#	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC3_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
+measure$(1)_MLOC3:
+	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC3_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
 
 MLOC4_NATIVE_$(1) := $$(wildcard src_ocanren04*/test$(1)*.native)
 
@@ -117,6 +117,7 @@ do_measure: measure$(1)
 
 measure$(1): measure$(1)_prepare \
 	measure$(1)_MLOC2  \
+	measure$(1)_MLOC3  \
 	measure$(1)_MLOC4  \
 	measure$(1)_MLOC11 \
 	measure$(1)_scm
@@ -131,7 +132,7 @@ $(foreach i,$(TESTS), $(eval $(call XXX,$(i)) ) )
 
 .PHONY: prepare_header do_measure
 prepare_header:
-	echo "x   2master 4unif-cps 11cunif faster-miniKanren/Scheme" \
+	echo "x   3oldmaster 2master 3unif-cps 11cunif faster-miniKanren/Scheme" \
 		> $(DATAFILE)
 
 .PHONY: clean celan
@@ -164,6 +165,7 @@ endef
 
 #$(eval $(call DO_PREPARE,01))
 $(eval $(call DO_PREPARE,02))
+$(eval $(call DO_PREPARE,03))
 $(eval $(call DO_PREPARE,04))
 $(eval $(call DO_PREPARE,11))
 

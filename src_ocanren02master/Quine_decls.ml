@@ -313,44 +313,36 @@ let thrineso p q r =
 let wrap_term rr = rr#reify gterm_reifier |> show_lterm
 let wrap_result rr = rr#reify gresult_reifier |> show_lresult
 
-let find_quines ~verbose n = run q quineso (fun timings qs ->
-  Stream.take ~n qs |> List.iter (fun q ->
+let find_quines ~verbose n =
+  ignore @@ Stream.take ~n @@
+  run q quineso (fun q ->
     if verbose
     then printf "%s\n\n" (wrap_term q)
     else ()
-  );
-  timings
-)
+  )
 
 let find_twines ~verbose n =
   (* let (_:int) =  run (succ @@ succ one) thrineso in *)
+  ignore @@ Stream.take ~n @@
   run qr (fun q r -> twineso q r)
-    (fun timings qs rs ->
-      let s1 = Stream.take ~n qs in
-      let s2 = Stream.take ~n rs in
-      List.iter2 (fun q r ->
+    (fun q r ->
         if verbose
         then printf "%s,\n%s\n\n" (wrap_term q) (wrap_term r)
         else ()
-      ) s1 s2;
-      timings
     )
 
 let find_thrines ~verbose n =
-  let open MiniKanren.RunCurried in
   (* let () = *)
   (*   MiniKanren.RunCurried.run (MiniKanren.RunCurried.succ @@ succ one) *)
   (*     (fun q r s -> (q === !!5) &&& (s === r)  &&& (q === r)) *)
   (*     (fun _timings ss -> ss) *)
   (* in *)
   (* let (_:int) =  run (succ @@ succ one) thrineso in *)
-  run (succ @@ succ one) thrineso (fun timings xs ->
-      List.iter (fun (q,(r,s)) ->
+  ignore @@ Stream.take ~n @@
+  run (succ @@ succ one) thrineso (fun q r s ->
         if verbose
         then printf "%s,\n%s,\n%s\n\n" (wrap_term q) (wrap_term r) (wrap_term s)
         else ()
-      ) (Stream.take ~n xs);
-      timings
   )
 
 (*

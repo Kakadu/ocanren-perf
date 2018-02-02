@@ -3,15 +3,12 @@ open Printf
 let the_time_file = "/tmp/ocanren_time"
 
 let wrap_run num rel ?(n= -1) ~reifier ~verbose onVerbose =
+  MiniKanren.Stream.take ~n @@
   MiniKanren.run num rel
-    (fun timings s ->
-      MiniKanren.Stream.take ~n s |>
-      List.iter (fun r ->
+    (fun r ->
         let term = r#reify reifier in
         if verbose then onVerbose term else ()
-      );
-      timings
-    )
+    ) |> ignore
 
 let time f =
   let t = Mtime_clock.counter () in
@@ -19,10 +16,10 @@ let time f =
   (Mtime_clock.count t |> Mtime.Span.to_s)
 ;;
 
-let wrap (do_measure : verbose:bool -> MiniKanren.Timings.t) =
+let wrap (do_measure : verbose:bool -> unit) =
   try ignore (Sys.getenv "DONT_RUN_CHEZ");
       (* warmup *)
-      let _ : MiniKanren.Timings.t = do_measure ~verbose:false in
+      let _  = do_measure ~verbose:false in
 
       (* do benchmarking *)
       let n = 20 in
@@ -39,5 +36,5 @@ let wrap (do_measure : verbose:bool -> MiniKanren.Timings.t) =
 
   with Not_found ->
     (* do normal run *)
-    let _: MiniKanren.Timings.t = do_measure ~verbose:true in
+    let _ = do_measure ~verbose:true in
     ()

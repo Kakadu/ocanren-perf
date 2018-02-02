@@ -37,11 +37,12 @@ endef
 $(foreach i,$(ALL_TEST_MLS), $(eval $(call XXX,$(i)) ) )
 
 .SUFFIX: .native
-.PHONY: all clean $(ALL_NATIVES)
+.PHONY: all celan clean $(ALL_NATIVES)
 
 all:
 	OCAMLPATH=`pwd`/../$(OCANREN_WHERE)/_build/bundle \
 	ocamlbuild -use-ocamlfind $(VERBOSE_OB) $(ALL_NATIVES)
 
+celan: clean
 clean:
 	$(RM) -r _build test*.native
