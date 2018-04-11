@@ -2,15 +2,17 @@ open Printf
 
 let the_time_file = "/tmp/ocanren_time"
 
+(* let () =
+ *   let open MiniKanren in
+ *   run (succ one) (fun q r -> (q=== r)) *)
+
 let wrap_run num rel ?(n= -1) ~reifier ~verbose onVerbose =
   MiniKanren.run num rel
-    (fun s ->
-      MiniKanren.Stream.take ~n s |>
-      List.iter (fun r ->
+    (fun r ->
         let term = r#reify reifier in
         if verbose then onVerbose term else ()
-        )
       )
+  |> MiniKanren.Stream.take ~n |> ignore
 
 let time f =
   let t = Mtime_clock.counter () in

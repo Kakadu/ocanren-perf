@@ -1,7 +1,7 @@
 print-%: ; @echo $*=$($*)
 
 DATAFILE=data.gnuplot
-TESTS=001 002 005 006 007 011
+TESTS=001 002 005 006 007 010 011
 MEASURE=/usr/bin/time -f "%U"
 DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
@@ -72,10 +72,10 @@ measure$(1)_scm:
 	(cd src_lisps && DONT_RUN_CHEZ=y scheme --program "work$(1).chez.so" >> ../.$(1).data)
 
 # ******************************************************************************
-MLOC1_NATIVE_$(1) := $$(wildcard src_ocanren01*/test$(1)*.native)
+# MLOC1_NATIVE_$(1) := $$(wildcard src_ocanren01*/test$(1)*.native)
 
-measure$(1)_MLOC1:
-	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC1_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
+# measure$(1)_MLOC1:
+# 	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC1_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
 
 MLOC2_NATIVE_$(1) := $$(wildcard src_ocanren02*/test$(1)*.native)
 
@@ -87,15 +87,15 @@ MLOC3_NATIVE_$(1) := $$(wildcard src_ocanren03*/test$(1)*.native)
 measure$(1)_MLOC3:
 	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC3_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
 
-MLOC4_NATIVE_$(1) := $$(wildcard src_ocanren04*/test$(1)*.native)
+# MLOC4_NATIVE_$(1) := $$(wildcard src_ocanren04*/test$(1)*.native)
 
-measure$(1)_MLOC4:
-	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC4_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
+# measure$(1)_MLOC4:
+# 	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC4_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
 
-MLOC5_NATIVE_$(1) := $$(wildcard src_ocanren05*/test$(1)*.native)
+# MLOC5_NATIVE_$(1) := $$(wildcard src_ocanren05*/test$(1)*.native)
 
-measure$(1)_MLOC5:
-	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC5_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
+# measure$(1)_MLOC5:
+# 	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC5_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
 
 #MLOC6_NATIVE_$(1) := $$(wildcard src_ocanren06*/test$(1)*.native)
 

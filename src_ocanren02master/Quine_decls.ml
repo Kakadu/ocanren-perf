@@ -194,7 +194,7 @@ let rec not_in_envo x env =
     ; (nil () === env)
     ]
 
-let rec proper_listo es env rs =
+let proper_listo_gen evalo selfo es env rs =
   (* let (===) ?loc = uni_term_list ?loc in *)
   conde
     [ ((nil ()) === es) &&& ((nil ()) === rs)
@@ -202,10 +202,10 @@ let rec proper_listo es env rs =
         (es === e  % d)
         (rs === te % td)
         (evalo e env (val_ te))
-        (proper_listo d env td)
+        (selfo d env td)
     ]
 
-and evalo (term: fterm) (env: fenv) (r: fresult) =
+let evalo_gen proper_listo selfo (term: fterm) (env: fenv) (r: fresult) =
   (* let (===)  ?loc = unitrace ?loc show_reif_term in
   let (===!) ?loc = unitrace ?loc show_reif_result in *)
 
@@ -227,9 +227,9 @@ and evalo (term: fterm) (env: fenv) (r: fresult) =
       (lookupo s env r)
   ; fresh (func arge arg x body env')
       (term === seq (func %< arge))
-      (evalo arge env arg)
-      (evalo func env (closure x body env') )
-      (evalo body ((pair x arg) % env') r)
+      (selfo arge env arg)
+      (selfo func env (closure x body env') )
+      (selfo body ((pair x arg) % env') r)
 
   ; fresh (x body)
       (term === seq ( (symb !!"lambda") %
@@ -238,6 +238,12 @@ and evalo (term: fterm) (env: fenv) (r: fresult) =
       (not_in_envo !!"lambda" env)
       (r ===! (closure x body env))
   ]
+
+let rec evalo_tabled x = Tabling.(tabledrec three (evalo_gen proper_listo_tabled)) x
+and proper_listo_tabled x = Tabling.(tabledrec three (proper_listo_gen evalo_tabled)) x
+
+let rec evalo x = evalo_gen proper_listo evalo x
+and proper_listo x = proper_listo_gen evalo proper_listo x
 
 let ( ~~ ) s  = symb @@ inj @@ lift s
 let s      tl = seq (List.list tl)
@@ -284,80 +290,56 @@ let gen_terms n r = printf "> %s\n" (show_term r);
 
 let quineso q = (evalo q nil (val_ q))
 
+let quineso_tabled q = (evalo_tabled q nil (val_ q))
+
 let twineso q p =
   (q =/= p) &&& (evalo q nil (val_ p)) &&& (evalo p nil (val_ q))
 
-module Triple = 
-  struct
-    
+module Triple = struct
     include Fmap3 (
       struct
         type ('a, 'b, 'c) t = 'a * 'b * 'c
         let fmap f g h (a, b, c) = (f a, g b, h c)
-      end)   
-
+      end)
   end
 
 let inj_triple p q r = inj @@ Triple.distrib (p, q, r)
 
-let thrineso x =
-  (* let (=//=) = diseqtrace @@ show_reif_term in *)
-  fresh (p q r)
-    (p =//= q)
-    (q =//= r)
-    (r =//= p)
-    (evalo p nil (val_ q))
-    (evalo q nil (val_ r))
+let thrineso p q r =
+    (p =//= q) &&&
+    (q =//= r) &&&
+    (r =//= p) &&&
+    (evalo p nil (val_ q)) &&&
+    (evalo q nil (val_ r)) &&&
     (evalo r nil (val_ p))
-    ((inj_triple p q r) === x)
+
 
 let wrap_term rr = rr#reify gterm_reifier |> show_lterm
 let wrap_result rr = rr#reify gresult_reifier |> show_lresult
 
-let find_quines ~verbose n = run q quineso @@ fun qs ->
-  Stream.take ~n qs |> List.iter (fun q ->
+let find_quines ~verbose n = run q quineso (fun qs ->
     if verbose
-    then printf "%s\n\n" (wrap_term q)
-    else ()
-  )
+    then printf "%s\n\n" (wrap_term qs)
+  ) |> Stream.take ~n |> ignore
+
+let find_quines_tabled ~verbose n = run q quineso_tabled (fun qs ->
+    if verbose
+    then printf "%s\n\n" (wrap_term qs)
+  ) |> Stream.take ~n |> ignore
 
 let find_twines ~verbose n =
   run qr (fun q r -> twineso q r)
-    (fun qs rs ->
-      let s1 = Stream.take ~n qs in
-      let s2 = Stream.take ~n rs in
-      List.iter2 (fun q r ->
+    (fun q r ->
         if verbose
         then printf "%s,\n%s\n\n" (wrap_term q) (wrap_term r)
-        else ()
-      ) s1 s2
-    )
+    ) |> Stream.take ~n |> ignore
 
-(*
-let wrap3terms t =
-  t#reify
-    (ManualReifiers.triple gterm_reifier gterm_reifier gterm_reifier)
-    ~inj:(fun (a,b,c) ->
-        Value (Gterm.to_logic a,Gterm.to_logic b,Gterm.to_logic a) )
-  |> (function
-      | Var _ -> assert false
-      | Value (a,b,c) ->
-          printfn "* %s\n  %s\n  %s\n"
-          (Gterm.show_lterm a)
-          (Gterm.show_lterm b)
-          (Gterm.show_lterm c)
-      )
-*)
 
 let find_thrines ~verbose n =
-  run q thrineso @@ fun xs ->
-      Stream.take ~n xs |>
-      List.iter (fun t ->
+  run qrs thrineso (fun q r s ->
           if verbose then
-         (*   let () = wrap3terms t in*)
-            print_newline ()
-          else ()
-        )
+          printf "%s,\n%s,\n%s\n\n" (wrap_term q) (wrap_term r) (wrap_term r)
+        ) |> Stream.take ~n |> ignore
 
 (*
 let _ =

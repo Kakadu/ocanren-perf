@@ -253,7 +253,7 @@ let rec ev e t v =
     ]
 
 let nil = nil ()
-let quineo q =
+let quineso q =
   (ev nil q (code q))
 
 (*
@@ -313,12 +313,11 @@ let wrap_term   rr = rr#reify gterm_reifier |> show_lterm
 
 let wrap_result rr = rr#reify gresult_reifier |> show_lresult
 
-let find_quines ~verbose n = run q quineo @@ fun qs ->
-  Stream.take ~n qs |> List.iter (fun q ->
+
+let find_quines ~verbose n = run q quineso (fun qs ->
     if verbose
-    then printf "%s\n\n" (wrap_term q)
-    else ()
-  )
+    then printf "%s\n\n" (wrap_term qs)
+  ) |> Stream.take ~n |> ignore
 
 (*
 let find_twines n =
