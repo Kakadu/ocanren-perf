@@ -289,7 +289,8 @@ let gen_terms n r = printf "> %s\n" (show_term r);
   Printf.printf "\n"
 *)
 
-let quineso q = (evalo q nil (val_ q))
+let quineso q =
+  (evalo q nil (val_ q))
 
 let twineso q p =
   (q =/= p) &&& (evalo q nil (val_ p)) &&& (evalo p nil (val_ q))
@@ -308,17 +309,19 @@ let thrineso x =
 let wrap_term rr = rr#reify gterm_reifier |> show_lterm
 let wrap_result rr = rr#reify gresult_reifier |> show_lresult
 
-let find_quines ~verbose n = run q quineso (fun q ->
+let find_quines ~verbose n =
+  printf "find_quines: verbose=%b\n%!" verbose;
+  run q quineso (fun q ->
     if verbose
     then printf "%s\n\n" (wrap_term (q))
-  ) |> ignore
+  ) |> Stream.take ~n |> ignore
 
 let find_twines ~verbose n =
   run qr twineso
     (fun q r ->
         if verbose
         then printf "%s,\n%s\n\n" (wrap_term q) (wrap_term r)
-    ) |> ignore
+    ) |> Stream.take ~n |> ignore
 
 let wrap3terms t =
   t#reify
@@ -333,15 +336,22 @@ let wrap3terms t =
       )
 
 let find_thrines ~verbose n =
-  let _ =
-    run q thrineso (fun t ->
-        if verbose then
-          let () = wrap3terms t in
-          print_newline ()
-        else ()
-      )
+  run q thrineso (fun t ->
+      if verbose then
+        let () = wrap3terms t in
+        print_newline ()
+      else ()
+    ) |> Stream.take ~n |> ignore
+
+let test_evalo ~verbose n =
+  let rel l =
+    evalo (seq @@ List.list [symb !!"list" ]) (List.list []) l
   in
-  ()
+  run q rel (fun q ->
+    printf "1\n%!";
+    if verbose
+    then printf "%s\n\n" (wrap_result (q))
+  ) |> Stream.take ~n |> ignore
 
 (*
 let _ =

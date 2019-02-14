@@ -7,4 +7,4 @@ FINDLIB_PATH ../ocanren01tagless/_build/bundle
 PKG ocanren
 PKG GT
 PKG GT.ppx
-PKG mtime
+PKG mtime.clock.os

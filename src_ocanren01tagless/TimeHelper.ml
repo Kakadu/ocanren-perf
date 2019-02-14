@@ -2,15 +2,12 @@ open Printf
 
 let the_time_file = "/tmp/ocanren_time"
 
-let wrap_run relation num ?(n= -1) ~reifier (* ~inj *) ~verbose onVerbose =
-  let _ =
-    MiniKanren.run num relation
-      (fun (r: _ MiniKanren.reified) ->
-         let term : _ MiniKanren.logic = r#reify reifier in
-         if verbose then onVerbose term else ()
-      )
-  in
-  ()
+let wrap_run relation num ?(n= -1) ~reifier ~verbose onVerbose =
+  MiniKanren.run num relation (fun r ->
+      let term : _ MiniKanren.logic = r#reify reifier in
+      if verbose then onVerbose term else ()
+    )
+  |> MiniKanren.Stream.take ~n |> ignore
 
 let time f =
   let t = Mtime_clock.counter () in
