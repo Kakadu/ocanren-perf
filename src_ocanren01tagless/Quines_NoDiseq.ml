@@ -17,7 +17,7 @@ module Gterm = struct
       | Symb  of 's
       | VR    of 'n   (* variable indexed by peano numbers *)
       | Tuple of 'ts
-    [@@deriving gt {show}]
+    [@@deriving gt ~options:{show}]
 
     let fmap f g h = function
     | Symb s   -> Symb (f s)
@@ -29,13 +29,12 @@ module Gterm = struct
       plugins = object
         (* method gmap = t.plugins#gmap *)
         method show fa fb fc bx =
-          GT.transform(t)
-            (GT.lift fa) (GT.lift fb) (GT.lift fc)
-            (object inherit ['a,'b,'c] show_t
+          GT.transform(t) (fun fself ->
+            object inherit ['a,'b,'c,_] show_t_t (GT.lift fa) (GT.lift fb) (GT.lift fc) fself
               method c_VR _ _ peano =
-                sprintf "(vr %s)" (peano.GT.fx ())
-              method c_Symb  _ _  s = "'" ^ (s.GT.fx ())
-              method c_Tuple _ _ xs = sprintf "(%s)" (xs.GT.fx ())
+                sprintf "(vr %s)" (fb peano)
+              method c_Symb  _ _  s = "'" ^ (fa s)
+              method c_Tuple _ _ xs = sprintf "(%s)" (fc xs)
             end)
             ()
             bx
@@ -61,13 +60,14 @@ module Gterm = struct
                               (show List.logic show_lterm)) x
 
   let rec to_logic : rterm -> lterm = fun term ->
-    Value (fmap (fun s -> Value s)
-                Nat.to_logic
-                (List.to_logic to_logic) term)
+    MiniKanren.to_logic
+      (fmap MiniKanren.to_logic
+         Nat.inj
+         (List.inj to_logic) term)
 
   let vr  n   : fterm = inj @@ distrib @@ VR n
   let symb s  : fterm = inj @@ distrib @@ Symb s
-  let tuple xs: fterm = inj @@ distrib @@ Tuple (inj_listi xs)
+  let tuple xs: fterm = inj @@ distrib @@ Tuple (List.list xs)
   let quote xs  = inj @@ distrib @@ Tuple ((symb !!"quote") % xs)
   let quotequote : fterm = quote (!< (symb !!"quote"))
 
@@ -85,7 +85,7 @@ module Gterm = struct
 end
 
 let rec gterm_reifier c : Gterm.fterm -> Gterm.lterm =
-  Gterm.reify ManualReifiers.string
+  Gterm.reify MiniKanren.reify
               Nat.reify
               (List.reify gterm_reifier) c
 
@@ -94,7 +94,7 @@ let (!!) x = inj @@ lift x
 open Gterm
 
 let rec nat o =
-  let (===) ?loc = unitrace ?loc (fun h t -> GT.show Nat.logic @@   Nat.reify h t) in
+  (* let (===) ?loc = unitrace ?loc (fun h t -> GT.show Nat.logic @@   Nat.reify h t) in *)
   conde
     [ o === Nat.zero
     ; fresh (n)
@@ -103,7 +103,7 @@ let rec nat o =
     ]
 
 let rec tm o =
-  let (===) ?loc = unitrace ?loc (fun h t -> show_lterm @@ gterm_reifier h t) in
+  (* let (===) ?loc = unitrace ?loc (fun h t -> show_lterm @@ gterm_reifier h t) in *)
   conde
     [ fresh (n)
         (o === (vr n))
@@ -125,7 +125,7 @@ module Gresult = struct
     type ('env, 'v, 't) t =
     | Closure of 'env * 'v * 't
     | Code    of 't
-     [@@deriving gt {show}]
+     [@@deriving gt ~options:{show}]
 
     let fmap f g h = function
     | Closure (a,b,c) -> Closure (f a, g b, h c)
@@ -163,20 +163,19 @@ module Gresult = struct
   and show_lenv e =
     GT.(show List.logic (show logic @@ show pair show_lvar show_lresult)) e
 
-  let pair_to_logic f g = fun (a,b) -> Value (f a, g b)
+  let pair_to_logic f g = fun (a,b) -> MiniKanren.to_logic (f a, g b)
   let rec to_logic : rresult -> lresult = fun res ->
-    Value (fmap env_to_logic Nat.to_logic Gterm.to_logic res)
+    MiniKanren.to_logic (fmap env_to_logic Nat.inj Gterm.to_logic res)
   and env_to_logic: renv -> lenv = fun e ->
-    List.to_logic (pair_to_logic Nat.to_logic to_logic) e
+    List.inj (pair_to_logic Nat.inj to_logic) e
 end
 
 let var_reifier = Nat.reify
 
 let rec gresult_reifier c : Gresult.fresult -> Gresult.lresult =
-  let open ManualReifiers in
   Gresult.reify env_reifier var_reifier gterm_reifier c
 and env_reifier e =
-  List.reify ManualReifiers.(pair var_reifier gresult_reifier) e
+  List.reify (Pair.reify var_reifier gresult_reifier) e
 
 open Gresult
 
@@ -210,7 +209,7 @@ and venv o =
   conde
     [ (o === nil ())
     ; fresh (n v e)
-        (o === ((inj_pair n v) % e))
+        (o === ((Pair.pair n v) % e))
         (nat n)
         (vl v)
         (venv e)
@@ -223,9 +222,9 @@ let rec vlookup env x v =
   (* trace "vlookup" @@ *)
   conde
     [ fresh (er)
-        (env ===< (inj_pair x v) % er)
+        (env ===< (Pair.pair x v) % er)
     ; fresh (y vy er)
-        (env ===< (inj_pair y vy) % er)
+        (env ===< (Pair.pair y vy) % er)
         (neq x y)
         (vlookup er x v)
     ]
@@ -247,7 +246,7 @@ let rec ev e t v =
         (t === (app t1 t2))
         (ev e t1 (clo e0 x0 t0))
         (ev e t2 v2)
-        (ev ((inj_pair x0 v2)%e0) t0 v)
+        (ev ((Pair.pair x0 v2)%e0) t0 v)
     ; fresh (t1 t2 c1 c2)
         (t ===  (list2 t1 t2))
         (v ==== (code (tuple [c1; c2])))
@@ -312,18 +311,16 @@ let gen_terms n r = printf "> %s\n" (show_term r);
   Printf.printf "\n"
 *)
 *)
-let wrap_term rr =
-  rr#refine gterm_reifier ~inj:Gterm.to_logic |> show_lterm
+let wrap_term rr = rr#reify gterm_reifier |> show_lterm
 
 let wrap_result rr =
-  rr#refine gresult_reifier ~inj:Gresult.to_logic |> show_lresult
+  rr#reify gresult_reifier |> show_lresult
 
-let find_quines ~verbose n = run q quineo @@ fun qs ->
-  Stream.take ~n qs |> List.iter (fun q ->
+let find_quines ~verbose n = run q quineo (fun q ->
     if verbose
     then printf "%s\n\n" (wrap_term q)
     else ()
-  )
+  ) |> Stream.take ~n |> ignore
 
 (*
 let find_twines n =

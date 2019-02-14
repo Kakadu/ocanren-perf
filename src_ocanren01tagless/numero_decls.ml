@@ -331,5 +331,5 @@ let show_num_logic = GT.(show List.logic @@ show logic @@ show int)
   run_exn show_num (-1)   q  qh (REPR (fun q       -> expo (build_num 3) (build_num 5) q               ));
   () *)
 
-let num_reifier h  = List.reify ManualReifiers.int h
+let num_reifier h  = List.reify reify h
 let runL n = runR num_reifier show_num show_num_logic n

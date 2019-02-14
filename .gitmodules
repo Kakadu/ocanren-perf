@@ -41,3 +41,6 @@
 	path = ocanren01tagless
 	url = https://github.com/Kakadu/OCanren.git
 	branch = bench-main1
+[submodule "ocanren03asm-workout12feb"]
+	path = ocanren03asm-workout12feb
+	url = https://github.com/kakadu/ocanren.git

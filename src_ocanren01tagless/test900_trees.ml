@@ -66,7 +66,7 @@ module Tree = struct
 
   (* Injection *)
   let rec inj_tree : inttree -> ftree = fun tree ->
-     inj @@ distrib @@ (fmap inj_nat inj_tree tree)
+     inj @@ distrib @@ (fmap (fun n -> Nat.(nat @@ of_int n)) inj_tree tree)
 
   (* Projection *)
   let rec prj_tree : rtree -> inttree =
@@ -90,14 +90,17 @@ let rec inserto a t t' = conde [
 
 (* Top-level wrapper for insertion --- takes and returns non-logic data *)
 let insert : int -> inttree -> inttree = fun a t ->
-  run q (fun q  -> inserto (inj_nat a) (inj_tree t) q)
-        (fun qs -> prj_tree (Stream.hd qs)#prj)
+  run q (fun q  -> inserto Nat.(nat @@ of_int a) (inj_tree t) q)
+    (fun qs -> prj_tree qs#prj)
+  |> Stream.hd
+
 
 (* Top-level wrapper for "inverse" insertion --- returns an integer, which
    has to be inserted to convert t into t' *)
 let insert' t t' =
   run q (fun q  -> inserto q (inj_tree t) (inj_tree t'))
-        (fun qs -> Nat.to_int (Stream.hd qs)#prj)
+    (fun qs -> Nat.to_int qs#prj)
+  |> Stream.hd
 
 (* Entry point *)
 let _ =

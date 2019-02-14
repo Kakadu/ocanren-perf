@@ -1,7 +1,10 @@
-FINDLIB_PATH ../ocanren9same-steams+2opts/_build/bundle
-PKG ocanren
-PKG GT
-PKG GT.ppx
 S .
 B _build
 FLG -rectypes
+
+FINDLIB_PATH ../ocanren01tagless/_build/bundle
+
+PKG ocanren
+PKG GT
+PKG GT.ppx
+PKG mtime
