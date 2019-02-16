@@ -310,7 +310,6 @@ let wrap_term rr = rr#reify gterm_reifier |> show_lterm
 let wrap_result rr = rr#reify gresult_reifier |> show_lresult
 
 let find_quines ~verbose n =
-  printf "find_quines: verbose=%b\n%!" verbose;
   run q quineso (fun q ->
     if verbose
     then printf "%s\n\n" (wrap_term (q))

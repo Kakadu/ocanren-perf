@@ -10,7 +10,7 @@ all:
 
 .SUFFIX: .native .byte .ml
 
-ALL_TEST_MLS = $(shell ls test*.ml -1 | sort -n)
+ALL_TEST_MLS = ./test001_expo1.ml # $(shell ls test*.ml -1 | sort -n)
 
 define XXX
 IDX  :=

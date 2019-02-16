@@ -44,8 +44,8 @@ let rec addero d n m r =
   conde [
     (!0 === d) &&& (nil() === m) &&& (n === r);
     (!0 === d) &&& (nil() === n) &&& (m === r) &&& (poso m);
-    (!1 === d) &&& (nil() === m) &&& ((addero !0 n (!< !1) r));
-    (!1 === d) &&& (nil() === n) &&& (poso m) &&& ((addero !0 m (!< !1) r));
+    (!1 === d) &&& (nil() === m) &&& (delay (fun () -> addero !0 n (!< !1) r));
+    (!1 === d) &&& (nil() === n) &&& (poso m) &&& (delay (fun () -> addero !0 m (!< !1) r));
     ?& [
       ((!< !1) === n);
       ((!< !1) === m);
@@ -54,7 +54,7 @@ let rec addero d n m r =
         (full_addero d !1 !1 a c)
     ];
     ((!< !1) === n) &&& (gen_addero d n m r);
-    ((!< !1) === m) &&& (gt1o n) &&& (gt1o r) &&& ( (addero d (!< !1) n r));
+    ((!< !1) === m) &&& (gt1o n) &&& (gt1o r) &&& (delay (fun () -> addero d (!< !1) n r));
     (gt1o n) &&& (gen_addero d n m r)
   ]
 and gen_addero d n m r =

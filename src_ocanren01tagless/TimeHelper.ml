@@ -3,11 +3,13 @@ open Printf
 let the_time_file = "/tmp/ocanren_time"
 
 let wrap_run relation num ?(n= -1) ~reifier ~verbose onVerbose =
+  MiniKanren.clear_counters ();
   MiniKanren.run num relation (fun r ->
       let term : _ MiniKanren.logic = r#reify reifier in
       if verbose then onVerbose term else ()
     )
-  |> MiniKanren.Stream.take ~n |> ignore
+  |> MiniKanren.Stream.take ~n |> ignore;
+  MiniKanren.report_counters ()
 
 let time f =
   let t = Mtime_clock.counter () in
