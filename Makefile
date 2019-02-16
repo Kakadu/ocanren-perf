@@ -1,15 +1,15 @@
 print-%: ; @echo $*=$($*)
 
 DATAFILE=data.gnuplot
-TESTS=001 002 005 006 007 011
+TESTS=005 006 007 901 # 001 002
 MEASURE=/usr/bin/time -f "%U"
 DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
 MEASURE_OC1   ?= y
-MEASURE_OC2   ?= 
+MEASURE_OC2   ?=
 MEASURE_OC3   ?= y
-MEASURE_OC4   ?= 
-MEASURE_OC5   ?= 
+MEASURE_OC4   ?=
+MEASURE_OC5   ?=
 
 MEASURE_OC9   ?=
 MEASURE_OC10  ?=
@@ -33,7 +33,7 @@ define AVG_MEASURE
 	DONT_RUN_CHEZ=y OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
 	#OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
 	#OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	#OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
+	#OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --app end -o .avg $(1)
 	#OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
 	@sh avg.awk .avg | xargs echo -n >> $(2)
 	@echo -n " " >> $(2)
@@ -144,8 +144,7 @@ compile: prepare_ocanren
 define DO_PREPARE
 .PHONY: prepare_ocanren$(1) compile_ocanren$(1)tests clean$(1)
 prepare_ocanren$(1):
-	$$(MAKE) -C $$(shell echo ocanren$(1)*) all
-	#$$(MAKE) -C $$(shell echo ocanren$(1)*) bundle
+	$$(MAKE) -C $$(shell echo ocanren$(1)*) lib plugin ppx bundle
 
 prepare_ocanren: prepare_ocanren$(1)
 

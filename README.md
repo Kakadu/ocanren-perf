@@ -12,6 +12,14 @@ In the beginning please do
   make # to build graph
 ```
 
+Or install scheme using package manager
+
+```
+  sudo apt install chezscheme9.5
+
+  sudo update-alternatives --install /usr/bin/scheme scheme /usr/bin/chezscheme9.5 10
+```
+
 and install `gnuplot` using your package manager.
 
 ### Testsuite
