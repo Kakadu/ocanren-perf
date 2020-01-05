@@ -6,10 +6,10 @@ MEASURE=/usr/bin/time -f "%U"
 DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
 MEASURE_OC1   ?= y
-MEASURE_OC2   ?= y
-MEASURE_OC3   ?= y
-MEASURE_OC4   ?= y
-MEASURE_OC5   ?= y
+MEASURE_OC2   ?=               # tagful
+MEASURE_OC3   ?= 
+MEASURE_OC4   ?= 
+MEASURE_OC5   ?= 
 
 MEASURE_OC9   ?=
 MEASURE_OC10  ?=
@@ -21,6 +21,7 @@ MEASURE_RKT   ?=
 MEASURE_MUSCM ?=
 
 .DEFAULT_GOAL := all
+.PHONY: celan
 .PHONY: compile_rkt compile_ml compile_scm compile_muscm \
 	measure_rkt measure_ml measure_scm measure_muscm
 
@@ -131,7 +132,7 @@ $(foreach i,$(TESTS), $(eval $(call XXX,$(i)) ) )
 
 .PHONY: prepare_header do_measure
 prepare_header:
-	echo "x   1tagless  2tagful 3only-set-var-val 4only-fast-Diseq 5no-opts faster-miniKanren/Scheme" \
+	echo "x   1tagless  faster-miniKanren/Scheme" \
 		> $(DATAFILE)
 
 .PHONY: clean
@@ -159,14 +160,15 @@ compile_ocanren$(1)tests:
 clean$(1):
 	$$(MAKE) -C $$(shell echo     ocanren$(1)*) clean
 	$$(MAKE) -C $$(shell echo src_ocanren$(1)*) clean
+celan: clean
 clean: clean$(1)
 endef
 
 $(eval $(call DO_PREPARE,01))
-$(eval $(call DO_PREPARE,2))
-$(eval $(call DO_PREPARE,3))
-$(eval $(call DO_PREPARE,4))
-$(eval $(call DO_PREPARE,5))
+#$(eval $(call DO_PREPARE,2))
+#$(eval $(call DO_PREPARE,3))
+#$(eval $(call DO_PREPARE,4))
+#$(eval $(call DO_PREPARE,5))
 
 compile: compile_scm
 

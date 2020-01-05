@@ -1,43 +1,7 @@
 [submodule "faster-miniKanren"]
 	path = faster-miniKanren
 	url = https://github.com/Kakadu/faster-miniKanren.git
-[submodule "ocanren9same-steams+2opts"]
-	path = ocanren9same-steams+2opts
-	url = https://github.com/Kakadu/OCanren.git
-	branch = same-steams+2opts
-[submodule "ocanren10tagful"]
-	path = ocanren10tagful
-	url = https://github.com/Kakadu/OCanren.git
-	branch = 10tagful
-[submodule "ocanren11no_opts"]
-	path = ocanren11no_opts
-	url = https://github.com/Kakadu/ocanren.git
-	branch = 11no_opts
-[submodule "ocanren13only-fast-constraints"]
-	path = ocanren13only-fast-constraints
-	url = https://github.com/Kakadu/ocanren.git
-	branch = 13only-fast-constraints
-[submodule "ocanren12only-set-var-val"]
-	path = ocanren12only-set-var-val
-	url = https://github.com/Kakadu/ocanren.git
-	branch = 12only-set-var-val
-[submodule "ocanren2tagful"]
-	path = ocanren2tagful
-	url = https://github.com/Kakadu/OCanren.git
-	branch = bench-main2tagful
-[submodule "ocanren3only-set-var-val"]
-	path = ocanren3only-set-var-val
-	url = https://github.com/Kakadu/OCanren.git
-	branch = bench-main3only-set-var-val
-[submodule "ocanren4only-fast-constraints"]
-	path = ocanren4only-fast-constraints
-	url = https://github.com/Kakadu/OCanren.git
-	branch = bench-main4only-fast-constraints
-[submodule "ocanren5no-optimizations"]
-	path = ocanren5no-optimizations
-	url = https://github.com/Kakadu/OCanren.git
-	branch = bench-main5no-optimizations
 [submodule "ocanren01tagless"]
 	path = ocanren01tagless
 	url = https://github.com/Kakadu/OCanren.git
-	branch = bench-main1
+	branch = master
