@@ -1,11 +1,11 @@
-open MiniKanren
-open MiniKanrenStd
+open OCanren
+open OCanren.Std
 
 let do_measure rel ~verbose =
   let open Numero_decls in
   TimeHelper.wrap_run one rel
     ~reifier:num_reifier
-    ~inj:(List.to_logic (fun x -> Value x) )
+    (* ~inj:(List.to_logic (fun x -> Value x) ) *)
     ~verbose
     (fun term -> Printf.printf "%s\n" (show_num_logic term))
 

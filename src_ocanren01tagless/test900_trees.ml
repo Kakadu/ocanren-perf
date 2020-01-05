@@ -18,8 +18,8 @@
 
 open Printf
 open GT
-open MiniKanren
-open MiniKanrenStd
+open OCanren
+open OCanren.Std
 
 module Tree = struct
   module X = struct
@@ -66,7 +66,7 @@ module Tree = struct
 
   (* Injection *)
   let rec inj_tree : inttree -> ftree = fun tree ->
-     inj @@ distrib @@ (fmap inj_nat inj_tree tree)
+     inj @@ distrib @@ (fmap Nat.(fun n -> nat @@ of_int n) inj_tree tree)
 
   (* Projection *)
   let rec prj_tree : rtree -> inttree =
@@ -81,23 +81,27 @@ let rec inserto a t t' = conde [
   (t === nil) &&& (t' === node a nil nil);
   fresh (x l r l')
     (t === node x l r)
-    Nat.(conde [
+    (conde [
       (t' === t) &&& (a === x);
-      (t' === (node x l' r  )) &&& (a < x) &&& (inserto a l l');
-      (t' === (node x l  l' )) &&& (a > x) &&& (inserto a r l')
+      (t' === (node x l' r  )) &&& (Std.Nat.(<) a x) &&& (inserto a l l');
+      (t' === (node x l  l' )) &&& (Std.Nat.(>) a x) &&& (inserto a r l')
     ])
 ]
 
 (* Top-level wrapper for insertion --- takes and returns non-logic data *)
 let insert : int -> inttree -> inttree = fun a t ->
-  run q (fun q  -> inserto (inj_nat a) (inj_tree t) q)
-        (fun qs -> prj_tree (Stream.hd qs)#prj)
+  run q (fun q  -> inserto (Std.Nat.nat @@ Std.Nat.of_int a) (inj_tree t) q)
+        (fun q -> q#prj)
+  |> Stream.hd
+  |> prj_tree
+        (* (fun qs -> prj_tree (Stream.hd qs)#prj) *)
 
 (* Top-level wrapper for "inverse" insertion --- returns an integer, which
    has to be inserted to convert t into t' *)
 let insert' t t' =
-  run q (fun q  -> inserto q (inj_tree t) (inj_tree t'))
-        (fun qs -> Nat.to_int (Stream.hd qs)#prj)
+  run q (fun q  -> inserto q (inj_tree t) (inj_tree t')) (fun n -> n#prj)
+  |> Stream.hd
+  |> Nat.to_int
 
 (* Entry point *)
 let _ =

@@ -5,8 +5,22 @@
 
 open Printf
 open GT
-open MiniKanren
-open MiniKanrenStd
+open OCanren
+
+module Std = struct
+  include Std
+
+  module Triple = struct
+    type ('a,'b,'c) ground = 'a * 'b * 'c [@@deriving gt ~options:{fmt;gmap}]
+    module F = Fmap3(struct
+        type ('a,'b,'c) t = ('a,'b,'c) ground
+        let fmap eta = GT.gmap ground eta
+      end)
+
+    let reify fa fb fc = F.reify fa fb fc
+    let make x y z = inj @@ F.distrib (x,y,z)
+  end
+end
 
 let list_combine3 xs ys zs =
   let rec helper acc = function
@@ -28,7 +42,7 @@ module Gterm = struct
   module X = struct
     type ('s, 'xs) t =
       | Symb  of 's
-      | Seq   of 'xs [@@deriving gt {show}]
+      | Seq   of 'xs [@@deriving gt ~options:{show; fmt; gmap}]
 
     let fmap f g = function
     | Symb s -> Symb (f s)
@@ -36,56 +50,60 @@ module Gterm = struct
 
     let t = {t with
       gcata = ();
-      plugins = object
+      plugins = object(self)
         method gmap = fmap (* t.plugins#gmap *)
-        method show fa fb bx =
+        method fmt fa fb fmt =
+          GT.transform(t)
+            (fun fself -> object
+              inherit ['a,'b,_] fmt_t_t fa fb fself
+              method c_Symb fmt _ str =
+                Format.fprintf fmt "(symb '%a)" fa str
+              method c_Seq  fmt _ xs =
+                Format.fprintf fmt "(seq %a)" fb xs
+            end)
+            fmt
+        method show fa fb () =
            GT.transform(t)
-              (GT.lift fa) (GT.lift fb)
-              (object inherit ['a,'b] show_t
-                method c_Symb _ s str =
-                  sprintf "(symb '%s)" (str.GT.fx ())
+              (fun fself -> object
+                inherit ['a,'b,_] show_t_t fa fb fself
+                method c_Symb _ _ str =
+                  sprintf "(symb '%s)" (fa () str)
                 method c_Seq  _ _ xs =
-                  sprintf "(seq %s)" (xs.GT.fx ())
+                  sprintf "(seq %s)" (fb () xs)
                end)
               ()
-              bx
        end
     }
-
   end
   include X
   include Fmap2(X)
 
-  type rterm = (string, rterm List.ground) X.t
-  type lterm = (string logic, lterm List.logic) X.t logic
+  type rterm = (GT.string, rterm Std.List.ground) X.t [@@deriving gt ~options:{fmt}]
+  type lterm = (GT.string logic, lterm Std.List.logic) X.t logic [@@deriving gt ~options:{fmt}]
   type fterm = (rterm, lterm) injected
 
-  let rec show_rterm : rterm -> string = fun t -> GT.(show X.t (fun s -> s) (show List.ground show_rterm)) t
-  let rec show_lterm : lterm -> string =
-    fun x -> GT.(show logic @@ show X.t (show logic (fun s -> s)) (show List.logic show_lterm) ) x
-
-  let rec to_logic : rterm -> lterm = fun term ->
-    Value (GT.(gmap X.t) (fun s -> Value s) (List.to_logic to_logic) term)
+  let show_rterm = Format.asprintf "%a" (GT.fmt rterm)
+  let show_lterm = Format.asprintf "%a" (GT.fmt lterm)
 
   let symb s : fterm = inj @@ distrib @@ Symb s
   let seq xs : fterm = inj @@ distrib @@ Seq xs
 end
 
 let rec gterm_reifier c : Gterm.fterm -> Gterm.lterm =
-  Gterm.reify ManualReifiers.string (List.reify gterm_reifier) c
+  Gterm.reify OCanren.reify (Std.List.reify gterm_reifier) c
 
 module Gresult = struct
   module X = struct
     type ('s, 't, 'xs) t =
     | Closure of 's * 't * 'xs
     | Val     of 't
-    [@@deriving gt {show}]
+    [@@deriving gt ~options:{show; fmt; gmap}]
 
     let fmap f g h = function
     | Closure (a,b,c) -> Closure (f a, g b, h c)
     | Val b -> Val (g b)
 
-    let t = {t with
+    (* let t = {t with
       gcata = ();
       plugins = object
         method gmap = fmap (* t.plugins#gmap *)
@@ -101,12 +119,12 @@ module Gresult = struct
               ()
               bx *)
        end
-    }
+    } *)
   end
 
   include Fmap3(X)
-  type rresult = (string, Gterm.rterm, (string * rresult) List.ground) X.t
-  type lresult = (string logic, Gterm.lterm, (string logic * lresult) logic List.logic) X.t logic
+  type rresult = (GT.string, Gterm.rterm, (GT.string * rresult) Std.List.ground) X.t [@@deriving gt ~options:{fmt}]
+  type lresult = (GT.string logic, Gterm.lterm, (GT.string logic, lresult) Std.Pair.logic Std.List.logic) X.t logic [@@deriving gt ~options:{fmt}]
   type fresult = (rresult, lresult) injected
 
   let closure s t xs = inj @@ distrib @@ X.Closure (s,t,xs)
@@ -115,22 +133,15 @@ module Gresult = struct
   let show_string = GT.(show string)
   let show_stringl = GT.(show logic) show_string
 
-  let rec show_rresult r = GT.(show X.t show_string Gterm.show_rterm
-      @@ show List.ground (show pair show_string show_rresult)) r
-  let rec show_lresult r = GT.(show logic @@ show X.t show_stringl Gterm.show_lterm
-    @@ show List.logic (show logic @@ show pair show_stringl show_lresult)) r
-
-  let rec to_logic : rresult -> lresult = fun res ->
-    let arg3 xs = List.to_logic (fun (a,b) -> Value (Value a, to_logic b)) xs in
-    Value (GT.(gmap X.t) (fun s -> Value s) (Gterm.to_logic) arg3 res)
+  let rec show_rresult r = Format.asprintf "%a" (GT.fmt rresult) r
+  let show_lresult (r: lresult) = Format.asprintf "%a" (GT.fmt lresult) r
 
 end
 
 
 let rec gresult_reifier c : Gresult.fresult -> Gresult.lresult =
-  let open ManualReifiers in
-  Gresult.reify string gterm_reifier
-    (List.reify (pair string gresult_reifier))
+  Gresult.reify OCanren.reify gterm_reifier
+    (Std.List.reify (Std.Pair.reify OCanren.reify gresult_reifier))
     c
 
 let (!!) x = inj @@ lift x
@@ -138,43 +149,59 @@ let (!!) x = inj @@ lift x
 open Gterm
 open Gresult
 
-type fenv = ( (string * rresult) List.ground,
-              (string logic * lresult) logic List.logic) injected
+type lenv = (string logic, lresult) Std.Pair.logic Std.List.logic
+type fenv = ( (string, rresult) Std.Pair.ground Std.List.ground,
+              lenv ) injected
+
+let reif_env e (x: fenv) : lenv =
+  Std.List.reify (Std.Pair.reify OCanren.reify gresult_reifier) e x
+
+(* let (_:int) = GT.(show Std.List.logic) *)
+let show_lenv : lenv -> string =
+  GT.show Std.List.logic
+    GT.(show Std.Pair.logic (show logic @@ (fun s -> s)) show_lresult)
 
 let show_reif_env h e =
-  GT.(show List.logic @@ show logic @@
-        show pair  (show logic (fun s -> s)) show_lresult) @@
-  (List.reify ManualReifiers.(pair string gresult_reifier))
-  h e
-let unienv ?loc = unitrace ?loc @@ show_reif_env
+  GT.(show Std.List.logic @@
+        show Std.Pair.logic (show logic @@ (fun s -> s)) show_lresult) @@
+  (* (fun _ _ -> assert false) *)
+  (* (Std.List.reify @@ Std.Pair.reify OCanren.reify gresult_reifier) *)
+  reif_env h e
+
+(* let (_:int) = GT.(show Std.List.logic @@
+      show Std.Pair.logic (show logic @@ (fun s -> s)) show_lresult)
+let (_: _ -> fenv -> _) = show_reif_env *)
+
+(* let unienv ?loc = unitrace ?loc @@ show_reif_env *)
 
 let show_reif_term h t = show_lterm @@ gterm_reifier h t
 let show_reif_result h t = show_lresult @@ gresult_reifier h t
-let uniresult ?loc = unitrace ?loc @@ show_reif_result
-let uniterm ?loc = unitrace ?loc @@ show_reif_term
-let uni_term_list ?loc =
+(* let uniresult ?loc = unitrace ?loc @@ show_reif_result
+let uniterm ?loc = unitrace ?loc @@ show_reif_term *)
+(* let uni_term_list ?loc =
   unitrace ?loc
     (fun h t -> GT.(fun t -> show List.logic Gterm.show_lterm t) @@
       (List.reify gterm_reifier h t)
-    )
+    ) *)
 
 let show_reif_string h t = GT.(show logic @@ show string) @@
-  ManualReifiers.string h t
-let unistring ?loc = unitrace ?loc @@ show_reif_string
+  OCanren.reify h t
+(* let unistring ?loc = unitrace ?loc @@ show_reif_string *)
 
-let (=/=) = MiniKanren.(=/=)
+let (=/=) = OCanren.(=/=)
 let (=//=) = (=/=)
-let (===) = MiniKanren.(===)
+let (===) = OCanren.(===)
 let (===!) = (===)
 let (===!!) = (===)
 
 let rec lookupo x env t =
+  let open OCanren.Std in
   (* let (=/=) = diseqtrace show_reif_string in
   let (===) ?loc = unienv ?loc in
   let (===!) ?loc = unistring ?loc in
   let (===!!) ?loc = uniresult ?loc in *)
   fresh (rest y v)
-    ((inj_pair y v) % rest === env)
+    ((Std.Pair.pair y v) % rest === env)
     (conde [
         (y ===! x) &&& (v ===!! t);
         (y =/= x) &&& (lookupo x rest t)
@@ -183,11 +210,11 @@ let rec lookupo x env t =
 let rec not_in_envo x env =
   (* let (=/=) = diseqtrace show_reif_string in
   let (===) ?loc = unienv ?loc in *)
-
+  let open OCanren.Std in
   (* printfn "entering not_in_envo"; *)
   conde
     [ fresh (y v rest)
-        (env === (inj_pair y v) % rest)
+        (env === (Std.pair y v) % rest)
         (y =/= x)
         (not_in_envo x rest)
     ; (nil () === env)
@@ -195,8 +222,9 @@ let rec not_in_envo x env =
 
 let rec proper_listo es env rs =
   (* let (===) ?loc = uni_term_list ?loc in *)
+  let open OCanren.Std in
   conde
-    [ ((nil ()) === es) &&& ((nil ()) === rs)
+    [ (Std.nil () === es) &&& (Std.nil () === rs)
     ; fresh (e d te td)
         (es === e  % d)
         (rs === te % td)
@@ -211,6 +239,7 @@ and evalo (term: fterm) (env: fenv) (r: fresult) =
   (* fun st -> *)
     (* let () = printfn "entering into evalo %s %s %s"
       (show_reif_term term) (show_reif_env env) (show_reif_result r) in *)
+  let open OCanren.Std in
   conde
   [ fresh (t)
     (term === seq ((symb !!"quote") %< t))
@@ -228,7 +257,7 @@ and evalo (term: fterm) (env: fenv) (r: fresult) =
       (term === seq (func %< arge))
       (evalo arge env arg)
       (evalo func env (closure x body env') )
-      (evalo body ((inj_pair x arg) % env') r)
+      (evalo body ((Std.pair x arg) % env') r)
 
   ; fresh (x body)
       (term === seq ( (symb !!"lambda") %
@@ -239,9 +268,9 @@ and evalo (term: fterm) (env: fenv) (r: fresult) =
   ]
 
 let ( ~~ ) s  = symb @@ inj @@ lift s
-let s      tl = seq (inj_listi tl)
+let s      tl = seq (Std.List.list tl)
 
-let nil = nil ()
+let nil = Std.nil ()
 
 (* let run_term (text,t) = printf "> %s\n%!%s\n\n%!" text @@
   run q (fun q -> evalo t nil (val_ q)) (fun qs ->
@@ -295,53 +324,47 @@ let thrineso x =
     (evalo p nil (val_ q))
     (evalo q nil (val_ r))
     (evalo r nil (val_ p))
-    ((inj_triple p q r) === x)
+    ((Std.Triple.make p q r) === x)
 
-let wrap_term rr = rr#refine gterm_reifier ~inj:Gterm.to_logic |> show_lterm
-let wrap_result rr = rr#refine gresult_reifier ~inj:Gresult.to_logic |> show_lresult
+let wrap_term rr = rr#reify gterm_reifier  |> show_lterm
+let wrap_result rr = rr#reify gresult_reifier |> show_lresult
 
-let find_quines ~verbose n = run q quineso @@ fun qs ->
-  Stream.take ~n qs |> List.iter (fun q ->
+let find_quines ~verbose n = run q quineso (fun r -> r)
+  |> OCanren.Stream.take ~n
+  |> List.iter (fun q ->
     if verbose
     then printf "%s\n\n" (wrap_term q)
     else ()
   )
 
-let find_twines ~verbose n =
-  run qr (fun q r -> twineso q r)
-    (fun qs rs ->
-      let s1 = Stream.take ~n qs in
-      let s2 = Stream.take ~n rs in
-      List.iter2 (fun q r ->
+let find_twines ~verbose n = run qr twineso (fun q r -> (q,r))
+  |> OCanren.Stream.take ~n
+  |> List.iter (fun (q,r) ->
         if verbose
         then printf "%s,\n%s\n\n" (wrap_term q) (wrap_term r)
         else ()
-      ) s1 s2
     )
 
 let wrap3terms t =
-  t#refine
-    (ManualReifiers.triple gterm_reifier gterm_reifier gterm_reifier)
-    ~inj:(fun (a,b,c) ->
-        Value (Gterm.to_logic a,Gterm.to_logic b,Gterm.to_logic a) )
+  t#reify
+    (Std.Triple.reify gterm_reifier gterm_reifier gterm_reifier)
   |> (function
       | Var _ -> assert false
       | Value (a,b,c) ->
-          printfn "* %s\n  %s\n  %s\n"
+          printf "* %s\n  %s\n  %s\n\n"
           (Gterm.show_lterm a)
           (Gterm.show_lterm b)
           (Gterm.show_lterm c)
       )
 
-let find_thrines ~verbose n =
-  run q thrineso @@ fun xs ->
-      Stream.take ~n xs |>
-      List.iter (fun t ->
-          if verbose then
-            let () = wrap3terms t in
-            print_newline ()
-          else ()
-        )
+
+let find_thrines ~verbose n = run q thrineso (fun a -> a)
+  |> Stream.take ~n
+  |> List.iter (fun a ->
+      if verbose then
+        let () = wrap3terms a in
+        print_newline ()
+  )
 
 (*
 let _ =
