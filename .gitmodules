@@ -1,6 +1,3 @@
-[submodule "faster-miniKanren"]
-	path = faster-miniKanren
-	url = https://github.com/michaelballantyne/faster-miniKanren.git
 [submodule "ocanren01tagless"]
 	path = ocanren01tagless
 	url = https://github.com/Kakadu/OCanren.git
