@@ -155,8 +155,9 @@ compile: prepare_ocanren
 define DO_PREPARE
 .PHONY: prepare_ocanren$(1) compile_ocanren$(1)tests clean$(1)
 prepare_ocanren$(1):
-	cd $$(shell echo ocanren$(1)*) && dune build src ppx @install --profile=release -j2
-	#$$(MAKE) -C $$(shell echo ocanren$(1)*) bundle
+	cd $$(shell echo ocanren$(1)*) && \
+		ln -sf ../src2 benches && \
+		dune build src ppx @install --profile=release -j2
 
 prepare_ocanren: prepare_ocanren$(1)
 
