@@ -1,0 +1,81 @@
+(env (_ (flags (:standard -w -33 -rectypes))))
+
+(library
+ (name TimeHelper)
+ (modules TimeHelper)
+ (libraries OCanren)
+ (wrapped false)
+ )
+
+(library
+ (name Quine_decls)
+ (modules Quine_decls)
+ (libraries OCanren)
+ (wrapped false)
+ (flags (:standard -rectypes -w -27-39))
+ (preprocess (pps OCanren-ppx.ppx_repr OCanren-ppx.ppx_fresh GTtogether))
+ )
+
+(library
+ (name Quines_NoDiseq)
+ (modules Quines_NoDiseq)
+ (libraries OCanren)
+ (wrapped false)
+ (flags (:standard -rectypes -w -27-39))
+ (preprocess (pps OCanren-ppx.ppx_repr OCanren-ppx.ppx_fresh GTtogether))
+ )
+
+(library
+ (name Numero_decls)
+ (modules Numero_decls)
+ (libraries OCanren OCanren.tester)
+ (wrapped false)
+ (flags (:standard -rectypes -w -27-39))
+ (preprocess (pps OCanren-ppx.ppx_repr OCanren-ppx.ppx_fresh GTtogether))
+ )
+
+(executables
+ (names test001_expo1 test002_logo1 test003_sort test004_logo2)
+ (public_names test001 test002 test003 test004)
+ (modules test001_expo1 test002_logo1 test003_sort test004_logo2)
+ (libraries OCanren OCanren.tester TimeHelper Numero_decls)
+ (flags (:standard -rectypes))
+ (preprocess
+  (action
+   (run %{project_root}/rewriters/pp5+gt+plugins+ocanren+dump.exe %{input-file}))))
+
+(library
+ (kind ppx_rewriter)
+ (name GTtogether)
+ (modules)
+ (flags (:standard -linkall))
+ (libraries GT.ppx GT.syntax.map GT.syntax.show GT.syntax.fmt)
+ )
+
+(executables
+ (names test005_thrines test006_twines test007_quines )
+ (public_names - - -)
+ (modules test005_thrines test006_twines test007_quines )
+ (libraries OCanren OCanren.tester TimeHelper Quine_decls)
+ (flags (:standard -rectypes -w -27-39))
+ (preprocess (pps OCanren-ppx.ppx_repr OCanren-ppx.ppx_fresh GTtogether ))
+ )
+
+(executables
+ (names  test011_quinesNoDiseq)
+ (public_names -)
+ (modules test011_quinesNoDiseq)
+ (libraries OCanren OCanren.tester TimeHelper Quines_NoDiseq)
+ (flags (:standard -rectypes -w -27-39))
+ (preprocess (pps OCanren-ppx.ppx_repr OCanren-ppx.ppx_fresh GTtogether ))
+ )
+
+(rule
+ (alias   run_test001)
+ (action (run %{exe:test001_expo1.exe})))
+
+(rule
+ (deps test001_expo1.exe test002_logo1.exe test003_sort.exe test004_logo2.exe)
+ (alias   all_tests)
+ (action (run echo))
+ )
