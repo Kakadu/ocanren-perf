@@ -5,7 +5,7 @@ open TimeHelper
 let do_measure rel ~verbose =
   let open Numero_decls in
   TimeHelper.wrap_run one rel
-    ~reifier:num_reifier
+    ~reifier:(fun r -> r#reify num_reifier)
     ~verbose
     (fun term -> Printf.printf "%s\n" (show_num_logic term))
 

@@ -3,11 +3,17 @@ open Printf
 let the_time_file = "/tmp/ocanren_time"
 
 let wrap_run num rel ?(n= -1) ~reifier ~verbose onVerbose =
-  OCanren.run num rel (fun r -> r#reify reifier)
+  OCanren.run num rel reifier
   |> OCanren.Stream.take ~n
   |> List.iter (fun s ->
         if verbose then onVerbose s else ()
     )
+
+let __foo num reifier : _ OCanren.Stream.t  = OCanren.run num (fun _ -> OCanren.success) (fun rr -> rr#reify reifier)
+
+(* let __ eta eta2 = __foo OCanren.one eta eta2 *)
+
+(* let _ = wrap_run OCanren.one *)
 
 let time f =
   let t = Mtime_clock.counter () in

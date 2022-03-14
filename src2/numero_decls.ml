@@ -6,8 +6,8 @@ open Tester
 let rec build_num =
   function
   | 0                   -> nil()
-  | n when n mod 2 == 0 -> (inj@@lift 0) % build_num (n / 2)
-  | n                   -> (inj@@lift 1) % build_num (n / 2)
+  | n when n mod 2 == 0 -> (inj 0) % build_num (n / 2)
+  | n                   -> (inj 1) % build_num (n / 2)
 
 let rec appendo l s out =
   conde [
@@ -26,7 +26,7 @@ let gt1o q =
   fresh (h t tt)
     (q === h % (t % tt))
 
-let (!) = fun x -> inj@@lift x
+let (!) = inj
 let full_addero b x y r c =
   conde [
     (!0 === b) &&& (!0 === x) &&& (!0 === y) &&& (!0 === r) &&& (!0 === c);
@@ -331,4 +331,4 @@ let show_num_logic = GT.(show List.logic @@ show logic @@ show int)
   () *)
 
 let num_reifier h  = List.reify OCanren.reify h
-let runL n = runR num_reifier show_num show_num_logic n
+let runL n = run_r num_reifier show_num_logic n

@@ -43,6 +43,6 @@ let rec sorto x y =
     ]
 
 open Tester
-let runL n = runR (List.reify Nat.reify) show_nat_list show_lnat_llist n
+let runL n = run_r (List.reify Nat.reify) show_lnat_llist n
 let () =
   runL  (-1)  q qh (REPR (fun q -> sorto q (Std.list (fun n -> Nat.nat @@ Nat.of_int n) [0;1;2;3;4;5]) ))

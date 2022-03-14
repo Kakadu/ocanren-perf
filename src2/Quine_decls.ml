@@ -11,14 +11,34 @@ module Std = struct
   include Std
 
   module Triple = struct
-    type ('a,'b,'c) ground = 'a * 'b * 'c [@@deriving gt ~options:{fmt;gmap}]
-    module F = Fmap3(struct
+  (*   [%%distrib
+      type nonrec ('a,'b,'c) t = 'a * 'b * 'c
+        [@@deriving gt ~options:{fmt;gmap}]
+      type nonrec ('a,'b,'c) ground = ('a,'b,'c) t (* Kind of abstract type *)
+    ] *)
+    (* module F = Fmap3(struct
         type ('a,'b,'c) t = ('a,'b,'c) ground
         let fmap eta = GT.gmap ground eta
       end)
+ *)
+    type nonrec ('a,'b,'c) t = 'a * 'b * 'c [@@deriving gt ~options:{fmt;gmap}]
 
-    let reify fa fb fc = F.reify fa fb fc
-    let make x y z = inj @@ F.distrib (x,y,z)
+    let reify  = fun ra rb rc ->
+      let ( >>= ) = Env.Monad.bind in
+      Reifier.fix (fun self ->
+        Reifier.compose Reifier.reify
+        ( ra >>= fun fa ->
+          rb >>= fun fb ->
+          rc >>= fun fc ->
+            let rec foo = function
+                | Var (v, xs) ->
+                  Var (v, Stdlib.List.map foo xs)
+                | Value x -> Value (GT.gmap t fa fb fc x)
+            in
+            Env.Monad.return foo
+          ))
+
+    let make x y z = inj @@ (x,y,z)
   end
 end
 
