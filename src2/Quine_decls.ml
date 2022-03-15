@@ -59,60 +59,63 @@ let list_iter3 f xs ys zs =
   helper (xs,ys,zs)
 
 module Gterm = struct
-  module X = struct
-    type ('s, 'xs) t =
+  [%%distrib
+    type nonrec ('s, 'xs) t =
       | Symb  of 's
       | Seq   of 'xs [@@deriving gt ~options:{show; fmt; gmap}]
-
-    let fmap f g = function
-    | Symb s -> Symb (f s)
-    | Seq xs -> Seq (g xs)
-
-    let t = {t with
-      gcata = ();
-      plugins = object(self)
-        method gmap = fmap (* t.plugins#gmap *)
-        method fmt fa fb fmt =
+    type ground = (string, ground Std.List.ground) t
+  ]
+  let t = {t with
+    gcata = ();
+    plugins = object(self)
+      method gmap = t.plugins#gmap
+      method fmt fa fb fmt =
+        GT.transform(t)
+          (fun fself -> object
+            inherit ['a,'b,_] fmt_t_t fa fb fself
+            method! c_Symb fmt _ str =
+              Format.fprintf fmt "(symb '%a)" fa str
+            method! c_Seq  fmt _ xs =
+              Format.fprintf fmt "(seq %a)" fb xs
+          end)
+          fmt
+      method show fa fb () =
           GT.transform(t)
             (fun fself -> object
-              inherit ['a,'b,_] fmt_t_t fa fb fself
-              method! c_Symb fmt _ str =
-                Format.fprintf fmt "(symb '%a)" fa str
-              method! c_Seq  fmt _ xs =
-                Format.fprintf fmt "(seq %a)" fb xs
-            end)
-            fmt
-        method show fa fb () =
-           GT.transform(t)
-              (fun fself -> object
-                inherit ['a,'b,_] show_t_t fa fb fself
-                method! c_Symb _ _ str =
-                  sprintf "(symb '%s)" (fa () str)
-                method! c_Seq  _ _ xs =
-                  sprintf "(seq %s)" (fb () xs)
-               end)
-              ()
-       end
-    }
-  end
-  include X
-  include Fmap2(X)
+              inherit ['a,'b,_] show_t_t fa fb fself
+              method! c_Symb _ _ str =
+                sprintf "(symb '%s)" (fa () str)
+              method! c_Seq  _ _ xs =
+                sprintf "(seq %s)" (fb () xs)
+              end)
+            ()
+      end
+  }
 
-  type rterm = (GT.string, rterm Std.List.ground) X.t [@@deriving gt ~options:{fmt}]
-  type lterm = (GT.string logic, lterm Std.List.logic) X.t logic [@@deriving gt ~options:{fmt}]
-  type fterm = (rterm, lterm) injected
+  type rterm = ground [@@deriving gt ~options:{show; fmt; gmap}]
+  type lterm = (GT.string OCanren.logic, lterm Std.List.logic) t OCanren.logic [@@deriving gt ~options:{fmt}]
+  type injected = (GT.string OCanren.logic, injected Std.List.groundi) t ilogic
 
   let show_rterm = Format.asprintf "%a" (GT.fmt rterm)
   let show_lterm = Format.asprintf "%a" (GT.fmt lterm)
 
-  let symb s : fterm = inj @@ distrib @@ Symb s
-  let seq xs : fterm = inj @@ distrib @@ Seq xs
+  let symb s : injected = inj @@ Symb s
+  let seq xs : injected = inj @@ Seq xs
 end
 
-let rec gterm_reifier c : Gterm.fterm -> Gterm.lterm =
-  Gterm.reify OCanren.reify (Std.List.reify gterm_reifier) c
+let gterm_reifier = Gterm.reify
 
 module Gresult = struct
+  [%%distrib
+  type nonrec ('s, 't, 'xs) t =
+    | Closure of 's * 't * 'xs
+    | Val     of 't
+    [@@deriving gt ~options:{show; fmt; gmap}]
+  (* type ground = (GT.string, Gterm.rterm, (GT.string, ground) Std.Pair.ground Std.List.ground) t *)
+  type nonrec ground = (GT.string, Gterm.ground, Gterm.ground) t
+    (* TODO: we need to generate fresh names for arguments of fmat because type parameter's names
+    could hide value `t` which is needed to access gmap *)
+  ]
   module X = struct
     type ('s, 't, 'xs) t =
     | Closure of 's * 't * 'xs
