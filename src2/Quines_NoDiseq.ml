@@ -21,29 +21,27 @@ module Gterm = struct
   type ground = (GT.string, Std.Nat.ground, ground Std.List.ground) t]
 
   let t =
-    {
-      t with
-      gcata = ();
-      plugins =
+    { t with
+      gcata = ()
+    ; plugins =
         object
           (* method gmap = t.plugins#gmap *)
           method show = t.GT.plugins#show
 
           method fmt fs fn fts fmt =
-            GT.transform t
+            GT.transform
+              t
               (fun fself ->
                 object
                   inherit ['a, 'b, 'c, _] fmt_t_t fs fn fts fself
                   method! c_Symb fmt _ s = Format.fprintf fmt "'%a" fs s
-
-                  method! c_VR fmt _ peano =
-                    Format.fprintf fmt "(vr %a)" fn peano
-
+                  method! c_VR fmt _ peano = Format.fprintf fmt "(vr %a)" fn peano
                   method! c_Tuple fmt _ xs = Format.fprintf fmt "(%a)" fts xs
                 end)
               fmt
-        end;
+        end
     }
+  ;;
 
   type rterm = ground [@@deriving gt ~options:{ fmt }]
 
@@ -67,6 +65,7 @@ module Gterm = struct
     tuple
     @@ (* in the original code lambda takes a list of arguments *)
     [ symb !!"lambda"; n; body ]
+  ;;
 
   let app func arg = inj @@ Tuple (func %< arg)
   let list xs : fterm = inj @@ Tuple (symb !!"list" % xs)
@@ -80,17 +79,18 @@ open Gterm
 let rec nat o =
   (* let (===) ?loc = unitrace ?loc (fun h t -> GT.show Nat.logic @@   Nat.reify h t) in *)
   conde [ o === Std.Nat.zero; fresh n (o === Std.Nat.succ n) (nat n) ]
+;;
 
 let rec tm o =
   (* let open OCanren.Std in *)
   (* let (===) ?loc = unitrace ?loc (fun h t -> show_lterm @@ gterm_reifier h t) in *)
   conde
-    [
-      fresh n (o === vr n) (nat n);
-      o === symb !!"quote";
-      fresh (n t) (o === lambda (vr n) t) (nat n) (tm t);
-      fresh (t1 t2) (o === tuple [ symb !!"list"; t1; t2 ]) (tm t1) (tm t2);
+    [ fresh n (o === vr n) (nat n)
+    ; o === symb !!"quote"
+    ; fresh (n t) (o === lambda (vr n) t) (nat n) (tm t)
+    ; fresh (t1 t2) (o === tuple [ symb !!"list"; t1; t2 ]) (tm t1) (tm t2)
     ]
+;;
 
 module Var = struct
   type ground = Std.Nat.ground [@@deriving gt ~options:{ fmt; show; gmap }]
@@ -103,7 +103,9 @@ end
 
 module Gresult = struct
   [%%distrib
-  type nonrec ('env, 'v, 't) t = Closure of 'env * 'v * 't | Code of 't
+  type nonrec ('env, 'v, 't) t =
+    | Closure of 'env * 'v * 't
+    | Code of 't
   [@@deriving gt ~options:{ fmt; show; gmap }]
 
   type nonrec 'env ground = ('env, Var.ground, Gterm.ground) t]
@@ -119,17 +121,23 @@ module Gresult = struct
   let show_lvar = GT.show Var.logic
 
   (* type renv = *)
-  type rresult = (renv, rvar, Gterm.rterm) X.t
-  and renv = (rvar * rresult) Std.List.ground [@@deriving gt ~options:{ fmt }]
+  type rresult = renv ground
+  and renv = (Var.ground * rresult) Std.List.ground [@@deriving gt ~options:{ fmt }]
 
-  type lresult = (lenv, lvar, Gterm.lterm) X.t logic
-  and lenv = (lvar * lresult) logic List.logic [@@deriving gt ~options:{ fmt }]
+  type lresult = lenv logic
+  and lenv = (Var.logic * lresult) logic Std.List.logic [@@deriving gt ~options:{ fmt }]
 
-  type fresult = (rresult, lresult) injected
+  type fresult = (Var.injected, fresult) Std.Pair.injected Std.List.injected
 
-  let closure env v b = inj @@ distrib @@ X.Closure (env, v, b)
+  let reify_renv =
+    Reifier.fix (fun self ->
+        Std.List.reify (Std.Pair.reify Var.reify (Std.List.reify self)))
+  ;;
+
+  let reify_result = Std.List.reify reify_renv
+  let closure env v b = inj @@ Closure (env, v, b)
   let clo = closure
-  let code c = inj @@ distrib @@ X.Code c
+  let code c = inj @@ Code c
   let show_string = GT.(show string)
   let show_stringl = GT.(show logic) show_string
   let rec show_rresult r = Format.asprintf "%a" (GT.fmt rresult)
@@ -158,36 +166,31 @@ let var_reifier = Std.Nat.reify
 let rec gresult_reifier c : Gresult.fresult -> Gresult.lresult =
   Gresult.reify env_reifier var_reifier gterm_reifier c
 
-and env_reifier e =
-  Std.List.reify (Std.Pair.reify var_reifier gresult_reifier) e
+and env_reifier e = Std.List.reify (Std.Pair.reify var_reifier gresult_reifier) e
 
 open Gresult
 
 (* TODO: move to miniKanren.mli *)
 let rec neq n1 n2 =
   conde
-    [
-      n1 === Std.Nat.zero &&& fresh prev (n2 === Std.Nat.succ prev);
-      n2 === Std.Nat.zero &&& fresh prev (n1 === Std.Nat.succ prev);
-      fresh (p1 p2)
-        (n1 === Std.Nat.succ p1)
-        (n2 === Std.Nat.succ p2)
-        (neq p1 p2);
+    [ n1 === Std.Nat.zero &&& fresh prev (n2 === Std.Nat.succ prev)
+    ; n2 === Std.Nat.zero &&& fresh prev (n1 === Std.Nat.succ prev)
+    ; fresh (p1 p2) (n1 === Std.Nat.succ p1) (n2 === Std.Nat.succ p2) (neq p1 p2)
     ]
+;;
 
 let rec vl o =
   conde
-    [
-      fresh (e n t) (o === closure e n t) (venv e) (nat n) (tm t);
-      fresh t (o === code t) (tm t);
+    [ fresh (e n t) (o === closure e n t) (venv e) (nat n) (tm t)
+    ; fresh t (o === code t) (tm t)
     ]
 
 and venv o =
   conde
-    [
-      o === Std.nil ();
-      fresh (n v e) (o === Std.(Pair.pair n v % e)) (nat n) (vl v) (venv e);
+    [ o === Std.nil ()
+    ; fresh (n v e) (o === Std.(Pair.pair n v % e)) (nat n) (vl v) (venv e)
     ]
+;;
 
 let rec vlookup env x v =
   (* let env_reifier e = List.reify (ManualReifiers.pair_reifier) *)
@@ -195,32 +198,32 @@ let rec vlookup env x v =
   (* let (====)  = unitrace (fun h t -> show_lterm   @@ gterm_reifier   h t) in *)
   (* trace "vlookup" @@ *)
   conde
-    [
-      fresh er Std.(env ===< Pair.pair x v % er);
-      fresh (y vy er)
-        Std.(env ===< Pair.pair y vy % er)
-        (neq x y) (vlookup er x v);
+    [ fresh er Std.(env ===< Pair.pair x v % er)
+    ; fresh (y vy er) Std.(env ===< Pair.pair y vy % er) (neq x y) (vlookup er x v)
     ]
+;;
 
 let rec ev e t v =
   (* let (===) ?loc  = unitrace ?loc (fun h t -> show_lterm   @@ gterm_reifier   h t) in
      let (====) ?loc = unitrace ?loc (fun h t -> show_lresult @@ gresult_reifier h t) in *)
   conde
-    [
-      fresh x (t === vr x) (vlookup e x v);
-      fresh (x t0) (t === lambda (vr x) t0) (v ==== closure e x t0);
-      fresh t0 (t === app (symb !!"quote") t0) (v ==== code t0);
-      fresh (t1 t2 e0 x0 t0 v2)
+    [ fresh x (t === vr x) (vlookup e x v)
+    ; fresh (x t0) (t === lambda (vr x) t0) (v ==== closure e x t0)
+    ; fresh t0 (t === app (symb !!"quote") t0) (v ==== code t0)
+    ; fresh
+        (t1 t2 e0 x0 t0 v2)
         (t === app t1 t2)
         (ev e t1 (clo e0 x0 t0))
         (ev e t2 v2)
-        (ev Std.(Pair.pair x0 v2 % e0) t0 v);
-      fresh (t1 t2 c1 c2)
+        (ev Std.(Pair.pair x0 v2 % e0) t0 v)
+    ; fresh
+        (t1 t2 c1 c2)
         (t === list2 t1 t2)
         (v ==== code (tuple [ c1; c2 ]))
         (ev e t1 (code c1))
-        (ev e t2 (code c2));
+        (ev e t2 (code c2))
     ]
+;;
 
 let nil = Std.nil ()
 let quineo q = ev nil q (code q)
@@ -285,6 +288,7 @@ let find_quines ~verbose n =
   run q quineo (fun r -> r)
   |> Stream.take ~n
   |> List.iter (fun q -> if verbose then printf "%s\n\n" (wrap_term q))
+;;
 
 (*
 let find_twines n =
