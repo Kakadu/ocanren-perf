@@ -28,10 +28,12 @@
  (modules Quines_NoDiseq)
  (libraries OCanren)
  (wrapped false)
- (flags
-  (:standard -rectypes -w -27-39))
  (preprocess
-  (pps OCanren-ppx.ppx_repr OCanren-ppx.ppx_fresh GTtogether)))
+  (pps
+   OCanren-ppx.ppx_distrib
+   OCanren-ppx.ppx_repr
+   OCanren-ppx.ppx_fresh
+   GTtogether)))
 
 (library
  (name Numero_decls)
