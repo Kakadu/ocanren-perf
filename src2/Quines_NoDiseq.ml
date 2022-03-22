@@ -20,6 +20,8 @@ module Gterm = struct
 
   type ground = (GT.string, Std.Nat.ground, ground Std.List.ground) t]
 
+  let _ = tuple
+
   let t =
     { t with
       gcata = ()
@@ -56,7 +58,8 @@ module Gterm = struct
   open OCanren.Std
 
   let vr n : fterm = inj @@ VR n
-  let symb s : fterm = inj @@ Symb s
+
+  (* let symb s : fterm = inj @@ Symb s *)
   let tuple xs : fterm = inj @@ Tuple (Std.List.list xs)
   let quote xs = inj @@ Tuple (symb !!"quote" % xs)
   let quotequote : fterm = quote !<(symb !!"quote")
@@ -135,9 +138,11 @@ module Gresult = struct
   ;;
 
   let reify_result = Std.List.reify reify_renv
-  let closure env v b = inj @@ Closure (env, v, b)
+
+  (* let closure env v b = inj @@ Closure (env, v, b) *)
   let clo = closure
-  let code c = inj @@ Code c
+
+  (* let code c = inj @@ Code c *)
   let show_string = GT.(show string)
   let show_stringl = GT.(show logic) show_string
   let rec show_rresult r = Format.asprintf "%a" (GT.fmt rresult)
@@ -162,11 +167,8 @@ module Gresult = struct
 end
 
 let var_reifier = Std.Nat.reify
-
-let rec gresult_reifier c : Gresult.fresult -> Gresult.lresult =
-  Gresult.reify env_reifier var_reifier gterm_reifier c
-
-and env_reifier e = Std.List.reify (Std.Pair.reify var_reifier gresult_reifier) e
+let gresult_reifier = Gresult.reify_result
+let env_reifier = Gresult.reify_renv
 
 open Gresult
 
@@ -281,13 +283,13 @@ The idea to implement twines and thrines is to implement
      Printf.printf "\n"
    *)
 *)
-let wrap_term rr = rr#reify gterm_reifier |> show_lterm
+(* let wrap_term rr = rr#reify Gterm.reify |> show_lterm *)
 let wrap_result rr = rr#reify gresult_reifier |> show_lresult
 
 let find_quines ~verbose n =
-  run q quineo (fun r -> r)
+  run q quineo (fun rr -> rr#reify Gterm.reify)
   |> Stream.take ~n
-  |> List.iter (fun q -> if verbose then printf "%s\n\n" (wrap_term q))
+  |> List.iter (fun q -> if verbose then printf "%s\n\n" (show_lterm q))
 ;;
 
 (*

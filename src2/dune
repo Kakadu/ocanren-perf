@@ -53,10 +53,12 @@
  (flags
   (:standard -rectypes))
  (preprocess
-  (action
-   (run
-    %{project_root}/rewriters/pp5+gt+plugins+ocanren+dump.exe
-    %{input-file}))))
+  (pps OCanren-ppx.ppx_distrib OCanren-ppx.ppx_repr OCanren-ppx.ppx_fresh))
+ ; (action
+ ;  (run
+ ;   %{project_root}/rewriters/pp5+gt+plugins+ocanren+dump.exe
+ ;   %{input-file})))
+ )
 
 (library
  (kind ppx_rewriter)
