@@ -84,13 +84,14 @@ measure$(1)_scm:
 	cat .$(1).data
 
 # ******************************************************************************
-MLOC1_NATIVE_$(1) := $$(wildcard ocanren01*/benches/test$(1)*.ml)
+MLOC1_NATIVE_$(1) := $$(wildcard src2*/test$(1)*.ml)
 MLOC1_NATIVE_EXE_$(1) := $$(MLOC1_NATIVE_$(1):.ml=.exe)
 MLOC1_NATIVE_EXE_$(1) := $$(shell echo $$(MLOC1_NATIVE_EXE_$(1)) | cut -f2- -d/)
-MLOC1_DIR_$(1) := $$(wildcard ocanren01*)
+MLOC1_DIR_$(1) := ocanren01 #$$(wildcard ocanren01)
+#$$(info $$(MLOC1_DIR_$(1)) )
 
 measure$(1)_MLOC1:
-	cd `realpath $$(MLOC1_DIR_$(1))` && DONT_RUN_CHEZ=y $(OCAML_GC_CFG) dune exec $$(MLOC1_NATIVE_EXE_$(1)) && cat /tmp/ocanren_time >> ../.$(1).data
+	cd `realpath $$(MLOC1_DIR_$(1))` && DONT_RUN_CHEZ=y $(OCAML_GC_CFG) dune exec ./$$(MLOC1_NATIVE_EXE_$(1)) && cat /tmp/ocanren_time >> ../.$(1).data
 	cat .$(1).data
 
 MLOC2_NATIVE_$(1) := $$(wildcard src_ocanren2*/test$(1)*.native)
@@ -156,14 +157,14 @@ define DO_PREPARE
 .PHONY: prepare_ocanren$(1) compile_ocanren$(1)tests clean$(1)
 prepare_ocanren$(1):
 	cd $$(shell echo ocanren$(1)*) && \
-		ln -sf ../src2 benches && \
-		dune build src ppx @install --profile=release -j2
+		dune build --profile=release -j2
 
 prepare_ocanren: prepare_ocanren$(1)
 
 compile: compile_ocanren$(1)tests
 compile_ocanren$(1)tests:
-	cd $$(shell echo ocanren$(1)*) && dune build @all_tests --profile=release
+	echo $(1) 1 MLOC1_DIR_$(1) 2 $(MLOC1_DIR_$(1)) 3 $$(MLOC1_DIR_$(1)) 4 $(MLOC1_NATIVE_$(1)) 5 $$(MLOC1_NATIVE_$(1)) 6  && \
+		cd $$(MLOC1_DIR_$(1)) && dune build @all_tests --profile=release
 
 
 clean$(1):
