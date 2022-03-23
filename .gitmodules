@@ -1,4 +1,0 @@
-[submodule "ocanren01tagless"]
-	path = _ocanren01tagless
-	url = https://github.com/Kakadu/OCanren.git
-	branch = master

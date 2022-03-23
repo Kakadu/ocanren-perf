@@ -9,8 +9,8 @@ TEST$(1)_NAME := $$(SCM_FILE_$(1):test$(1)_%.chez.scm=%)
 SCM_NATIVE_$(1) = $$(SCM_FILE_$(1):.scm=).so
 SCM_FILE_$(1)_BASENAME = $$(shell basename $$(SCM_FILE_$(1)))
 
-all: $$(SCM_NATIVE_$(1))
-$$(SCM_NATIVE_$(1)):
+all: work$(1).chez.so
+work$(1).chez.so:
 	cat `basename $$(SCM_FILE_$(1))` > work$(1).chez.scm
 	@cat hack.scm | sed 's/FILENAME/$$(SCM_FILE_$(1)_BASENAME)/' >> work$(1).chez.scm
 	echo '(compile-file "work$(1).chez.scm")' | scheme -q

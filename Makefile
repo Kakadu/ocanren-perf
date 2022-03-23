@@ -76,7 +76,7 @@ compile_scm: compile$(1)_scm
 compile$(1)_scm: $$(SCM_NATIVE_$(1))
 $$(SCM_NATIVE_$(1)):
 	$(MAKE) -C src_lisps work$(1).chez.so
-	(cd src_lisps && cat `basename $$(SCM_FILE_$(1))` > work$(1).chez.scm && cat hack.scm | sed 's/FILENAME/$$(SCM_FILE_$(1)_BASENAME)/' >> work$(1).chez.scm && echo '(compile-file "work$(1).chez.scm")' | scheme -q && rm -v work$(1).chez.scm)
+	#(cd src_lisps && cat `basename $$(SCM_FILE_$(1))` > work$(1).chez.scm && cat hack.scm | sed 's/FILENAME/$$(SCM_FILE_$(1)_BASENAME)/' >> work$(1).chez.scm && echo '(compile-file "work$(1).chez.scm")' | scheme -q && rm -v work$(1).chez.scm)
 endif
 
 measure$(1)_scm:
@@ -84,14 +84,14 @@ measure$(1)_scm:
 	cat .$(1).data
 
 # ******************************************************************************
-MLOC1_NATIVE_$(1) := $$(wildcard src2*/test$(1)*.ml)
+MLOC1_DIR = ocanren01
+MLOC1_NATIVE_$(1) := $$(wildcard $$(MLOC1_DIR)/test$(1)*.ml)
 MLOC1_NATIVE_EXE_$(1) := $$(MLOC1_NATIVE_$(1):.ml=.exe)
 MLOC1_NATIVE_EXE_$(1) := $$(shell echo $$(MLOC1_NATIVE_EXE_$(1)) | cut -f2- -d/)
-MLOC1_DIR_$(1) := ocanren01 #$$(wildcard ocanren01)
-#$$(info $$(MLOC1_DIR_$(1)) )
+#$$(info MLOC1_NATIVE_EXE_$(1) = $$(MLOC1_NATIVE_EXE_$(1)) )
 
 measure$(1)_MLOC1:
-	cd `realpath $$(MLOC1_DIR_$(1))` && DONT_RUN_CHEZ=y $(OCAML_GC_CFG) dune exec ./$$(MLOC1_NATIVE_EXE_$(1)) && cat /tmp/ocanren_time >> ../.$(1).data
+	cd `realpath $$(MLOC1_DIR)` && DONT_RUN_CHEZ=y $(OCAML_GC_CFG) dune exec ./$$(MLOC1_NATIVE_EXE_$(1)) && cat /tmp/ocanren_time >> ../.$(1).data
 	cat .$(1).data
 
 MLOC2_NATIVE_$(1) := $$(wildcard src_ocanren2*/test$(1)*.native)
@@ -137,6 +137,7 @@ endef
 
 #$(info $(call XXX,002))
 $(foreach i,$(TESTS), $(eval $(call XXX,$(i)) ) )
+#$(info $(MLOC1_DIR_001))
 
 .PHONY: prepare_header do_measure
 prepare_header:
@@ -153,9 +154,12 @@ clean:
 
 compile: prepare_ocanren
 
+#$(info asdf $(MLOC1_DIR_001) 1  $(MLOC1_DIR_01) 1  )
+
 define DO_PREPARE
 .PHONY: prepare_ocanren$(1) compile_ocanren$(1)tests clean$(1)
 prepare_ocanren$(1):
+	#$$(info asdf $$(MLOC1_DIR_$(1)) )
 	cd $$(shell echo ocanren$(1)*) && \
 		dune build --profile=release -j2
 
@@ -163,8 +167,8 @@ prepare_ocanren: prepare_ocanren$(1)
 
 compile: compile_ocanren$(1)tests
 compile_ocanren$(1)tests:
-	echo $(1) 1 MLOC1_DIR_$(1) 2 $(MLOC1_DIR_$(1)) 3 $$(MLOC1_DIR_$(1)) 4 $(MLOC1_NATIVE_$(1)) 5 $$(MLOC1_NATIVE_$(1)) 6  && \
-		cd $$(MLOC1_DIR_$(1)) && dune build @all_tests --profile=release
+	#echo $(1) 1 MLOC1_DIR_$(1) 2 $(MLOC1_DIR_$(1)) 3 $$(MLOC1_DIR_$(1)) 4 $(MLOC1_NATIVE_$(1)) 5 $$(MLOC1_NATIVE_$(1)) 6  && \
+	cd $$(MLOC1_DIR) && dune build @all_tests --profile=release
 
 
 clean$(1):
