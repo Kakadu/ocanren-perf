@@ -4,3 +4,4 @@ compiled
 # ignore manually compiled racket executables
 /test00?
 /test003_sort
+/work*.chez.scm

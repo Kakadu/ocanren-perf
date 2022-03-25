@@ -15,7 +15,7 @@
       (== `(,p ,q ,r) x)))
 ))
 
-(if (not (getenv "DONT_RUN_CHEZ"))
+(if (not (getenv "BENCH_MODE"))
   (begin
     (list-display (do_measure))
     (report_counters)

@@ -14,7 +14,7 @@ work$(1).chez.so:
 	cat `basename $$(SCM_FILE_$(1))` > work$(1).chez.scm
 	@cat hack.scm | sed 's/FILENAME/$$(SCM_FILE_$(1)_BASENAME)/' >> work$(1).chez.scm
 	echo '(compile-file "work$(1).chez.scm")' | scheme -q
-	@$(RM) -v work$(1).chez.scm
+	#@$(RM) -v work$(1).chez.scm
 endef
 
 TESTS=001 002 003 005 006 007 011

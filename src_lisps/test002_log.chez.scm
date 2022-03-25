@@ -15,7 +15,7 @@
     (logo '(1 1 0 0 1 1 1 1) '(1 1) q '() ))
 ))
 
-(if (not (getenv "DONT_RUN_CHEZ"))
+(if (not (getenv "BENCH_MODE"))
   (begin
     (list-display (do_measure))
     (report_counters)
