@@ -6,7 +6,7 @@ MEASURE=/usr/bin/time -f "%U"
 DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
 MEASURE_OC1   ?= y
-MEASURE_OC2   ?=               # tagful
+MEASURE_OC2   ?= y
 MEASURE_OC3   ?=
 MEASURE_OC4   ?=
 MEASURE_OC5   ?=
@@ -29,17 +29,17 @@ OCAML_GC_CFG=OCAMLRUNPARAM='s=250M,h=250M'
 #OCAML_GC_CFG=
 ####### AVG_MEASURE(what-to-run,where-to-put-avg)
 ####### we need to measure 20 times to have 1-2% error
-define AVG_MEASURE
-	$(RM) .avg
-	DONT_RUN_CHEZ=y OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	#OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	#OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	#OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	#OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
-	@sh avg.awk .avg | xargs echo -n >> $(2)
-	@echo -n " " >> $(2)
-	@$(RM)  .avg
-endef
+# define AVG_MEASURE
+# 	$(RM) .avg
+# 	BENCH_MODE=y OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
+# 	#OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
+# 	#OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
+# 	#OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
+# 	#OCAMLRUNPARAM='s=250M,h=250M' $(MEASURE) --append -o .avg $(1)
+# 	@sh avg.awk .avg | xargs echo -n >> $(2)
+# 	@echo -n " " >> $(2)
+# 	@$(RM)  .avg
+# endef
 
 ########## DOUBLE_IF(NATIVE_FILE,IS_ENABLED_FLAG,DATA_FILE,MEASURE_ACTION)
 define DOUBLE_IF
@@ -80,39 +80,42 @@ $$(SCM_NATIVE_$(1)):
 endif
 
 measure$(1)_scm:
-	(cd src_lisps && DONT_RUN_CHEZ=y scheme --program "work$(1).chez.so" >> ../.$(1).data)
+	(cd src_lisps && BENCH_MODE=y scheme --program "work$(1).chez.so" >> ../.$(1).data)
 	cat .$(1).data
 
 # ******************************************************************************
-MLOC1_DIR = ocanren01
-MLOC1_NATIVE_$(1) := $$(wildcard $$(MLOC1_DIR)/test$(1)*.ml)
-MLOC1_NATIVE_EXE_$(1) := $$(MLOC1_NATIVE_$(1):.ml=.exe)
-MLOC1_NATIVE_EXE_$(1) := $$(shell echo $$(MLOC1_NATIVE_EXE_$(1)) | cut -f2- -d/)
-#$$(info MLOC1_NATIVE_EXE_$(1) = $$(MLOC1_NATIVE_EXE_$(1)) )
+MLOC01_DIR = ocanren01
+MLOC01_NATIVE_$(1) := $$(wildcard $$(MLOC01_DIR)/test$(1)*.ml)
+MLOC01_NATIVE_EXE_$(1) := $$(MLOC01_NATIVE_$(1):.ml=.exe)
+MLOC01_NATIVE_EXE_$(1) := $$(shell echo $$(MLOC01_NATIVE_EXE_$(1)) | cut -f2- -d/)
 
 measure$(1)_MLOC1:
-	cd `realpath $$(MLOC1_DIR)` && DONT_RUN_CHEZ=y $(OCAML_GC_CFG) dune exec ./$$(MLOC1_NATIVE_EXE_$(1)) && cat /tmp/ocanren_time >> ../.$(1).data
+	cd `realpath $$(MLOC01_DIR)` && BENCH_MODE=y $(OCAML_GC_CFG) dune exec ./$$(MLOC01_NATIVE_EXE_$(1)) && cat /tmp/ocanren_time >> ../.$(1).data
 	cat .$(1).data
 
-MLOC2_NATIVE_$(1) := $$(wildcard src_ocanren2*/test$(1)*.native)
+MLOC02_DIR = ocanren02
+MLOC02_NATIVE_$(1) := $$(wildcard $$(MLOC02_DIR)/test$(1)*.ml)
+MLOC02_NATIVE_EXE_$(1) := $$(MLOC02_NATIVE_$(1):.ml=.exe)
+MLOC02_NATIVE_EXE_$(1) := $$(shell echo $$(MLOC02_NATIVE_EXE_$(1)) | cut -f2- -d/)
 
 measure$(1)_MLOC2:
-	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC2_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
+	cd `realpath $$(MLOC02_DIR)` && BENCH_MODE=y $(OCAML_GC_CFG) dune exec ./$$(MLOC02_NATIVE_EXE_$(1)) && cat /tmp/ocanren_time >> ../.$(1).data
+	cat .$(1).data
 
 MLOC3_NATIVE_$(1) := $$(wildcard src_ocanren3*/test$(1)*.native)
 
 measure$(1)_MLOC3:
-	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC3_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
+	BENCH_MODE=y $(OCAML_GC_CFG) $$(MLOC3_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
 
 MLOC4_NATIVE_$(1) := $$(wildcard src_ocanren4*/test$(1)*.native)
 
 measure$(1)_MLOC4:
-	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC4_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
+	BENCH_MODE=y $(OCAML_GC_CFG) $$(MLOC4_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
 
 MLOC5_NATIVE_$(1) := $$(wildcard src_ocanren5*/test$(1)*.native)
 
 measure$(1)_MLOC5:
-	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC5_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
+	BENCH_MODE=y $(OCAML_GC_CFG) $$(MLOC5_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
 
 ###################################### finish measuring ocanren ################
 .PHONY: measure$(1) measure$(1)_prepare do_measure
@@ -124,7 +127,7 @@ do_measure: measure$(1)
 measure$(1): measure$(1)_prepare \
 	measure$(1)_scm \
 	measure$(1)_MLOC1  \
-	#measure$(1)_MLOC2  \
+	measure$(1)_MLOC2  \
 	#measure$(1)_MLOC3  \
 	#measure$(1)_MLOC4  \
 	#measure$(1)_MLOC5  \
@@ -135,13 +138,11 @@ measure$(1): measure$(1)_prepare \
 	printf "\n" >> $(DATAFILE)
 endef
 
-#$(info $(call XXX,002))
 $(foreach i,$(TESTS), $(eval $(call XXX,$(i)) ) )
-#$(info $(MLOC1_DIR_001))
 
 .PHONY: prepare_header do_measure
 prepare_header:
-	echo "x   faster-miniKanren/Scheme 1tagless  " \
+	echo "x   faster-miniKanren/Scheme 01master 02before-Moiseenko  " \
 		> $(DATAFILE)
 
 .PHONY: clean
@@ -159,16 +160,14 @@ compile: prepare_ocanren
 define DO_PREPARE
 .PHONY: prepare_ocanren$(1) compile_ocanren$(1)tests clean$(1)
 prepare_ocanren$(1):
-	#$$(info asdf $$(MLOC1_DIR_$(1)) )
 	cd $$(shell echo ocanren$(1)*) && \
-		dune build --profile=release -j2
+		dune build @all_tests --profile=release -j2
 
 prepare_ocanren: prepare_ocanren$(1)
 
 compile: compile_ocanren$(1)tests
 compile_ocanren$(1)tests:
-	#echo $(1) 1 MLOC1_DIR_$(1) 2 $(MLOC1_DIR_$(1)) 3 $$(MLOC1_DIR_$(1)) 4 $(MLOC1_NATIVE_$(1)) 5 $$(MLOC1_NATIVE_$(1)) 6  && \
-	cd $$(MLOC1_DIR) && dune build @all_tests --profile=release
+	cd $$(MLOC$(1)_DIR) && dune build @all_tests --profile=release
 
 
 clean$(1):
@@ -179,7 +178,7 @@ clean: clean$(1)
 endef
 
 $(eval $(call DO_PREPARE,01))
-#$(eval $(call DO_PREPARE,2))
+$(eval $(call DO_PREPARE,02))
 #$(eval $(call DO_PREPARE,3))
 #$(eval $(call DO_PREPARE,4))
 #$(eval $(call DO_PREPARE,5))

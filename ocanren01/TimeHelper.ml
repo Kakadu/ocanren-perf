@@ -20,7 +20,7 @@ let time f =
 
 let wrap (do_measure : verbose:bool -> unit) =
   try
-    ignore (Sys.getenv "DONT_RUN_CHEZ");
+    ignore (Sys.getenv "BENCH_MODE");
     (* warmup *)
     let () = do_measure ~verbose:false in
     (* do benchmarking *)
@@ -46,7 +46,13 @@ let wrap (do_measure : verbose:bool -> unit) =
   with
   | Not_found ->
     (* do normal run *)
+    (* Format.printf
+      "Unification counter before = %d\n%!"
+      (OCanren.Peep.unification_counter ()); *)
     let () = do_measure ~verbose:true in
     (* let () = OCanren.report_counters () in *)
+    (* Format.printf
+      "Unification counter after = %d\n%!"
+      (OCanren.Peep.unification_counter ()); *)
     ()
 ;;

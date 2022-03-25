@@ -118,8 +118,6 @@ module Gterm = struct
 
   let show_rterm = Format.asprintf "%a" (GT.fmt rterm)
   let show_lterm = Format.asprintf "%a" (GT.fmt lterm)
-  let symb s : injected = inj @@ Symb s
-  let seq xs : injected = inj @@ Seq xs
 end
 
 let gterm_reifier = Gterm.reify
@@ -232,6 +230,7 @@ let (_: _ -> fenv -> _) = show_reif_env *)
 
 let show_reif_term h t = show_lterm @@ gterm_reifier h t
 let show_reif_result h t = show_lresult @@ gresult_reifier h t
+
 (* let uniresult ?loc = unitrace ?loc @@ show_reif_result
 let uniterm ?loc = unitrace ?loc @@ show_reif_term *)
 (* let uni_term_list ?loc =
