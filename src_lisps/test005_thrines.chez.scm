@@ -19,6 +19,7 @@
   (begin
     (list-display (do_measure))
     (report_counters)
+    ; Should give 224671 unifications
     (exit)
       ))
 ;(report_counters)
