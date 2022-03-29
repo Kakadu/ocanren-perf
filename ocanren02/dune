@@ -48,11 +48,12 @@
  (libraries OCanren OCanren.tester TimeHelper Numero_decls)
  (flags
   (:standard -rectypes))
- (preprocess
-  (action
-   (run
-    %{project_root}/rewriters/pp5+gt+plugins+ocanren+dump.exe
-    %{input-file}))))
+ ;  (preprocess
+ ;   (action
+ ;    (run
+ ;     %{project_root}/rewriters/pp5+gt+plugins+ocanren+dump.exe
+ ;     %{input-file})))
+ )
 
 (executables
  (names test005_thrines test006_twines test007_quines)
@@ -61,8 +62,9 @@
  (libraries OCanren OCanren.tester TimeHelper Quine_decls)
  (flags
   (:standard -rectypes -w -27-39))
- (preprocess
-  (pps OCanren-ppx.ppx_repr OCanren-ppx.ppx_fresh GT.ppx_all)))
+ ;(preprocess
+ ; (pps OCanren-ppx.ppx_repr OCanren-ppx.ppx_fresh GT.ppx_all))
+ )
 
 (executables
  (names test011_quinesNoDiseq)
