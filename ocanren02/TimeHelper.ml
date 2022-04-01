@@ -15,7 +15,8 @@ let time f =
 ;;
 
 [%%define STATS]
-[%%undef STATS]
+
+(* [%%undef STATS] *)
 [%%ifdef STATS]
 
 let wrap_single_measure f =

@@ -180,7 +180,7 @@ open Gresult
 type lenv = (string logic, lresult) Std.Pair.logic Std.List.logic
 type fenv = ((string, rresult) Std.Pair.ground Std.List.ground, lenv) injected
 
-let reif_env e (x : fenv) : lenv =
+let reify_env e (x : fenv) : lenv =
   Std.List.reify (Std.Pair.reify OCanren.reify gresult_reifier) e x
 ;;
 
@@ -190,13 +190,13 @@ let show_lenv : lenv -> string =
 
 let show_reif_env h e =
   GT.(show Std.List.logic @@ show Std.Pair.logic (show logic @@ fun s -> s) show_lresult)
-  @@ reif_env h e
+  @@ reify_env h e
 ;;
 
 (* let unienv ?loc = unitrace ?loc @@ show_reif_env *)
 
-let show_reif_term h t = show_lterm @@ gterm_reifier h t
-let show_reif_result h t = show_lresult @@ gresult_reifier h t
+(* let show_reif_term h t = show_lterm @@ gterm_reifier h t *)
+(* let show_reif_result h t = show_lresult @@ gresult_reifier h t *)
 
 (* let uniresult ?loc = unitrace ?loc @@ show_reif_result
    let uniterm ?loc = unitrace ?loc @@ show_reif_term *)
@@ -213,7 +213,47 @@ let ( === ) = OCanren.( === )
 let ( ===! ) = ( === )
 let ( ===!! ) = ( === )
 
+let debug_wrapper refier to_string msg u v =
+  debug_var ~with_reif:false (Std.pair u v) (flip refier) (function
+      | [ Value (a, b) ] ->
+        Format.printf "%s %s and %s\n%!" msg (to_string a) (to_string b);
+        success
+      | _ -> assert false)
+;;
+
+let debug_results msg u v =
+  debug_wrapper
+    (Std.Pair.reify gresult_reifier gresult_reifier)
+    Gresult.show_lresult
+    msg
+    u
+    v
+;;
+
+let debug_env eta = debug_wrapper (Std.Pair.reify reify_env reify_env) show_lenv eta
+
+let debug_terms =
+  debug_wrapper (Std.Pair.reify gterm_reifier gterm_reifier) Gterm.show_lterm
+;;
+
+let debug_string =
+  debug_wrapper
+    (Std.Pair.reify OCanren.reify OCanren.reify)
+    (GT.show OCanren.logic (GT.show GT.string))
+;;
+
+let uniterm u v = debug_terms "===" u v &&& (u === v)
+let unirez u v = debug_results "===" u v &&& (u === v)
+let unienv u v = debug_env "===" u v &&& (u === v)
+let unistring u v = debug_string "===" u v &&& (u === v)
+let disterm u v = debug_terms "=/=" u v &&& (u =/= v)
+let disrez u v = debug_results "=/=" u v &&& (u =/= v)
+let disstring u v = debug_string "=/=" u v &&& (u =/= v)
+
 let rec lookupo x env t =
+  let ( === ) = unienv in
+  let ( == ) = unistring in
+  let ( ===!! ) = unirez in
   let open OCanren.Std in
   (* let (=/=) = diseqtrace show_reif_string in
      let (===) ?loc = unienv ?loc in
@@ -222,12 +262,13 @@ let rec lookupo x env t =
   fresh
     (rest y v)
     (Std.Pair.pair y v % rest === env)
-    (conde [ y ===! x &&& (v ===!! t); y =/= x &&& lookupo x rest t ])
+    (conde [ y == x &&& (v ===!! t); y =/= x &&& lookupo x rest t ])
 ;;
 
 let rec not_in_envo x (env : fenv) =
-  (* let (=/=) = diseqtrace show_reif_string in
-     let (===) ?loc = unienv ?loc in *)
+  let ( =/= ) = disstring in
+  (* let ( == ) = unistring in *)
+  let ( === ) = unienv in
   let open OCanren.Std in
   (* printfn "entering not_in_envo"; *)
   conde
@@ -235,37 +276,6 @@ let rec not_in_envo x (env : fenv) =
     ; nil () === env
     ]
 ;;
-
-let debug_terms msg u v =
-  debug_var
-    (Std.pair u v)
-    (flip @@ Std.Pair.reify gterm_reifier gterm_reifier)
-    (function
-      | [ Value (a, b) ] ->
-        Format.printf "%s %s and %s\n%!" msg (Gterm.show_lterm a) (Gterm.show_lterm b);
-        success
-      | _ -> assert false)
-;;
-
-let debug_results msg u v =
-  debug_var
-    (Std.pair u v)
-    (flip @@ Std.Pair.reify gresult_reifier gresult_reifier)
-    (function
-      | [ Value (a, b) ] ->
-        Format.printf
-          "%s %s and %s\n%!"
-          msg
-          (Gresult.show_lresult a)
-          (Gresult.show_lresult b);
-        success
-      | _ -> assert false)
-;;
-
-let uniterm u v = debug_terms "===" u v &&& (u === v)
-let unirez u v = debug_results "===" u v &&& (u === v)
-let disterm u v = debug_terms "=/=" u v &&& (u =/= v)
-let disrez u v = debug_results "=/=" u v &&& (u =/= v)
 
 let rec proper_listo es env rs =
   (* let (===) ?loc = uni_term_list ?loc in *)
@@ -281,8 +291,8 @@ let rec proper_listo es env rs =
     ]
 
 and evalo (term : fterm) (env : fenv) (r : fresult) =
-  (* let ( === ) = uniterm in *)
-  (* let ( ===! ) = unirez in *)
+  let ( === ) = uniterm in
+  let ( ===! ) = unirez in
   (* let (===)  ?loc = unitrace ?loc show_reif_term in
      let (===!) ?loc = unitrace ?loc show_reif_result in *)
 
