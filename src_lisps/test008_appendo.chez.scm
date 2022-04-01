@@ -3,41 +3,34 @@
 ;(include "../simple-miniKanren/test-check.scm")
 (include "list-display.scm")
 
-(define nullo
-  (lambda (x)
-    (== '() x)))
-(define pairo
-  (lambda (p)
-    (fresh (a d)
-      (conso a d p))))
-(define conso
-  (lambda (a d p)
-    (== (cons a d) p)))
-(define poso
-  (lambda (n)
-    (fresh (a d)
-      (== `(,a . ,d) n))))
-(define cdro
-  (lambda (p d)
-    (fresh (a)
-      (== (cons a d) p))))
-(define caro
-  (lambda (p a)
-    (fresh (d)
-      (== (cons a d) p))))
+(display "============================= appendo test\n")
 
-;(include "numbers.scm")
+(define appendo11 (lambda (a b ab)
+  (conde
+    ( (trace "appendo") fail)
+    ( (== '() a)
+      (trace "a")
+      (== b ab)
+      (trace "e")
+    )
+    ((fresh (h tl temp)
+        (trace "b")
+        (== a `(,h . ,tl) )
+        (== ab `(,h . ,temp))
+        (trace "c")
+        (appendo11 tl b temp)
+        (trace "d")
+        )) )))
 
-(define myappendo (lambda (l s out)
-    (conde
-      ( (== '() l)
-        (== s out) )
-      ((fresh (a d res)
-         (== `(,a . ,d) l)
-         (== `(,a . ,res) out)
-         (myappendo d s res))) )))
+(define do_measure (lambda ()
+  (run 3 (q r)
+    (appendo11 q r '(1 2 3) ))
+))
 
-(list-display
-(run 3 (q r)
-  (myappendo q r '(1 2) ))
-)
+
+(if (not (getenv "BENCH_MODE"))
+  (begin
+    (list-display (do_measure))
+    (report_counters)
+    (exit)
+      ))

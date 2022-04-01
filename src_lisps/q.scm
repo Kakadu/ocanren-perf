@@ -1,5 +1,14 @@
 (include "list-display.scm")
 
+(define lookupo
+  (lambda (x env t)
+    (fresh (rest y v)
+      (=== `((,y . ,v) . ,rest) env)
+      (conde
+        ((=== y x) (=== v t))
+        ((=//= y x) (lookupo x rest t))))))
+
+
 (define not-in-envo (lambda (x env)
    (conde
      ((fresh (y v rest)
@@ -27,7 +36,7 @@
          (=== exp `(seq ((symb 'quote) ,t)) )
          (=== r `(val_ ,t))
          (not-in-envo 'quote env)
-           ))
+      ))
       ((fresh (es rs)
          (=== exp `(seq ((symb 'list) . ,es)) )
          (=== r `(val_ (seq ,rs)) )
@@ -52,11 +61,3 @@
          (not-in-envo 'lambda env)
          (=== r `(closure ,x ,body ,env) ) ))
     )) )
-
-(define lookupo
-  (lambda (x env t)
-    (fresh (rest y v)
-      (=== `((,y . ,v) . ,rest) env)
-      (conde
-        ((=== y x) (=== v t))
-        ((=//= y x) (lookupo x rest t))))))
