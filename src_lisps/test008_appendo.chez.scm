@@ -1,6 +1,5 @@
 (include "../faster-miniKanren/mk-vicare.scm")
 (include "../faster-miniKanren/mk.scm")
-;(include "../simple-miniKanren/test-check.scm")
 (include "list-display.scm")
 
 (display "============================= appendo test\n")
@@ -8,23 +7,20 @@
 (define appendo11 (lambda (a b ab)
   (conde
     ( (trace "appendo") fail)
-    ( (== '() a)
-      (trace "a")
-      (== b ab)
-      (trace "e")
+    ( (== '() a 'A)
+      (== b ab  'E)
     )
     ((fresh (h tl temp)
-        (trace "b")
-        (== a `(,h . ,tl) )
-        (== ab `(,h . ,temp))
-        (trace "c")
+        (== a `(,h . ,tl) 'F)
+        (== ab `(,h . ,temp) 'C)
         (appendo11 tl b temp)
-        (trace "d")
         )) )))
 
 (define do_measure (lambda ()
+  ;(run 3 (q r)
+  ;  (appendo11 q r '(1 2 3) ))
   (run 3 (q r)
-    (appendo11 q r '(1 2 3) ))
+    (appendo11 '(1 2 3) q r ))
 ))
 
 
