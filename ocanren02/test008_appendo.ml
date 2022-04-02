@@ -2,6 +2,7 @@ open OCanren
 open Tester
 
 let flip f a b = f b a
+let reify_int_list = Std.List.reify (OCanren.reify : _ -> (int, _) injected -> _)
 
 let trace msg =
   debug_var !!1 (flip OCanren.reify) (function
@@ -13,26 +14,25 @@ let trace msg =
 
 let debug_intlist =
   Quine_decls.debug_wrapper
-    (Std.Pair.reify (Std.List.reify OCanren.reify) (Std.List.reify OCanren.reify))
+    (Std.Pair.reify reify_int_list reify_int_list)
     (GT.show OCanren.Std.List.logic @@ GT.show OCanren.logic (GT.show GT.int))
 ;;
 
-let unilist u v = debug_intlist "\t===" u v &&& (u === v)
+let unilist ?(msg = "") u v =
+  debug_intlist (Format.sprintf "%s\t===" msg) u v &&& (u === v)
+;;
 
 let rec appendo a b ab =
   let open OCanren.Std in
-  let ( === ) = unilist in
+  let ( === ) a b msg = unilist a b ~msg in
   conde
     [ trace "appendo" &&& failure
-    ; Std.nil () === a &&& trace "a" &&& (b === ab) &&& trace "e"
+    ; ( === ) (Std.nil ()) a "A" &&& ( === ) b ab "E"
     ; fresh
         (h t temp)
-        (trace "b")
-        (a === h % t)
-        (ab === h % temp)
-        (trace "c")
+        (( === ) a (h % t) "F")
+        (( === ) ab (h % temp) "C")
         (appendo t b temp)
-        (trace "d")
     ]
 ;;
 
@@ -46,14 +46,33 @@ let input_ints =
 
 let () = assert (nels == List.length input_ints)
 let show_int_list = GT.(show Std.List.ground @@ show int)
+let show_intl_listl = GT.show Std.List.logic @@ GT.show OCanren.logic (GT.show GT.int)
 
+(* let (_ : int) = runR reify_int_list show_int_list show_intl_listl *)
+let run_list eta = runR reify_int_list show_int_list show_intl_listl eta
+
+let run_list2 eta =
+  runR
+    (Std.Pair.reify reify_int_list reify_int_list)
+    (GT.show Std.Pair.ground show_int_list show_int_list)
+    (GT.show Std.Pair.logic show_intl_listl show_intl_listl)
+    eta
+;;
+
+let __ () = run_list 3 qr qrh (REPR (fun q r -> appendo q r (Std.List.list input_ints)))
+
+(* Internally scheme uses run for single argument where this argument
+  is a tuple of many arguments. That's why `run n` may give n extra
+  unifications
+   *)
 let () =
-  run_exn
-    show_int_list
+  run_list2
     3
-    qr
-    qrh
-    (REPR (fun q r -> appendo q r (Std.List.list input_ints)))
+    q
+    qh
+    (REPR
+       (fun q ->
+         fresh (a b) (q === Std.pair a b) (appendo (Std.List.list input_ints) a b)))
 ;;
 
 let () =

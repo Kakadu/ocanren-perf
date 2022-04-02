@@ -70,9 +70,9 @@
   (pps OCanren-ppx.ppx_repr OCanren-ppx.ppx_fresh GT.ppx_all)))
 
 (executables
- (names test008_appendo)
- (public_names -)
- (modules test008_appendo)
+ (names test008_appendo test600_order)
+ (public_names - -)
+ (modules test008_appendo test600_order)
  (libraries OCanren OCanren.tester TimeHelper Quine_decls)
  (preprocess
   (pps OCanren-ppx.ppx_repr OCanren-ppx.ppx_fresh GT.ppx_all)))
