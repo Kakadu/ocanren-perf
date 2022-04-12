@@ -70,6 +70,20 @@
   (pps OCanren-ppx.ppx_repr OCanren-ppx.ppx_fresh GT.ppx_all)))
 
 (executables
+ (names test777)
+ (public_names -)
+ (modules ulc_defs test777)
+ (libraries OCanren OCanren.tester TimeHelper)
+ (flags
+  (:standard -rectypes -w -27-39))
+ (preprocess
+  (pps
+   OCanren-ppx.ppx_distrib
+   OCanren-ppx.ppx_repr
+   OCanren-ppx.ppx_fresh
+   GT.ppx_all)))
+
+(executables
  (names test008_appendo test600_order)
  (public_names - -)
  (modules test008_appendo test600_order)

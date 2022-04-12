@@ -7,36 +7,41 @@ let symb_ s = Gterm.symb !!s
 
 let quineso q =
   fresh
-    (arg _3903)
+    (arg _3903 _asdf0 _asdf1 _asdf2)
     (arg
     === seq
-          [ seq
+          [ (* _asdf2 *)
+            seq
               [ symb_ "lambda"
               ; seq [ symb _3903 ]
+              ; Gterm.seq _asdf0
+                (*
               ; seq
                   [ symb !!"list"
                   ; symb _3903
-                  ; seq [ symb_ "list"; seq [ symb_ "quote"; symb_ "quote" ]; symb _3903 ]
+                  ; Gterm.seq _asdf0
+                    (* ; seq [ symb_ "list"; seq [ symb_ "quote"; symb_ "quote" ]; symb _3903 ] *)
                   ]
+                  *)
               ]
           ; seq
               [ symb_ "quote"
               ; seq
                   [ symb_ "lambda"
                   ; seq [ symb _3903 ]
-                  ; seq
-                      [ symb_ "list"
+                  ; Gterm.seq _asdf0
+                    (* [ symb_ "list"
                       ; symb _3903
                       ; seq
                           [ symb_ "list"
                           ; seq [ symb_ "quote"; symb_ "quote" ]
                           ; symb _3903
                           ]
-                      ]
+                      ] *)
                   ]
               ]
           ])
-    (evalo arg nil (Gresult.val_ q))
+    (evalo arg nil (Gresult.val_ arg))
 ;;
 
 let () =

@@ -59,7 +59,15 @@ let run_list2 eta =
     eta
 ;;
 
-let __ () = run_list 3 qr qrh (REPR (fun q r -> appendo q r (Std.List.list input_ints)))
+let __ () =
+  run_list2
+    3
+    q
+    qh
+    (REPR
+       (fun q ->
+         fresh (a b) (appendo a b (Std.List.list input_ints)) (q === Std.pair a b)))
+;;
 
 (* Internally scheme uses run for single argument where this argument
   is a tuple of many arguments. That's why `run n` may give n extra
@@ -72,7 +80,7 @@ let () =
     qh
     (REPR
        (fun q ->
-         fresh (a b) (q === Std.pair a b) (appendo (Std.List.list input_ints) a b)))
+         fresh (a b) (appendo (Std.List.list input_ints) a b) (q === Std.pair a b)))
 ;;
 
 let () =
