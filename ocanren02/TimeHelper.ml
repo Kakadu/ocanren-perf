@@ -15,8 +15,7 @@ let time f =
 ;;
 
 [%%define STATS]
-
-(* [%%undef STATS] *)
+[%%undef STATS]
 [%%ifdef STATS]
 
 let wrap_single_measure f =
@@ -64,6 +63,5 @@ let wrap (do_measure : verbose:bool -> unit) =
   with
   | Not_found ->
     (* do normal run *)
-    let () = wrap_single_measure (fun () -> do_measure ~verbose:true) in
-    ()
+    wrap_single_measure (fun () -> do_measure ~verbose:true)
 ;;

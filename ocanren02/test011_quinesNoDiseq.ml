@@ -1,1 +1,1 @@
-let () = TimeHelper.wrap (Quines_NoDiseq.find_quines 1)
+let () = TimeHelper.wrap (Quines_NoDiseq.find_quines 200)
