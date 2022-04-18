@@ -38,12 +38,17 @@
                              ))
                                 )))) )
     )
-      (eval-expo arg '() `(val_ ,arg)) )
+      (eval-expo q '() `(val_ ,arg)) )
 )))
+
+; honest quines
+(define do_measure0 (lambda ()
+  (run 1 (q) (eval-expo q '() `(val_ ,q)) )
+))
 
 (if (not (getenv "BENCH_MODE"))
   (begin
-    (list-display (do_measure))
+    (list-display (do_measure0))
     (report_counters)
     (exit)
       ))

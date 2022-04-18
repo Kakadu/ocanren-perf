@@ -1,5 +1,13 @@
 (include "list-display.scm")
 
+(define === (lambda (x y) (lambda (s)
+  ((==original x y) s)
+)))
+
+(define =//= (lambda (x y) (lambda (s)
+  ((=/= x y) s)
+)))
+
 (define lookupo
   (lambda (x env t)
     (fresh (rest y v)
@@ -15,14 +23,17 @@
         (=== env `((,y . ,v) . ,rest) )
         (=//= y x)
         (not-in-envo x rest)
-         ))
-     ((=== '() env)) )))
+     ))
+     ((=== '() env)) ))
+)
 
 
 (define proper-listo
  (lambda (exp env rs)
    (conde
-     ((=== '() exp) (=== '() rs))
+     ((=== '() exp)
+      (=== '() rs)
+      )
      ((fresh (e d t-e t-d)
         (=== exp `(,e . ,d) )
         (=== rs `(,t-e . ,t-d) )
@@ -46,7 +57,8 @@
       ;
       ((fresh (s)
          (=== exp `(symb ,s))
-         (lookupo s env r) ))
+         (lookupo s env r)
+      ))
       ((fresh (rator rand x body env^ a)
          (=== exp `(seq (,rator ,rand)) )
          (eval-expo rand env a)

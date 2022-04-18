@@ -3,9 +3,10 @@
 
 (include "q.scm")
 
+(define count 200)
 ; quines
 (define do_measure (lambda ()
-  (run 1 (p)
+  (run count (p)
     (eval-expo p '() `(val_ ,p)) )
 ))
 
@@ -14,5 +15,11 @@
     (list-display (do_measure))
     (report_counters) ; 274068 unification for first 200 quines
       ; 2085 for first quine
+      ; 6920
+      ; 8480
+
+      ; 18798 for 10th
+
+      ; 274068 for 200th
     (exit)
       ))
