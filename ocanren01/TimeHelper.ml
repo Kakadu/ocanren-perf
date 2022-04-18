@@ -1,4 +1,5 @@
-open Printf
+[%%define STATS]
+[%%undef STATS]
 
 let the_time_file = "/tmp/ocanren_time"
 
@@ -8,15 +9,30 @@ let wrap_run num rel ?(n = -1) ~reifier ~verbose onVerbose =
   |> List.iter (fun s -> if verbose then onVerbose s else ())
 ;;
 
-let __foo num reifier : _ OCanren.Stream.t =
-  OCanren.run num (fun _ -> OCanren.success) (fun rr -> rr#reify reifier)
-;;
-
 let time f =
   let t = Mtime_clock.counter () in
   let _res = f () in
   Mtime_clock.count t |> Mtime.Span.to_s
 ;;
+
+[%%ifdef STATS]
+
+let wrap_single_measure f =
+  Format.printf
+    "Unification counter before = %d\n%!"
+    (OCanren.Peep.unification_counter ());
+  let rez = f () in
+  Format.printf
+    "Unification counter after  = %d\n%!"
+    (OCanren.Peep.unification_counter ());
+  rez
+;;
+
+[%%else]
+
+let wrap_single_measure f = f ()
+
+[%%endif]
 
 let wrap (do_measure : verbose:bool -> unit) =
   try
@@ -32,7 +48,7 @@ let wrap (do_measure : verbose:bool -> unit) =
       acc := !acc +. (time @@ fun () -> do_measure ~verbose:false)
     done;
     let ans = !acc /. float_of_int n in
-    let (_ : int) = Sys.command @@ sprintf "echo %f > %s" ans the_time_file in
+    let (_ : int) = Sys.command @@ Printf.sprintf "echo %f > %s" ans the_time_file in
     Printf.printf "%f\n" ans
     (* let samples = Benchmark.latency1 (Int64.of_int n) (fun () -> do_measure ~verbose:false)  () in
       match samples with
@@ -46,13 +62,5 @@ let wrap (do_measure : verbose:bool -> unit) =
   with
   | Not_found ->
     (* do normal run *)
-    (* Format.printf
-      "Unification counter before = %d\n%!"
-      (OCanren.Peep.unification_counter ()); *)
-    let () = do_measure ~verbose:true in
-    (* let () = OCanren.report_counters () in *)
-    (* Format.printf
-      "Unification counter after = %d\n%!"
-      (OCanren.Peep.unification_counter ()); *)
-    ()
+    wrap_single_measure (fun () -> do_measure ~verbose:true)
 ;;

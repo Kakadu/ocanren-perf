@@ -7,6 +7,8 @@
  (name TimeHelper)
  (modules TimeHelper)
  (libraries OCanren)
+ (preprocess
+  (pps ppx_optcomp))
  (wrapped false))
 
 (library
@@ -97,8 +99,12 @@
  (deps
   test001_expo1.exe
   test002_logo1.exe
-  test003_sort.exe
-  test004_logo2.exe)
+  ;test003_sort.exe
+  ;test004_logo2.exe
+  test005_thrines.exe
+  test006_twines.exe
+  test007_quines.exe
+  test011_quinesNoDiseq.exe)
  (alias all_tests)
  (action
   (run echo)))

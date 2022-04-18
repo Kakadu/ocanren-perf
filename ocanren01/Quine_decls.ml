@@ -272,7 +272,6 @@ let rec not_in_envo x env =
 ;;
 
 let rec proper_listo es env rs =
-  (* let (===) ?loc = uni_term_list ?loc in *)
   let open OCanren.Std in
   conde
     [ Std.nil () === es &&& (Std.nil () === rs)
@@ -285,14 +284,7 @@ let rec proper_listo es env rs =
     ]
 
 and evalo (term : Gterm.injected) (env : fenv) (r : Gresult.injected) =
-  (* let (===)  ?loc = unitrace ?loc show_reif_term in
-  let (===!) ?loc = unitrace ?loc show_reif_result in *)
-
-  (* fun st -> *)
-  (* let () = printfn "entering into evalo %s %s %s"
-      (show_reif_term term) (show_reif_env env) (show_reif_result r) in *)
   let open OCanren.Std in
-  (* let (_ : int) = Gresult.closure in *)
   conde
     [ fresh
         t
