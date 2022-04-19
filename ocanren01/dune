@@ -48,14 +48,28 @@
   (pps OCanren-ppx.ppx_repr OCanren-ppx.ppx_fresh GTtogether)))
 
 (executables
- (names test001_expo1 test002_logo1 test003_sort test004_logo2)
- (public_names test001 test002 test003 test004)
- (modules test001_expo1 test002_logo1 test003_sort test004_logo2)
+ (names
+  test001_expo1
+  test002_logo1
+  test003_sort
+  test004_logo2
+  test008_appendo)
+ (public_names test001 test002 test003 test004 test008_appendo)
+ (modules
+  test001_expo1
+  test002_logo1
+  test003_sort
+  test004_logo2
+  test008_appendo)
  (libraries OCanren OCanren.tester TimeHelper Numero_decls)
  (flags
   (:standard -rectypes))
  (preprocess
-  (pps OCanren-ppx.ppx_distrib OCanren-ppx.ppx_repr OCanren-ppx.ppx_fresh))
+  (pps
+   GT.ppx_all
+   OCanren-ppx.ppx_distrib
+   OCanren-ppx.ppx_repr
+   OCanren-ppx.ppx_fresh))
  ; (action
  ;  (run
  ;   %{project_root}/rewriters/pp5+gt+plugins+ocanren+dump.exe
