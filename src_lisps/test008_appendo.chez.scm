@@ -4,23 +4,23 @@
 
 (display "============================= appendo test\n")
 
+(define == ==count)
 (define appendo11 (lambda (a b ab)
   (conde
-    ( (trace "appendo") fail)
-    ( (== '() a 'A)
-      (== b ab  'E)
+    ( (== '() a )
+      (== b ab  )
     )
     ((fresh (h tl temp)
-        (== a `(,h . ,tl) 'F)
-        (== ab `(,h . ,temp) 'C)
+        (== a `(,h . ,tl) )
+        (== ab `(,h . ,temp) )
         (appendo11 tl b temp)
         )) )))
 
 (define do_measure (lambda ()
+  (run 100 (q r)
+    (appendo11 q r (makelist 20) ))
   ;(run 3 (q r)
-  ;  (appendo11 q r '(1 2 3) ))
-  (run 3 (q r)
-    (appendo11 '(1 2 3) q r ))
+  ;  (appendo11 '(1 2 3) q r ))
 ))
 
 

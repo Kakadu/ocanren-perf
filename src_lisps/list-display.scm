@@ -1,3 +1,10 @@
+(define (makelist n)
+  (letrec ((helper (lambda (i acc)
+        (if (<= i 0) acc (helper (- i 1) (cons i acc)))
+      )))
+    (helper n '())
+  ))
+
 (define (list-display lis)
           (cond ((null? lis)
                  #f)
@@ -9,28 +16,3 @@
 (define logged_unif_counter 0)
 
 ; TODO: how to check variable is bound
-
-(define === (lambda (x y) (lambda (s)
-  ;(if log_unif (log_unif) (void) )
-  ;(printf "~a: unify '~a' and '~a'" logged_unif_counter x y)
-
-  ; gives a very weird text
-  ;(printf "~a: unify '~a' and '~a'\n" logged_unif_counter
-  ;    (reify-S x s)
-  ;     y)
-  (let* ( (ans ((== x y) s) ) )
-    ;(if ans (printf "  +\n") (printf "   -\n"))
-    ans
-  )
-
-)))
-
-(define =//= (lambda (x y) (lambda (s)
-  ;(if log_diseq (log_diseq) (void) )
-
-  ;(printf "~a: (=/=) '~a' and '~a'" logged_diseq_counter x y)
-  (let* ( (ans ((=/= x y) s) ) )
-    ;(if ans (printf "  +\n") (printf "   -\n"))
-    ans
-  )
-)))

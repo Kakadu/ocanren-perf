@@ -1,7 +1,7 @@
 (include "list-display.scm")
 
 (define === (lambda (x y) (lambda (s)
-  ((==original x y) s)
+  ((== x y) s)
 )))
 
 (define =//= (lambda (x y) (lambda (s)

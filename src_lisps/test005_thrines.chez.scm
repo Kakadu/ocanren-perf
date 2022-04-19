@@ -21,26 +21,4 @@
     (report_counters)
     ; Should give 224671 unifications
     (exit)
-      ))
-;(report_counters)
-;
-;(define evalo2 (lambda (exp)
-;  (conde
-;    ((fresh (t)
-;      (=== exp `(seq ((symb 'quote) ,t)) )
-;      (=== t 2 )
-;    ))
-;    ((fresh (eeeeeeeeeeees)
-;      (succeed))
-;    ))))
-;
-;(list-display (run 1 (exp)
-;    (evalo2 exp)
-;    ;(conde
-;    ;  ((fresh (t)
-;    ;    (=== exp `(seq ((symb 'quote) ,t)) )
-;    ;  ))
-;    ;  ((fresh (eeeeeeeeeeees)
-;    ;    (succeed))
-;    ;  ))
-;))
+  ))
