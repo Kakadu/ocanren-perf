@@ -9,3 +9,7 @@
 	url = https://github.com/Kakadu/OCanren.git
 	branch = bind1
 
+[submodule "faster-miniKanren"]
+	path = faster-miniKanren
+	url = https://github.com/Kakadu/faster-miniKanren.git
+	branch = master-new
