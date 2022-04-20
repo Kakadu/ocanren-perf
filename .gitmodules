@@ -4,3 +4,6 @@
 [submodule "OCanrenBeforeMoiseenko"]
 	path = ocanren02/OCanren
 	url = https://github.com/JetBrains-Research/OCanren.git
+[submodule "ocanren03/OCanren"]
+	path = ocanren03/OCanren
+	url = https://github.com/Kakadu/OCanren.git
