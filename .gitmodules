@@ -7,3 +7,5 @@
 [submodule "ocanren03/OCanren"]
 	path = ocanren03/OCanren
 	url = https://github.com/Kakadu/OCanren.git
+	branch = bind1
+
