@@ -6,8 +6,8 @@ MEASURE=/usr/bin/time -f "%U"
 DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
 MEASURE_OC1   ?= y
-MEASURE_OC2   ?= y
-MEASURE_OC3   ?=
+MEASURE_OC2   ?=
+MEASURE_OC3   ?= y
 MEASURE_OC4   ?=
 MEASURE_OC5   ?=
 
@@ -102,10 +102,14 @@ measure$(1)_MLOC2:
 	cd `realpath $$(MLOC02_DIR)` && BENCH_MODE=y $(OCAML_GC_CFG) dune exec ./$$(MLOC02_NATIVE_EXE_$(1)) && cat /tmp/ocanren_time >> ../.$(1).data
 	cat .$(1).data
 
-MLOC3_NATIVE_$(1) := $$(wildcard src_ocanren3*/test$(1)*.native)
+MLOC03_DIR = ocanren03
+MLOC03_NATIVE_$(1) := $$(wildcard $$(MLOC03_DIR)/test$(1)*.ml)
+MLOC03_NATIVE_EXE_$(1) := $$(MLOC03_NATIVE_$(1):.ml=.exe)
+MLOC03_NATIVE_EXE_$(1) := $$(shell echo $$(MLOC03_NATIVE_EXE_$(1)) | cut -f2- -d/)
 
 measure$(1)_MLOC3:
-	BENCH_MODE=y $(OCAML_GC_CFG) $$(MLOC3_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
+	cd `realpath $$(MLOC03_DIR)` && BENCH_MODE=y $(OCAML_GC_CFG) dune exec ./$$(MLOC03_NATIVE_EXE_$(1)) && cat /tmp/ocanren_time >> ../.$(1).data
+	cat .$(1).data
 
 MLOC4_NATIVE_$(1) := $$(wildcard src_ocanren4*/test$(1)*.native)
 
@@ -127,8 +131,8 @@ do_measure: measure$(1)
 measure$(1): measure$(1)_prepare \
 	measure$(1)_scm \
 	measure$(1)_MLOC1  \
-	measure$(1)_MLOC2  \
-	#measure$(1)_MLOC3  \
+	measure$(1)_MLOC3  \
+	#measure$(1)_MLOC2  \
 	#measure$(1)_MLOC4  \
 	#measure$(1)_MLOC5  \
 
@@ -142,7 +146,7 @@ $(foreach i,$(TESTS), $(eval $(call XXX,$(i)) ) )
 
 .PHONY: prepare_header do_measure
 prepare_header:
-	echo "x   faster-miniKanren/Scheme 01master 02before-Moiseenko  " \
+	echo "x   faster-miniKanren/Scheme 01master 03bind  " \
 		> $(DATAFILE)
 
 .PHONY: clean
@@ -178,8 +182,8 @@ clean: clean$(1)
 endef
 
 $(eval $(call DO_PREPARE,01))
-$(eval $(call DO_PREPARE,02))
-#$(eval $(call DO_PREPARE,3))
+#$(eval $(call DO_PREPARE,02))
+$(eval $(call DO_PREPARE,03))
 #$(eval $(call DO_PREPARE,4))
 #$(eval $(call DO_PREPARE,5))
 
