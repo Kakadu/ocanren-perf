@@ -6,7 +6,7 @@
 (library
  (name TimeHelper)
  (modules TimeHelper)
- (libraries OCanren)
+ (libraries mtime.clock.os OCanren)
  (preprocess
   (pps ppx_optcomp))
  (wrapped false))
@@ -88,7 +88,7 @@
  (names test005_thrines test006_twines test007_quines)
  (public_names - - -)
  (modules test005_thrines test006_twines test007_quines)
- (libraries OCanren OCanren.tester TimeHelper Quine_decls)
+ (libraries OCanren TimeHelper Quine_decls)
  (flags
   (:standard -rectypes -w -27-39))
  (preprocess
