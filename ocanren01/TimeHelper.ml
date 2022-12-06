@@ -42,7 +42,7 @@ let wrap (do_measure : verbose:bool -> unit) =
     (* do benchmarking *)
     let n = 10 in
     let acc = ref 0. in
-    for _i = 1 to 1 do
+    for _i = 1 to n do
       let () = Gc.compact () in
       let () = Gc.full_major () in
       acc := !acc +. (time @@ fun () -> do_measure ~verbose:false)

@@ -1,5 +1,10 @@
 (include "list-display.scm")
 
+#| (define == (lambda (x y) (lambda (s)
+  ((==count x y) s)
+))) |#
+
+
 (define appendo (lambda (l s out)
   (conde
     ((== '() l) (== s out))

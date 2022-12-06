@@ -1,7 +1,7 @@
 print-%: ; @echo $*=$($*)
 
 DATAFILE=data.gnuplot
-TESTS=001 002 005 #006 007 011
+TESTS=001 002 005 006 007 011
 MEASURE=/usr/bin/time -f "%U"
 DUMMY_MEASURE=printf "%10.3f\t" 0.0
 

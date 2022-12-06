@@ -14,3 +14,10 @@ let do_measure rel ~verbose =
 let () =
   TimeHelper.wrap @@ do_measure Numero_decls.(fun q -> expo (build_num 3) (build_num 5) q)
 ;;
+
+(* TODO(Kakadu): implement with instrumentalization
+   https://dune.readthedocs.io/en/stable/instrumentation.html
+   *)
+(* let () =
+  Format.printf "OCanren unification = %d\n%!" (OCanren.Peep.unification_counter ())
+;; *)
