@@ -6,3 +6,7 @@
 [submodule "OCanren"]
 	path = ocanren01/OCanren
 	url = https://github.com/JetBrains-Research/OCanren.git
+[submodule "scheme2"]
+	path = scheme2
+	url = git@github.com:Kakadu/faster-miniKanren.git
+	branch = fresh-placement
