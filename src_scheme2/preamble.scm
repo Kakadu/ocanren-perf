@@ -1,3 +1,4 @@
+(include "../scheme2/unif.scm")
 (include "../scheme2/mk-vicare.scm")
 (include "../scheme2/mk.scm")
 (include "../scheme2/test-check.scm")

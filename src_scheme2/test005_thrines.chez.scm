@@ -16,7 +16,7 @@
 (if (not (getenv "BENCH_MODE"))
   (begin
     (list-display (do_measure))
-    (report_counters)
+    (report_counters "count/005thrines")
     ; Old minicanren gives 224671 unifications
     (exit)
   ))

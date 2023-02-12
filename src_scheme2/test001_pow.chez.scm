@@ -17,6 +17,6 @@
 (if (not (getenv "BENCH_MODE"))
   (begin
     (list-display (do_measure))
-    (report_counters)
+    (report_counters "count/001pow")
     (exit)
   ))
