@@ -10,3 +10,8 @@
 	path = scheme2
 	url = git@github.com:Kakadu/faster-miniKanren.git
 	branch = fresh-placement
+[submodule "ocanren02/OCanren"]
+	path = ocanren02/OCanren
+	url = https://github.com/Kakadu/OCanren.git
+	branch = fresh-without-delay
+
