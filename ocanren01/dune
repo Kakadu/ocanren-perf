@@ -61,7 +61,7 @@
   test003_sort
   test004_logo2
   test008_appendo)
- (libraries OCanren OCanren.tester TimeHelper Numero_decls)
+ (libraries OCanren OCanren.tester TimeHelper Numero_decls benchmark)
  (flags
   (:standard -rectypes))
  (preprocess
@@ -88,7 +88,7 @@
  (names test005_thrines test006_twines test007_quines)
  (public_names - - -)
  (modules test005_thrines test006_twines test007_quines)
- (libraries OCanren TimeHelper Quine_decls)
+ (libraries OCanren TimeHelper Quine_decls benchmark)
  (flags
   (:standard -rectypes -w -27-39))
  (preprocess
