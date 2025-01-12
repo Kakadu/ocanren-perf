@@ -1,6 +1,6 @@
 (*
-   Quines stuff by Dmitrii Rozplokhas. Adopted from
-   https://raw.githubusercontent.com/rozplokhas/OCanren/master/regression/test015.ml
+  Quines stuff by Dmitrii Rozplokhas. Adopted from
+  https://raw.githubusercontent.com/rozplokhas/OCanren/master/regression/test015.ml
 *)
 
 open Printf
@@ -71,10 +71,10 @@ module Std = struct
       type nonrec ('a,'b,'c) ground = ('a,'b,'c) t (* Kind of abstract type *)
     ] *)
     (* module F = Fmap3(struct
-       type ('a,'b,'c) t = ('a,'b,'c) ground
-       let fmap eta = GT.gmap ground eta
-       end)
-    *)
+        type ('a,'b,'c) t = ('a,'b,'c) ground
+        let fmap eta = GT.gmap ground eta
+      end)
+ *)
     type nonrec ('a, 'b, 'c) t = 'a * 'b * 'c [@@deriving gt ~options:{ fmt; gmap }]
 
     let reify ra rb rc =
@@ -83,16 +83,16 @@ module Std = struct
         Reifier.compose
           Reifier.reify
           (ra
-           >>= fun fa ->
-           rb
-           >>= fun fb ->
-           rc
-           >>= fun fc ->
-           let rec foo = function
-             | Var (v, xs) -> Var (v, Stdlib.List.map foo xs)
-             | Value x -> Value (GT.gmap t fa fb fc x)
-           in
-           Env.Monad.return foo))
+          >>= fun fa ->
+          rb
+          >>= fun fb ->
+          rc
+          >>= fun fc ->
+          let rec foo = function
+            | Var (v, xs) -> Var (v, Stdlib.List.map foo xs)
+            | Value x -> Value (GT.gmap t fa fb fc x)
+          in
+          Env.Monad.return foo))
     ;;
 
     let make x y z = inj @@ (x, y, z)
@@ -172,9 +172,9 @@ module Gresult = struct
 
   type ground =
     ( StringLo.ground
-      , Gterm.ground
-      , (StringLo.ground, ground) Std.Pair.ground Std.List.ground )
-      t]
+    , Gterm.ground
+    , (StringLo.ground, ground) Std.Pair.ground Std.List.ground )
+    t]
 
   let show_string = GT.(show string)
   let show_stringl = GT.(show OCanren.logic) show_string
@@ -293,7 +293,7 @@ let find_twines ~verbose n =
   run qr twineso (fun q r -> q#reify Gterm.reify, r#reify Gterm.reify)
   |> OCanren.Stream.take ~n
   |> List.iter (fun (q, r) ->
-    if verbose then printf "%s,\n%s\n\n" (show_lterm q) (show_lterm r) else ())
+       if verbose then printf "%s,\n%s\n\n" (show_lterm q) (show_lterm r) else ())
 ;;
 
 let wrap3terms = function
@@ -311,8 +311,8 @@ let find_thrines ~verbose n =
     r#reify (Std.Triple.reify gterm_reifier gterm_reifier gterm_reifier))
   |> Stream.take ~n
   |> List.iter (fun a ->
-    if verbose
-    then (
-      let () = wrap3terms a in
-      print_newline ()))
+       if verbose
+       then (
+         let () = wrap3terms a in
+         print_newline ()))
 ;;

@@ -169,18 +169,21 @@ clean_scheme_$(1):
 endef
 
 $(eval $(call ADD_OCANREN,ocanren01,ocanren01))
+$(eval $(call ADD_OCANREN,ocanren02,ocanren02))
+
 #$(eval $(call ADD_OCANREN,ocanren02,ocanren02))
-$(eval $(call ADD_RACKET,src_lisps,faster-miniKanren))
+#$(eval $(call ADD_RACKET,src_lisps,faster-miniKanren))
 
 $(eval $(call DO_PREPARE_OCANREN,ocanren01))
-#$(eval $(call DO_PREPARE_OCANREN,ocanren02))
-$(eval $(call DO_PREPARE_SCHEME,src_lisps))
+$(eval $(call DO_PREPARE_OCANREN,ocanren02))
+
+#$(eval $(call DO_PREPARE_SCHEME,src_lisps))
 #$(eval $(call DO_PREPARE,02))
 #$(eval $(call DO_PREPARE,03))
 #$(eval $(call DO_PREPARE,04))
 #$(eval $(call DO_PREPARE,5))
 
-compile: compile_scm
+#compile: compile_scm
 
 define PREPARE_DATAFILE # testname
 .PHONY: process_datafile_$(1) clean_datafile_$(1)

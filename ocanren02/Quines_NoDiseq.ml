@@ -1,6 +1,6 @@
 (*
-   Quines stuff by Dmitrii Rozplokhas. Adopted from
-   https://raw.githubusercontent.com/rozplokhas/OCanren/master/regression/test015.ml
+  Quines stuff by Dmitrii Rozplokhas. Adopted from
+  https://raw.githubusercontent.com/rozplokhas/OCanren/master/regression/test015.ml
 *)
 
 open Printf
@@ -161,9 +161,9 @@ module Gresult = struct
 
   (* let pair_to_logic f g = fun (a,b) -> Value (f a, g b)
      let rec to_logic : rresult -> lresult = fun res ->
-     Value (fmap env_to_logic Nat.to_logic Gterm.to_logic res)
+       Value (fmap env_to_logic Nat.to_logic Gterm.to_logic res)
      and env_to_logic: renv -> lenv = fun e ->
-     List.to_logic (pair_to_logic Nat.to_logic to_logic) e *)
+       List.to_logic (pair_to_logic Nat.to_logic to_logic) e *)
 end
 
 let var_reifier = Std.Nat.reify
@@ -293,7 +293,7 @@ let find_quines ~verbose n =
 ;;
 
 (*
-   let find_twines n =
+let find_twines n =
   run qr (fun q r -> twineso q r)
     (fun qs rs ->
       List.iter2 (fun q r -> printf "%s,\n%s\n\n%!" (wrap_term q) (wrap_term r))
