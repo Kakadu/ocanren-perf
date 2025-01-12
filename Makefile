@@ -104,9 +104,9 @@ MLOC_$(2)_NATIVE_EXE_$(1) := $$(shell echo $$(MLOC_$(2)_NATIVE_EXE_$(1)) | cut -
 
 .PHONY: measure_MLOC_$(2)_$(1)
 measure_MLOC_$(2)_$(1):
-	sudo cpupower frequency-set --governor performance
+	sudo cpupower -c 0 frequency-set --governor performance
 	cd `realpath $$(MLOC_$(2)_DIR)` && \
-	  BENCH_MODE=y $(OCAML_GC_CFG) dune b ./$$(MLOC_$(2)_NATIVE_EXE_$(1)) && \
+	  dune b ./$$(MLOC_$(2)_NATIVE_EXE_$(1)) --profile=release && \
 	  BENCH_MODE=y $(OCAML_GC_CFG) taskset -c 0 \
 		_build/default/$$(MLOC_$(2)_NATIVE_EXE_$(1)) && \
 	  cat /tmp/ocanren_time >> ../.$(1).data
