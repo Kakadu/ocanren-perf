@@ -5,6 +5,7 @@
 
 open Printf
 open OCanren
+open Tagged_stdlib
 
 module StringLo = struct
   type ground = GT.string [@@deriving gt ~options:{ show; fmt; gmap }]
@@ -36,67 +37,33 @@ module ListLo = struct
       plugins =
         object
           method fmt fa ppf xs =
+            let _: _ logic = xs in
             let default ppf xs = (GT.fmt Std.List.logic) fa ppf xs in
             match xs with
+            | Value (Std.Wrapper.W (Var _))
             | Var _ -> default ppf xs
-            | Value _ ->
+            | Value (Std.Wrapper.W _) ->
               let rec iter ppf xs =
+                let _: _ Std.List.logic = xs in
                 match xs with
-                | Value Std.List.Nil -> ()
-                | Value (Std.List.Cons (h, tl)) -> Format.fprintf ppf "%a %a" fa h iter tl
+                | Value (Std.Wrapper.W (Value Std.List.Nil)) -> ()
+                | Value (Std.Wrapper.W (Value (Std.List.Cons (Std.Wrapper.W h, tl)))) -> Format.fprintf ppf "%a %a" fa h iter tl
+                | Value (Std.Wrapper.W (Var _))
                 | Var _ -> Format.fprintf ppf " . %a" default xs
               in
               Format.fprintf ppf "(%a)" iter xs
 
-          method gmap fa xs = [%gmap: 'a Std.List.logic] (GT.lift fa) () xs
+          method gmap fa xs =
+            let _: _ logic = xs in
+            [%gmap: 'a Std.List.logic] (GT.lift fa) () xs
         end
     }
   ;;
 
-  type 'a injected = 'a Std.List.groundi
+  type 'a injected = 'a Std.List.injected
 
   let prj_exn = Std.List.prj_exn
   let reify = Std.List.reify
-end
-
-(* let (_ : int) = GT.gmap ListLo.logic *)
-
-module Std = struct
-  include Std
-
-  module Triple = struct
-    (*   [%%distrib
-      type nonrec ('a,'b,'c) t = 'a * 'b * 'c
-        [@@deriving gt ~options:{fmt;gmap}]
-      type nonrec ('a,'b,'c) ground = ('a,'b,'c) t (* Kind of abstract type *)
-    ] *)
-    (* module F = Fmap3(struct
-       type ('a,'b,'c) t = ('a,'b,'c) ground
-       let fmap eta = GT.gmap ground eta
-       end)
-    *)
-    type nonrec ('a, 'b, 'c) t = 'a * 'b * 'c [@@deriving gt ~options:{ fmt; gmap }]
-
-    let reify ra rb rc =
-      let ( >>= ) = Env.Monad.bind in
-      Reifier.fix (fun self ->
-        Reifier.compose
-          Reifier.reify
-          (ra
-           >>= fun fa ->
-           rb
-           >>= fun fb ->
-           rc
-           >>= fun fc ->
-           let rec foo = function
-             | Var (v, xs) -> Var (v, Stdlib.List.map foo xs)
-             | Value x -> Value (GT.gmap t fa fb fc x)
-           in
-           Env.Monad.return foo))
-    ;;
-
-    let make x y z = inj @@ (x, y, z)
-  end
 end
 
 let list_combine3 xs ys zs =
@@ -155,7 +122,7 @@ module Gterm = struct
   type logic = (StringLo.logic, logic ListLo.logic) t OCanren.logic
   [@@deriving gt ~options:{ fmt; gmap }]
 
-  type injected = (GT.string OCanren.ilogic, injected Std.List.groundi) t ilogic
+  type injected = (GT.string OCanren.ilogic, injected Std.List.injected) t ilogic
 
   let show_rterm = Format.asprintf "%a" (GT.fmt ground)
   let show_lterm = Format.asprintf "%a" (GT.fmt logic)

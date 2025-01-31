@@ -4,6 +4,18 @@
    (:standard -w -33-27-39 -rectypes))))
 
 (library
+ (name tagged_stdlib)
+ (modules tagged_stdlib)
+ (libraries OCanren)
+ (wrapped false)
+ (preprocess
+  (pps
+   OCanren-ppx.ppx_distrib
+   OCanren-ppx.ppx_repr
+   OCanren-ppx.ppx_fresh
+   GTtogether)))
+
+(library
  (name TimeHelper)
  (modules TimeHelper)
  (libraries mtime.clock.os OCanren)
@@ -14,7 +26,7 @@
 (library
  (name Quine_decls)
  (modules Quine_decls)
- (libraries OCanren)
+ (libraries OCanren tagged_stdlib)
  (wrapped false)
  (flags
   (:standard -rectypes))
@@ -28,7 +40,7 @@
 (library
  (name Quines_NoDiseq)
  (modules Quines_NoDiseq)
- (libraries OCanren)
+ (libraries OCanren tagged_stdlib)
  (wrapped false)
  (preprocess
   (pps
@@ -40,7 +52,7 @@
 (library
  (name Numero_decls)
  (modules Numero_decls)
- (libraries OCanren OCanren.tester)
+ (libraries OCanren OCanren.tester tagged_stdlib)
  (wrapped false)
  (flags
   (:standard -rectypes -w -27-39))
