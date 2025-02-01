@@ -35,26 +35,36 @@ module ListLo = struct
   let logic =
     { Std.List.logic with
       plugins =
-        object
-          method fmt fa ppf xs =
-            let _: _ logic = xs in
-            let default ppf xs = (GT.fmt Std.List.logic) fa ppf xs in
-            match xs with
-            | Value (Std.Wrapper.W (Var _))
-            | Var _ -> default ppf xs
-            | Value (Std.Wrapper.W _) ->
-              let rec iter ppf xs =
-                let _: _ Std.List.logic = xs in
-                match xs with
-                | Value (Std.Wrapper.W (Value Std.List.Nil)) -> ()
-                | Value (Std.Wrapper.W (Value (Std.List.Cons (Std.Wrapper.W h, tl)))) -> Format.fprintf ppf "%a %a" fa h iter tl
-                | Value (Std.Wrapper.W (Var _))
-                | Var _ -> Format.fprintf ppf " . %a" default xs
-              in
-              Format.fprintf ppf "(%a)" iter xs
+        object (self)
+          (* method fmt_unwrapped fa ppf =
+             function
+             | Var _ -> assert false
+             | Value Std.List.Nil -> ()
+             | Value (Std.List.Cons (h, tl))
+
+             Format.fprintf ppf "%a %a" fa h iter tl *)
+          method fmt
+            : (Format.formatter -> 'a -> unit) -> Format.formatter -> 'a logic -> unit =
+            fun fa ppf xs ->
+              match xs with
+              | Value (Std.Wrapper.W (Var (idx, []))) | Var (idx, []) ->
+                Format.fprintf ppf "_.%d" idx
+              | Value (Std.Wrapper.W (Var (idx, _))) | Var (idx, _) -> assert false
+              | Value (Std.Wrapper.W _) ->
+                let rec iter ppf xs =
+                  let _ : 'a logic = xs in
+                  match xs with
+                  | Value (Std.Wrapper.W (Value Std.List.Nil)) -> ()
+                  | Value (Std.Wrapper.W (Value (Std.List.Cons (h, tl)))) ->
+                    Format.fprintf ppf "%a %a" fa h iter tl
+                  | Value (Std.Wrapper.W (Var (idx, []))) | Var (idx, []) ->
+                    Format.fprintf ppf "_.%d" idx
+                  | Value (Std.Wrapper.W (Var (idx, _))) | Var (idx, _) -> assert false
+                in
+                Format.fprintf ppf "(%a)" iter xs
 
           method gmap fa xs =
-            let _: _ logic = xs in
+            let _ : _ logic = xs in
             [%gmap: 'a Std.List.logic] (GT.lift fa) () xs
         end
     }
@@ -65,6 +75,14 @@ module ListLo = struct
   let prj_exn = Std.List.prj_exn
   let reify = Std.List.reify
 end
+
+let%expect_test _ =
+  OCanren.(run q)
+    (fun q -> q === Std.list ( !! ) [ 1; 2; 3 ])
+    (fun s -> s#reify (Std.List.reify OCanren.reify))
+  |> OCanren.Stream.iter (fun q ->
+    Format.printf "%a" [%fmt: GT.int OCanren.logic ListLo.logic] q)
+;;
 
 let list_combine3 xs ys zs =
   let rec helper acc = function
@@ -89,13 +107,10 @@ let list_iter3 f xs ys zs =
 module Gterm = struct
   [@@@ocaml.warnerror "-32-34"]
 
-  [%%distrib
   type nonrec ('s, 'xs) t =
     | Symb of 's
     | Seq of 'xs
   [@@deriving gt ~options:{ fmt; gmap }]
-
-  type ground = (StringLo.ground, ground ListLo.ground) t]
 
   let t =
     { t with
@@ -118,20 +133,61 @@ module Gterm = struct
     }
   ;;
 
-  (* This is a hack to apply custom printers for logic strings and lists *)
-  type logic = (StringLo.logic, logic ListLo.logic) t OCanren.logic
-  [@@deriving gt ~options:{ fmt; gmap }]
+  type ground = (StringLo.ground Std.Wrapper.ground, ground ListLo.ground) t Std.Wrapper.t
+  [@@deriving gt ~options:{ fmt }]
 
-  type injected = (GT.string OCanren.ilogic, injected Std.List.injected) t ilogic
+  type logic =
+    (StringLo.logic Std.Wrapper.logic, logic ListLo.logic) t OCanren.logic
+      Std.Wrapper.logic
+  [@@deriving gt ~options:{ fmt }]
+
+  type injected =
+    (StringLo.injected Std.Wrapper.injected, injected ListLo.injected) t ilogic
+      Std.Wrapper.injected
+
+  let fmap_ fa fb eta = (GT.gmap t fa fb) eta
+
+  let fmapt f__009_ f__010_ subj__011_ =
+    let open OCanren.Env.Monad in
+    OCanren.Env.Monad.return fmap_ <*> f__009_ <*> f__010_ <*> subj__011_
+  ;;
+
+  let (prj_exn : (injected, ground) OCanren.Reifier.t) =
+    let open OCanren.Env.Monad in
+    OCanren.Reifier.fix (fun self ->
+      Std.Wrapper.prj_exn
+        (OCanren.prj_exn
+         <..> chain (fmapt (Std.Wrapper.prj_exn StringLo.prj_exn) (ListLo.prj_exn self))))
+  ;;
+
+  let (reify : (injected, logic) OCanren.Reifier.t) =
+    let open OCanren.Env.Monad in
+    OCanren.Reifier.fix (fun self ->
+      Std.Wrapper.reify
+        (OCanren.reify
+         <..> chain
+                (OCanren.Reifier.zed
+                   (OCanren.Reifier.rework
+                      ~fv:(fmapt (Std.Wrapper.reify StringLo.reify) (ListLo.reify self))))
+        ))
+  ;;
+
+  let symb x : injected = Std.Wrapper.w (OCanren.inj (Symb (Std.Wrapper.w x)))
+  let seq x : injected = Std.Wrapper.w (OCanren.inj (Seq x))
+
+  (* This is a hack to apply custom printers for logic strings and lists *)
+  (* include struct
+     type logic =
+     (StringLo.logic Std.Wrapper.logic, logic Std.List.logic) t OCanren.logic
+     Std.Wrapper.logic
+     [@@deriving gt ~options:{ fmt }]
+     end *)
 
   let show_rterm = Format.asprintf "%a" (GT.fmt ground)
   let show_lterm = Format.asprintf "%a" (GT.fmt logic)
 end
 
-let gterm_reifier = Gterm.reify
-
 module Gresult = struct
-  [%%distrib
   type nonrec ('s, 't, 'xs) t =
     | Closure of 's * 't * 'xs
     | Val_ of 't
@@ -140,9 +196,63 @@ module Gresult = struct
   type ground =
     ( StringLo.ground
       , Gterm.ground
-      , (StringLo.ground, ground) Std.Pair.ground Std.List.ground )
-      t]
+      , (StringLo.ground, ground) Std.Pair.ground ListLo.ground )
+      t
+      Std.Wrapper.t
+  [@@deriving gt ~options:{ fmt }]
 
+  type injected =
+    ( StringLo.injected
+      , Gterm.injected
+      , (StringLo.injected, injected) Std.Pair.injected ListLo.injected )
+      t
+      ilogic
+      Std.Wrapper.injected
+
+  let fmapt : ('a -> 'd) Env.m -> ('b -> 'e) Env.m -> ('c -> 'f) Env.m -> _ =
+    fun fa fb fc subj ->
+    let open OCanren.Env.Monad in
+    OCanren.Env.Monad.return (GT.gmap t) <*> fa <*> fb <*> fc <*> subj
+  ;;
+
+  let (prj_exn : (injected, ground) OCanren.Reifier.t) =
+    let open OCanren.Env.Monad in
+    OCanren.Reifier.fix (fun self ->
+      Std.Wrapper.prj_exn
+        (OCanren.prj_exn
+         <..> chain
+                (fmapt
+                   StringLo.prj_exn
+                   Gterm.prj_exn
+                   (ListLo.prj_exn (Std.Pair.prj_exn StringLo.prj_exn self)))))
+  ;;
+
+  type logic =
+    (StringLo.logic, Gterm.logic, (StringLo.logic, logic) Std.Pair.logic ListLo.logic) t
+      OCanren.logic
+      Std.Wrapper.logic
+  [@@deriving gt ~options:{ fmt }]
+
+  let (reify : (injected, logic) OCanren.Reifier.t) =
+    let open OCanren.Env.Monad in
+    OCanren.Reifier.fix (fun self ->
+      Std.Wrapper.reify
+        (OCanren.reify
+         <..> chain
+                (OCanren.Reifier.zed
+                   (OCanren.Reifier.rework
+                      ~fv:
+                        (fmapt
+                           StringLo.reify
+                           Gterm.reify
+                           (ListLo.reify (Std.Pair.reify StringLo.reify self)))))))
+  ;;
+
+  let closure _x__060_ _x__061_ _x__062_ =
+    Std.Wrapper.w (OCanren.inj (Closure (_x__060_, _x__061_, _x__062_)))
+  ;;
+
+  let val_ _x__063_ = Std.Wrapper.w (OCanren.inj (Val_ _x__063_))
   let show_string = GT.(show string)
   let show_stringl = GT.(show OCanren.logic) show_string
   let rec show_rresult r = Format.asprintf "%a" (GT.fmt ground) r
@@ -158,30 +268,32 @@ open Gresult
 type lenv = (GT.string OCanren.logic, Gresult.logic) Std.Pair.logic Std.List.logic
 [@@deriving gt ~options:{ fmt }]
 
-type fenv = (string OCanren.ilogic, Gresult.injected) Std.Pair.groundi Std.List.groundi
+type fenv = (string OCanren.ilogic, Gresult.injected) Std.Pair.injected Std.List.injected
 
 let reif_env : (_, lenv) Reifier.t =
   Std.List.reify (Std.Pair.reify OCanren.reify gresult_reifier)
 ;;
 
-let show_reif_term h t = show_lterm @@ gterm_reifier h t
-let show_reif_result h t = show_lresult @@ gresult_reifier h t
+let show_reif_term h t = show_lterm @@ Gterm.reify h t
+let show_reif_result h t = show_lresult @@ Gresult.reify h t
 let ( =/= ) = OCanren.( =/= )
 let ( =//= ) = ( =/= )
 let ( === ) = OCanren.( === )
 let ( ===! ) = ( === )
 let ( ===!! ) = ( === )
 
-let rec lookupo x env t =
-  let open OCanren.Std in
+let rec lookupo : _ -> _ Std.Pair.injected ListLo.injected -> _ -> goal =
+  fun x env t ->
+  let open Tagged_stdlib.Std in
   fresh
     (rest y v)
-    (Std.Pair.pair y v % rest === env)
+    (Pair.pair y v % rest === env)
     (conde [ y ===! x &&& (v ===!! t); y =/= x &&& lookupo x rest t ])
 ;;
 
 let rec not_in_envo x env =
-  let open OCanren.Std in
+  let _ : _ Std.Pair.injected Std.List.injected = env in
+  let open Std in
   conde
     [ fresh (y v rest) (env === Std.pair y v % rest) (y =/= x) (not_in_envo x rest)
     ; nil () === env
@@ -189,7 +301,10 @@ let rec not_in_envo x env =
 ;;
 
 let rec proper_listo es env rs =
-  let open OCanren.Std in
+  let open Tagged_stdlib.Std in
+  let _ : Gterm.injected ListLo.injected = es in
+  let _ : _ Std.Pair.injected ListLo.injected = env in
+  let _ : Gterm.injected ListLo.injected = rs in
   conde
     [ Std.nil () === es &&& (Std.nil () === rs)
     ; fresh
@@ -201,7 +316,7 @@ let rec proper_listo es env rs =
     ]
 
 and evalo (term : Gterm.injected) (env : fenv) (r : Gresult.injected) =
-  let open OCanren.Std in
+  let open Tagged_stdlib.Std in
   conde
     [ fresh
         t
@@ -247,11 +362,11 @@ let thrineso x =
     (Std.Triple.make p q r === x)
 ;;
 
-let wrap_term rr = rr#reify gterm_reifier |> show_lterm
+let wrap_term rr = rr#reify Gterm.reify |> show_lterm
 let wrap_result rr = rr#reify gresult_reifier |> show_lresult
 
 let find_quines ~verbose n =
-  run q quineso (fun r -> r#reify gterm_reifier)
+  run q quineso (fun r -> r#reify Gterm.reify)
   |> OCanren.Stream.take ~n
   |> List.iter (fun q -> if verbose then printf "%s\n\n" (show_lterm q) else ())
 ;;
@@ -264,8 +379,8 @@ let find_twines ~verbose n =
 ;;
 
 let wrap3terms = function
-  | Var _ -> assert false
-  | Value (a, b, c) ->
+  | Value (Std.Wrapper.W (Var _)) | Var _ -> assert false
+  | Value (Std.Wrapper.W (Value (a, b, c))) ->
     printf
       "* %s\n  %s\n  %s\n\n"
       (Gterm.show_lterm a)
@@ -274,8 +389,7 @@ let wrap3terms = function
 ;;
 
 let find_thrines ~verbose n =
-  run q thrineso (fun r ->
-    r#reify (Std.Triple.reify gterm_reifier gterm_reifier gterm_reifier))
+  run q thrineso (fun r -> r#reify (Std.Triple.reify Gterm.reify Gterm.reify Gterm.reify))
   |> Stream.take ~n
   |> List.iter (fun a ->
     if verbose
