@@ -149,3 +149,12 @@
  (alias all_tests)
  (action
   (run echo)))
+
+(library
+ (name tests_numero)
+ (modules tests_numero)
+ ;  (public_name -)
+ (libraries Numero_decls OCanren.tester)
+ (inline_tests)
+ (preprocess
+  (pps GT.ppx_all ppx_expect)))

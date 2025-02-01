@@ -175,12 +175,13 @@ endef
 
 $(eval $(call ADD_OCANREN,ocanren01,ocanren01))
 #$(eval $(call ADD_OCANREN,ocanren02,ocanren02))
+$(eval $(call ADD_OCANREN,ocanren03,ocanren03))
 
-#$(eval $(call ADD_OCANREN,ocanren02,ocanren02))
 #$(eval $(call ADD_RACKET,src_lisps,faster-miniKanren))
 
 $(eval $(call DO_PREPARE_OCANREN,ocanren01))
 #$(eval $(call DO_PREPARE_OCANREN,ocanren02))
+$(eval $(call DO_PREPARE_OCANREN,ocanren03))
 
 $(eval $(call DO_PREPARE_SCHEME,src_lisps))
 #$(eval $(call DO_PREPARE,02))

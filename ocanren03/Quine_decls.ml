@@ -81,7 +81,8 @@ let%expect_test _ =
     (fun q -> q === Std.list ( !! ) [ 1; 2; 3 ])
     (fun s -> s#reify (Std.List.reify OCanren.reify))
   |> OCanren.Stream.iter (fun q ->
-    Format.printf "%a" [%fmt: GT.int OCanren.logic ListLo.logic] q)
+    Format.printf "%a" [%fmt: GT.int OCanren.logic ListLo.logic] q);
+  [%expect {| (1 2 3 ) |}]
 ;;
 
 let list_combine3 xs ys zs =

@@ -50,6 +50,12 @@ module Std = struct
     val reify : ('a, 'b) OCanren.Reifier.t -> ('a injected, 'b logic) OCanren.Reifier.t
     val nil : unit -> 'a injected
     val cons : 'a -> 'a injected -> 'a injected
+
+    open OCanren
+
+    val nullo : _ injected -> OCanren.goal
+    val tlo : 'a ilogic injected -> 'a ilogic injected -> OCanren.goal
+    val list_of_ground : 'a ground -> 'a GT.list
   end = struct
     [%%ocanren_inject
       type nonrec ('a, 'self) ground =
@@ -86,6 +92,27 @@ module Std = struct
           (OCanren.reify
            <..> chain (OCanren.Reifier.zed (OCanren.Reifier.rework ~fv:(fmapt ra rself)))
           ))
+    ;;
+
+    let nullo xs = OCanren.(xs === nil ())
+
+    let tlo : 'a injected -> _ -> OCanren.goal =
+      fun xs tl -> OCanren.call_fresh (fun h -> OCanren.unify xs (cons h tl))
+    ;;
+
+    let rec list_of_ground : _ ground -> _ GT.list = function
+      | Wrapper.W Nil -> []
+      | Wrapper.W (Cons (h, tl)) -> h :: list_of_ground tl
+    ;;
+
+    let ground =
+      { ground with
+        plugins =
+          object
+            method gmap = ground.plugins#gmap
+            method fmt fa ppf xs = GT.fmt GT.list fa ppf (list_of_ground xs)
+          end
+      }
     ;;
   end
 
