@@ -55,7 +55,7 @@ module Std = struct
 
     val nullo : _ injected -> OCanren.goal
     val tlo : 'a ilogic injected -> 'a ilogic injected -> OCanren.goal
-    val list_of_ground : 'a ground -> 'a GT.list
+    val list_of_ground : ('a -> 'b) -> 'a ground -> 'b GT.list
   end = struct
     [%%ocanren_inject
       type nonrec ('a, 'self) ground =
@@ -100,9 +100,9 @@ module Std = struct
       fun xs tl -> OCanren.call_fresh (fun h -> OCanren.unify xs (cons h tl))
     ;;
 
-    let rec list_of_ground : _ ground -> _ GT.list = function
+    let rec list_of_ground f : _ ground -> _ GT.list = function
       | Wrapper.W Nil -> []
-      | Wrapper.W (Cons (h, tl)) -> h :: list_of_ground tl
+      | Wrapper.W (Cons (h, tl)) -> f h :: list_of_ground f tl
     ;;
 
     let ground =
@@ -110,7 +110,7 @@ module Std = struct
         plugins =
           object
             method gmap = ground.plugins#gmap
-            method fmt fa ppf xs = GT.fmt GT.list fa ppf (list_of_ground xs)
+            method fmt fa ppf xs = GT.fmt GT.list fa ppf (list_of_ground Fun.id xs)
           end
       }
     ;;

@@ -173,7 +173,7 @@ module Gterm = struct
         ))
   ;;
 
-  let symb x : injected = Std.Wrapper.w (OCanren.inj (Symb (Std.Wrapper.w x)))
+  let symb x : injected = Std.Wrapper.w (OCanren.inj (Symb x))
   let seq x : injected = Std.Wrapper.w (OCanren.inj (Seq x))
 
   (* This is a hack to apply custom printers for logic strings and lists *)
@@ -195,17 +195,18 @@ module Gresult = struct
   [@@deriving gt ~options:{ fmt; gmap }]
 
   type ground =
-    ( StringLo.ground
+    ( StringLo.ground Std.Wrapper.ground
       , Gterm.ground
-      , (StringLo.ground, ground) Std.Pair.ground ListLo.ground )
+      , (StringLo.ground Std.Wrapper.ground, ground) Std.Pair.ground ListLo.ground )
       t
       Std.Wrapper.t
   [@@deriving gt ~options:{ fmt }]
 
   type injected =
-    ( StringLo.injected
+    ( StringLo.injected Std.Wrapper.injected
       , Gterm.injected
-      , (StringLo.injected, injected) Std.Pair.injected ListLo.injected )
+      , (StringLo.injected Std.Wrapper.injected, injected) Std.Pair.injected
+          ListLo.injected )
       t
       ilogic
       Std.Wrapper.injected
@@ -223,13 +224,17 @@ module Gresult = struct
         (OCanren.prj_exn
          <..> chain
                 (fmapt
-                   StringLo.prj_exn
+                   (Std.Wrapper.prj_exn StringLo.prj_exn)
                    Gterm.prj_exn
-                   (ListLo.prj_exn (Std.Pair.prj_exn StringLo.prj_exn self)))))
+                   (ListLo.prj_exn
+                      (Std.Pair.prj_exn (Std.Wrapper.prj_exn StringLo.prj_exn) self)))))
   ;;
 
   type logic =
-    (StringLo.logic, Gterm.logic, (StringLo.logic, logic) Std.Pair.logic ListLo.logic) t
+    ( StringLo.logic Std.Wrapper.logic
+      , Gterm.logic
+      , (StringLo.logic Std.Wrapper.logic, logic) Std.Pair.logic ListLo.logic )
+      t
       OCanren.logic
       Std.Wrapper.logic
   [@@deriving gt ~options:{ fmt }]
@@ -244,24 +249,24 @@ module Gresult = struct
                    (OCanren.Reifier.rework
                       ~fv:
                         (fmapt
-                           StringLo.reify
+                           (Std.Wrapper.reify StringLo.reify)
                            Gterm.reify
-                           (ListLo.reify (Std.Pair.reify StringLo.reify self)))))))
+                           (ListLo.reify
+                              (Std.Pair.reify (Std.Wrapper.reify StringLo.reify) self)))))
+        ))
   ;;
 
   let closure _x__060_ _x__061_ _x__062_ =
     Std.Wrapper.w (OCanren.inj (Closure (_x__060_, _x__061_, _x__062_)))
   ;;
 
-  let val_ _x__063_ = Std.Wrapper.w (OCanren.inj (Val_ _x__063_))
-  let show_string = GT.(show string)
-  let show_stringl = GT.(show OCanren.logic) show_string
-  let rec show_rresult r = Format.asprintf "%a" (GT.fmt ground) r
+  let val_ x : injected = Std.Wrapper.w (OCanren.inj (Val_ x))
+  let show_rresult : ground -> string = fun r -> Format.asprintf "%a" (GT.fmt ground) r
   let show_lresult (r : logic) = Format.asprintf "%a" (GT.fmt logic) r
 end
 
 let gresult_reifier = Gresult.reify
-let ( !! ) x = inj x
+let ( !! ) x : string ilogic Std.Wrapper.injected = Std.Wrapper.w (inj x)
 
 open Gterm
 open Gresult
@@ -269,7 +274,9 @@ open Gresult
 type lenv = (GT.string OCanren.logic, Gresult.logic) Std.Pair.logic Std.List.logic
 [@@deriving gt ~options:{ fmt }]
 
-type fenv = (string OCanren.ilogic, Gresult.injected) Std.Pair.injected Std.List.injected
+type fenv =
+  (string OCanren.ilogic Std.Wrapper.injected, Gresult.injected) Std.Pair.injected
+    Std.List.injected
 
 let reif_env : (_, lenv) Reifier.t =
   Std.List.reify (Std.Pair.reify OCanren.reify gresult_reifier)

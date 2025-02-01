@@ -8,7 +8,7 @@ let do_measure rel ~verbose =
     rel
     ~reifier:(fun r -> r#reify num_reifier) (* ~inj:(List.to_logic (fun x -> Value x) ) *)
     ~verbose
-    (fun term -> Printf.printf "%s\n" (show_num_logic term))
+    (fun term -> Printf.printf "%s\n" (Oleg.show_logic term))
 ;;
 
 let () =
@@ -17,7 +17,7 @@ let () =
 
 (* TODO(Kakadu): implement with instrumentalization
    https://dune.readthedocs.io/en/stable/instrumentation.html
-   *)
+*)
 (* let () =
-  Format.printf "OCanren unification = %d\n%!" (OCanren.Peep.unification_counter ())
-;; *)
+   Format.printf "OCanren unification = %d\n%!" (OCanren.Peep.unification_counter ())
+   ;; *)

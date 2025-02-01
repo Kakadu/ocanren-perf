@@ -3,30 +3,32 @@ open OCanren
 open Tagged_stdlib.Std
 open Tester
 
-let rec build_num = function
-  | 0 -> nil ()
-  | n when n mod 2 == 0 -> inj 0 % build_num (n / 2)
-  | n -> inj 1 % build_num (n / 2)
-;;
-
 module Oleg = struct
-  type injected = int OCanren.ilogic List.injected
+  type injected = int OCanren.ilogic Wrapper.injected List.injected
   type ground = int GT.list
 
   let prj_exn : (injected, ground) Reifier.t =
-    Reifier.fmap List.list_of_ground (List.prj_exn OCanren.prj_exn)
+    Reifier.fmap
+      (List.list_of_ground (function Wrapper.W x -> x))
+      (List.prj_exn (Wrapper.prj_exn OCanren.prj_exn))
   ;;
 
   let show_ground = GT.show GT.list (GT.show GT.int)
 
-  type logic = int OCanren.logic List.logic
+  type logic = int OCanren.logic Wrapper.logic List.logic
 
-  let reify : (injected, logic) Reifier.t = List.reify OCanren.reify
+  let reify : (injected, logic) Reifier.t = List.reify (Wrapper.reify OCanren.reify)
 
   let show_logic : logic -> string =
-    Format.asprintf "%a" [%fmt: GT.int OCanren.logic List.logic]
+    Format.asprintf "%a" [%fmt: GT.int OCanren.logic Wrapper.logic List.logic]
   ;;
 end
+
+let rec build_num : int -> Oleg.injected = function
+  | 0 -> nil ()
+  | n when n mod 2 == 0 -> Wrapper.w !!0 % build_num (n / 2)
+  | n -> Wrapper.w !!1 % build_num (n / 2)
+;;
 
 let rec appendo l s out =
   let _ : _ List.injected = l in
@@ -40,7 +42,7 @@ let rec appendo l s out =
 
 let poso : Oleg.injected -> _ = fun q -> fresh (h t) (q === h % t)
 let gt1o (q : Oleg.injected) = fresh (h t tt) (q === h % (t % tt))
-let ( ! ) = inj
+let ( ! ) x = Wrapper.w (inj x)
 
 let full_addero b x y r c =
   conde
@@ -282,11 +284,14 @@ let logo n b q r =
     ]
 ;;
 
-let expo b q n = logo n b q @@ nil ()
-let test17 n m = lelo n m &&& multo n (build_num 2) m
-let test27 b q r = logo (build_num 68) b q r &&& gt1o q
-let show_num num = Format.asprintf "%a" GT.(fmt List.ground (GT.fmt int)) num
-let show_num_logic = Format.asprintf "%a" [%fmt: GT.int OCanren.logic List.logic]
+let expo : Oleg.injected -> Oleg.injected -> Oleg.injected -> _ =
+  fun b q n -> logo n b q @@ nil ()
+;;
+
+(* let test17 n m = lelo n m &&& multo n (build_num 2) m *)
+(* let test27 b q r = logo (build_num 68) b q r &&& gt1o q *)
+(* let show_num num = Format.asprintf "%a" GT.(fmt List.ground (GT.fmt int)) num *)
+(* let show_num_logic = Format.asprintf "%a" [%fmt: GT.int OCanren.logic List.logic] *)
 (* GT.(show List.logic @@ show logic @@ show int) *)
 
 (* let _ffoo _ =
@@ -297,5 +302,5 @@ let show_num_logic = Format.asprintf "%a" [%fmt: GT.int OCanren.logic List.logic
    run_exn show_num (-1)   q  qh (REPR (fun q       -> expo (build_num 3) (build_num 5) q               ));
    () *)
 
-let num_reifier h = List.reify OCanren.reify h
-let runL n = run_r num_reifier show_num_logic n
+let num_reifier = Oleg.reify
+let runL n = run_r num_reifier Oleg.show_logic n
