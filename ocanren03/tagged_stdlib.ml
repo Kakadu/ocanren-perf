@@ -126,6 +126,43 @@ module Std = struct
     | x :: xs -> List.cons (f x) (list f xs)
   ;;
 
+  module Nat = struct
+    type nonrec 'self t =
+      | Z
+      | S of 'self
+    [@@deriving gt ~plugins:{ fmt; gmap }]
+
+    type ground = ground t Wrapper.t [@@deriving gt ~plugins:{ fmt; gmap }]
+
+    type logic = logic t OCanren.logic Wrapper.logic
+    [@@deriving gt ~plugins:{ fmt; gmap }]
+
+    type injected = injected t OCanren.ilogic Wrapper.injected
+
+    let o () : injected = Wrapper.w (OCanren.inj Z)
+    let zero : injected = Wrapper.w (OCanren.inj Z)
+    let succ prev : injected = Wrapper.w (OCanren.inj (S prev))
+
+    let fmapt fa s =
+      let open OCanren.Env.Monad in
+      OCanren.Env.Monad.return (GT.gmap t) <*> fa <*> s
+    ;;
+
+    let prj_exn : (injected, ground) OCanren.Reifier.t =
+      let open OCanren.Env.Monad in
+      OCanren.Reifier.fix (fun rself ->
+        Wrapper.prj_exn (OCanren.prj_exn <..> chain (fmapt rself)))
+    ;;
+
+    let reify : (injected, logic) OCanren.Reifier.t =
+      let open OCanren.Env.Monad in
+      OCanren.Reifier.fix (fun rself ->
+        Wrapper.reify
+          (OCanren.reify
+           <..> chain (OCanren.Reifier.zed (OCanren.Reifier.rework ~fv:(fmapt rself)))))
+    ;;
+  end
+
   module Pair = struct
     type nonrec ('a, 'b) t = 'a * 'b [@@deriving gt ~plugins:{ fmt; gmap }]
     type nonrec ('a, 'b) ground = ('a * 'b) Wrapper.t [@@deriving gt ~plugins:{ fmt }]

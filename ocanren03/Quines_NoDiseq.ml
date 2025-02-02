@@ -4,32 +4,27 @@
 *)
 
 open Printf
-open GT
 open OCanren
-(* open Tagged_stdlib *)
+open Tagged_stdlib
 
 let ( ===< ) = ( === )
 let ( ==== ) = ( === )
+(* let ( !! ) x = Std.Wrapper.w (inj x) *)
 
 module Gterm = struct
-  [%%distrib
   type nonrec ('s, 'n, 'ts) t =
     | Symb of 's
     | VR of 'n (* variable indexed by peano numbers *)
     | Tuple of 'ts
   [@@deriving gt ~options:{ fmt; show; gmap }]
 
-  type ground = (GT.string, Std.Nat.ground, ground Std.List.ground) t]
-
-  let _ = tuple
-
   let t =
     { t with
       gcata = ()
     ; plugins =
         object
-          (* method gmap = t.plugins#gmap *)
           method show = t.GT.plugins#show
+          method gmap = t.GT.plugins#gmap
 
           method fmt fs fn fts fmt =
             GT.transform
@@ -46,34 +41,78 @@ module Gterm = struct
     }
   ;;
 
-  type rterm = ground [@@deriving gt ~options:{ fmt }]
+  type ground = (GT.string, Std.Nat.ground, ground Std.List.ground) t Std.Wrapper.t
+  [@@deriving gt ~options:{ fmt }]
 
-  (* type lterm = (string logic, Std.Nat.logic,  lterm Std.List.logic) X.t logic [@@deriving gt ~options:{fmt}] *)
-  type fterm = injected
+  type injected =
+    (GT.string ilogic, Std.Nat.injected, injected Std.List.injected) t ilogic
+      Std.Wrapper.injected
+
+  let fmapt fa fb fc s =
+    let open OCanren.Env.Monad in
+    OCanren.Env.Monad.return (GT.gmap t) <*> fa <*> fb <*> fc <*> s
+  ;;
+
+  let prj_exn : (injected, ground) OCanren.Reifier.t =
+    let open OCanren.Env.Monad in
+    OCanren.Reifier.fix (fun self ->
+      Std.Wrapper.prj_exn
+        (OCanren.prj_exn
+         <..> chain (fmapt OCanren.prj_exn Std.Nat.prj_exn (Std.List.prj_exn self))))
+  ;;
+
+  type logic =
+    (GT.string OCanren.logic, Std.Nat.logic, logic Std.List.logic) t OCanren.logic
+      Std.Wrapper.logic
+  [@@deriving gt ~options:{ fmt }]
+
+  let reify : (injected, logic) OCanren.Reifier.t =
+    let open OCanren.Env.Monad in
+    OCanren.Reifier.fix (fun self ->
+      Std.Wrapper.reify
+        (OCanren.reify
+         <..> chain
+                (OCanren.Reifier.zed
+                   (OCanren.Reifier.rework
+                      ~fv:(fmapt OCanren.reify Std.Nat.reify (Std.List.reify self))))))
+  ;;
 
   (* let rec pp_rterm f t =
      GT.fmt X.t (GT.fmt GT.string) (GT.fmt Std.List.ground pp_rterm) f t *)
-  let show_rterm : rterm -> string = Format.asprintf "%a" (GT.fmt rterm)
+  let show_rterm : ground -> string = Format.asprintf "%a" (GT.fmt ground)
   let show_lterm : logic -> string = Format.asprintf "%a" (GT.fmt logic)
 
   open OCanren.Std
 
-  let vr n : fterm = inj @@ VR n
+  let symb n : injected = Std.Wrapper.w (inj @@ Symb n)
+  let vr n : injected = Std.Wrapper.w (inj @@ VR n)
+  let tuple xs : injected = Std.Wrapper.w (inj @@ Tuple (Std.list Fun.id xs))
 
-  (* let symb s : fterm = inj @@ Symb s *)
-  let tuple xs : fterm = inj @@ Tuple (Std.list Fun.id xs)
-  let quote xs = inj @@ Tuple (symb !!"quote" % xs)
-  let quotequote : fterm = quote !<(symb !!"quote")
+  let quote xs : injected =
+    Std.Wrapper.w (inj @@ Tuple (Std.List.cons (symb !!"quote") xs))
+  ;;
 
-  let lambda n body : fterm =
+  let quotequote : injected =
+    let open Std in
+    quote !<(symb !!"quote")
+  ;;
+
+  let lambda n body : injected =
     tuple
     @@ (* in the original code lambda takes a list of arguments *)
     [ symb !!"lambda"; n; body ]
   ;;
 
-  let app func arg = inj @@ Tuple (func %< arg)
-  let list xs : fterm = inj @@ Tuple (symb !!"list" % xs)
-  let list2 a b : fterm = inj @@ Tuple (symb !!"list" % (a %< b))
+  let app : injected -> injected -> injected =
+    fun func arg -> Std.Wrapper.w (inj @@ Tuple Std.List.(cons func (cons arg (nil ()))))
+  ;;
+
+  let list xs : injected = Std.Wrapper.w (inj @@ Tuple (Std.List.cons (symb !!"list") xs))
+
+  let list2 a b : injected =
+    let open Std in
+    Wrapper.w (inj @@ Tuple (symb !!"list" % (a %< b)))
+  ;;
 end
 
 let ( !! ) = inj
@@ -97,8 +136,8 @@ let rec tm o =
 ;;
 
 module Var = struct
-  type ground = Std.Nat.ground [@@deriving gt ~options:{ fmt; show; gmap }]
-  type logic = Std.Nat.logic [@@deriving gt ~options:{ fmt; show; gmap }]
+  type ground = Std.Nat.ground [@@deriving gt ~options:{ fmt; gmap }]
+  type logic = Std.Nat.logic [@@deriving gt ~options:{ fmt; gmap }]
   type injected = Std.Nat.injected
 
   let prj_exn = Std.Nat.prj_exn
@@ -106,59 +145,72 @@ module Var = struct
 end
 
 module Gresult = struct
-  [%%distrib
   type nonrec ('env, 'v, 't) t =
     | Closure of 'env * 'v * 't
     | Code of 't
-  [@@deriving gt ~options:{ fmt; show; gmap }]
+  [@@deriving gt ~options:{ fmt; gmap }]
 
-  type nonrec 'env ground = ('env, Var.ground, Gterm.ground) t]
-  (* let fmap f g h = function
-     | Closure (a, b, c) -> Closure (f a, g b, h c)
-     | Code b -> Code (h b)] *)
+  type ground =
+    ((Var.ground * ground) Std.Wrapper.ground Std.List.ground, Var.ground, Gterm.ground) t
+  [@@deriving gt ~options:{ fmt }]
 
-  (* include X *)
-  (* include Fmap3 (X) *)
-  (* open OCanren.Std *)
-
-  let show_rvar = GT.show Var.ground
-  let show_lvar = GT.show Var.logic
-
-  (* type renv = *)
-  type rresult = renv ground
-  and renv = (Var.ground * rresult) Std.List.ground [@@deriving gt ~options:{ fmt }]
-
-  type lresult = lenv logic
-  and lenv = (Var.logic * lresult) logic Std.List.logic [@@deriving gt ~options:{ fmt }]
-
-  type fresult = (Var.injected, fresult) Std.Pair.injected Std.List.injected
-
-  let reify_renv =
-    Reifier.fix (fun self ->
-      Std.List.reify (Std.Pair.reify Var.reify (Std.List.reify self)))
+  let fmapt fa fb fc s =
+    let open OCanren.Env.Monad in
+    OCanren.Env.Monad.return (GT.gmap t) <*> fa <*> fb <*> fc <*> s
   ;;
 
-  let reify_result = Std.List.reify reify_renv
+  type env_injected = (Var.injected, injected) Std.Pair.injected Std.List.injected
+  and injected = (env_injected, Var.injected, Gterm.injected) t OCanren.ilogic
 
-  (* let closure env v b = inj @@ Closure (env, v, b) *)
+  let prj_exn : (injected, ground) OCanren.Reifier.t =
+    let open OCanren.Env.Monad in
+    OCanren.Reifier.fix (fun self ->
+      OCanren.prj_exn
+      <..> chain
+             (fmapt
+                (Std.List.prj_exn (Std.Pair.prj_exn Var.prj_exn self))
+                Var.prj_exn
+                Gterm.prj_exn))
+  ;;
+
+  type logic =
+    ((Var.logic, logic) Std.Pair.logic Std.List.logic, Var.logic, Gterm.logic) t
+      OCanren.logic
+  [@@deriving gt ~options:{ fmt }]
+
+  let reify : (injected, logic) OCanren.Reifier.t =
+    let open OCanren.Env.Monad in
+    OCanren.Reifier.fix (fun self ->
+      OCanren.reify
+      <..> chain
+             (OCanren.Reifier.zed
+                (OCanren.Reifier.rework
+                   ~fv:
+                     (fmapt
+                        (Std.List.reify (Std.Pair.reify Var.reify self))
+                        Var.reify
+                        Gterm.reify))))
+  ;;
+
+  (* type rresult = (Var.ground * rresult) Std.List.ground ground
+     and renv = (Var.ground * rresult) Std.List.ground [@@deriving gt ~options:{ fmt }]
+
+     type lresult = lenv logic
+     and lenv = (Var.logic * lresult) logic Std.List.logic [@@deriving gt ~options:{ fmt }] *)
+
+  let closure env v b : injected = inj @@ Closure (env, v, b)
+  let code x : injected = inj @@ Code x
   let clo = closure
 
-  (* let code c = inj @@ Code c *)
-  let show_string = GT.(show string)
-  let show_stringl = GT.(show logic) show_string
-  let rec show_rresult r = Format.asprintf "%a" (GT.fmt rresult)
+  let show_rresult r =
+    Format.asprintf "%a" [%fmt: (Var.ground * ground) Std.Wrapper.ground Std.List.ground]
+  ;;
 
-  (* GT.(show X.t
-     (show List.ground (show pair show_rvar show_rresult))
-     show_rvar
-     Gterm.show_rterm) r *)
-  let show_lresult = Format.asprintf "%a" (GT.fmt lresult)
+  let show_lresult = Format.asprintf "%a" (GT.fmt logic)
 
-  (* GT.(show logic @@ show X.t
-     show_lenv
-     show_lvar
-     Gterm.show_lterm) r *)
-  let show_lenv = Format.asprintf "%a" (GT.fmt lresult)
+  let show_lenv =
+    Format.asprintf "%a" [%fmt: (Var.logic, logic) Std.Pair.logic Std.List.logic]
+  ;;
 
   (* let pair_to_logic f g = fun (a,b) -> Value (f a, g b)
      let rec to_logic : rresult -> lresult = fun res ->
@@ -167,9 +219,8 @@ module Gresult = struct
      List.to_logic (pair_to_logic Nat.to_logic to_logic) e *)
 end
 
-let var_reifier = Std.Nat.reify
-let gresult_reifier = Gresult.reify_result
-let env_reifier = Gresult.reify_renv
+let gresult_reifier = Gresult.reify
+(* let env_reifier = Gresult.reify_renv *)
 
 open Gresult
 
@@ -206,7 +257,8 @@ let rec vlookup env x v =
     ]
 ;;
 
-let rec ev e t v =
+let rec ev : _ =
+  fun e t v ->
   (* let (===) ?loc  = unitrace ?loc (fun h t -> show_lterm   @@ gterm_reifier   h t) in
      let (====) ?loc = unitrace ?loc (fun h t -> show_lresult @@ gresult_reifier h t) in *)
   conde
