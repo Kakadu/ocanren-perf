@@ -1,6 +1,8 @@
 module Std = struct
   module Wrapper = struct
-    [%%distrib type nonrec 'self w = W of 'self [@@deriving gt ~plugins:{ gmap; fmt }]]
+    [%%distrib
+      type nonrec 'self w = W of 'self
+      [@@ocaml.boxed] [@@deriving gt ~plugins:{ gmap; fmt }]]
 
     let t =
       { t with
@@ -33,7 +35,6 @@ module Std = struct
   end
 
   module List : sig
-    (* TODO: In intefaces we can't use 'plugins', only 'options' *)
     type nonrec ('a, 'self) t =
       | Nil
       | Cons of 'a * 'self
@@ -50,12 +51,12 @@ module Std = struct
     val reify : ('a, 'b) OCanren.Reifier.t -> ('a injected, 'b logic) OCanren.Reifier.t
     val nil : unit -> 'a injected
     val cons : 'a -> 'a injected -> 'a injected
+    val list_of_ground : ('a -> 'b) -> 'a ground -> 'b GT.list
 
     open OCanren
 
-    val nullo : _ injected -> OCanren.goal
-    val tlo : 'a ilogic injected -> 'a ilogic injected -> OCanren.goal
-    val list_of_ground : ('a -> 'b) -> 'a ground -> 'b GT.list
+    val nullo : _ injected -> goal
+    val tlo : 'a ilogic injected -> 'a ilogic injected -> goal
   end = struct
     [%%ocanren_inject
       type nonrec ('a, 'self) ground =
@@ -73,8 +74,7 @@ module Std = struct
     let nil () : 'a injected = Wrapper.w (nil ())
     let cons h tl : 'a injected = Wrapper.w (cons h tl)
 
-    let (prj_exn :
-          ('a, 'b) OCanren.Reifier.t -> ('a injected, 'b ground) OCanren.Reifier.t)
+    let prj_exn : ('a, 'b) OCanren.Reifier.t -> ('a injected, 'b ground) OCanren.Reifier.t
       =
       fun ra ->
       let open OCanren.Env.Monad in
@@ -127,17 +127,17 @@ module Std = struct
   ;;
 
   module Pair = struct
-    type nonrec ('a, 'b) t = 'a * 'b [@@deriving gt ~options:{ fmt; gmap }]
-    type nonrec ('a, 'b) ground = ('a * 'b) Wrapper.t [@@deriving gt ~options:{ fmt }]
+    type nonrec ('a, 'b) t = 'a * 'b [@@deriving gt ~plugins:{ fmt; gmap }]
+    type nonrec ('a, 'b) ground = ('a * 'b) Wrapper.t [@@deriving gt ~plugins:{ fmt }]
 
     type nonrec ('a, 'b) logic = ('a * 'b) OCanren.logic Wrapper.logic
-    [@@deriving gt ~options:{ fmt }]
+    [@@deriving gt ~plugins:{ fmt }]
 
     type ('a, 'b) injected = ('a * 'b) OCanren.ilogic Wrapper.injected
 
     let fmapt fa fb s =
       let open OCanren.Env.Monad in
-      OCanren.Env.Monad.return (fun fa fb (x, y) -> fa x, fb y) <*> fa <*> fb <*> s
+      OCanren.Env.Monad.return (GT.gmap t) <*> fa <*> fb <*> s
     ;;
 
     let prj_exn
@@ -171,7 +171,7 @@ module Std = struct
   let pair = Pair.make
 
   module Triple = struct
-    type nonrec ('a, 'b, 'c) t = 'a * 'b * 'c [@@deriving gt ~options:{ fmt; gmap }]
+    type nonrec ('a, 'b, 'c) t = 'a * 'b * 'c [@@deriving gt ~plugins:{ fmt; gmap }]
     type ('a, 'b, 'c) ground = ('a * 'b * 'c) Wrapper.t
     type ('a, 'b, 'c) injected = ('a * 'b * 'c) OCanren.ilogic Wrapper.injected
 
@@ -194,7 +194,7 @@ module Std = struct
     ;;
 
     type nonrec ('a, 'b, 'c) logic = ('a * 'b * 'c) OCanren.logic Wrapper.logic
-    [@@deriving gt ~options:{ fmt }]
+    [@@deriving gt ~plugins:{ fmt }]
 
     let reify
       : 'a 'b 'c 'd 'e 'f.

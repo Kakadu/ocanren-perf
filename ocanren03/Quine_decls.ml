@@ -146,14 +146,12 @@ module Gterm = struct
     (StringLo.injected Std.Wrapper.injected, injected ListLo.injected) t ilogic
       Std.Wrapper.injected
 
-  let fmap_ fa fb eta = (GT.gmap t fa fb) eta
-
-  let fmapt f__009_ f__010_ subj__011_ =
+  let fmapt fa fb s =
     let open OCanren.Env.Monad in
-    OCanren.Env.Monad.return fmap_ <*> f__009_ <*> f__010_ <*> subj__011_
+    OCanren.Env.Monad.return (GT.gmap t) <*> fa <*> fb <*> s
   ;;
 
-  let (prj_exn : (injected, ground) OCanren.Reifier.t) =
+  let prj_exn : (injected, ground) OCanren.Reifier.t =
     let open OCanren.Env.Monad in
     OCanren.Reifier.fix (fun self ->
       Std.Wrapper.prj_exn
@@ -161,7 +159,7 @@ module Gterm = struct
          <..> chain (fmapt (Std.Wrapper.prj_exn StringLo.prj_exn) (ListLo.prj_exn self))))
   ;;
 
-  let (reify : (injected, logic) OCanren.Reifier.t) =
+  let reify : (injected, logic) OCanren.Reifier.t =
     let open OCanren.Env.Monad in
     OCanren.Reifier.fix (fun self ->
       Std.Wrapper.reify
@@ -256,16 +254,13 @@ module Gresult = struct
         ))
   ;;
 
-  let closure _x__060_ _x__061_ _x__062_ =
-    Std.Wrapper.w (OCanren.inj (Closure (_x__060_, _x__061_, _x__062_)))
-  ;;
-
+  let closure x y z : injected = Std.Wrapper.w (OCanren.inj (Closure (x, y, z)))
   let val_ x : injected = Std.Wrapper.w (OCanren.inj (Val_ x))
   let show_rresult : ground -> string = fun r -> Format.asprintf "%a" (GT.fmt ground) r
   let show_lresult (r : logic) = Format.asprintf "%a" (GT.fmt logic) r
 end
 
-let gresult_reifier = Gresult.reify
+(* let gresult_reifier = Gresult.reify *)
 let ( !! ) x : string ilogic Std.Wrapper.injected = Std.Wrapper.w (inj x)
 
 open Gterm
@@ -279,7 +274,7 @@ type fenv =
     Std.List.injected
 
 let reif_env : (_, lenv) Reifier.t =
-  Std.List.reify (Std.Pair.reify OCanren.reify gresult_reifier)
+  Std.List.reify (Std.Pair.reify OCanren.reify Gresult.reify)
 ;;
 
 let show_reif_term h t = show_lterm @@ Gterm.reify h t
@@ -371,7 +366,7 @@ let thrineso x =
 ;;
 
 let wrap_term rr = rr#reify Gterm.reify |> show_lterm
-let wrap_result rr = rr#reify gresult_reifier |> show_lresult
+let wrap_result rr = rr#reify Gresult.reify |> show_lresult
 
 let find_quines ~verbose n =
   run q quineso (fun r -> r#reify Gterm.reify)
