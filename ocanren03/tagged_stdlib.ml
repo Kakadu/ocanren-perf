@@ -132,6 +132,7 @@ module Std = struct
       | S of 'self
     [@@deriving gt ~plugins:{ fmt; gmap }]
 
+    (** Wrapped ground natural numbers *)
     type ground = ground t Wrapper.t [@@deriving gt ~plugins:{ fmt; gmap }]
 
     type logic = logic t OCanren.logic Wrapper.logic
@@ -251,4 +252,45 @@ module Std = struct
 
     let make x y z = Wrapper.w (OCanren.inj (x, y, z))
   end
+end
+
+module ListLo = struct
+  type 'a ground = 'a Std.List.ground [@@deriving gt ~options:{ gmap; fmt }]
+  type 'a logic = 'a Std.List.logic
+
+  let logic =
+    { Std.List.logic with
+      plugins =
+        object (self)
+          method fmt
+            : (Format.formatter -> 'a -> unit) -> Format.formatter -> 'a logic -> unit =
+            fun fa ppf xs ->
+              match xs with
+              | Value (Std.Wrapper.W (Var (idx, []))) | Var (idx, []) ->
+                Format.fprintf ppf "_.%d" idx
+              | Value (Std.Wrapper.W (Var (idx, _))) | Var (idx, _) -> assert false
+              | Value (Std.Wrapper.W _) ->
+                let rec iter ppf xs =
+                  let _ : 'a logic = xs in
+                  match xs with
+                  | Value (Std.Wrapper.W (Value Std.List.Nil)) -> ()
+                  | Value (Std.Wrapper.W (Value (Std.List.Cons (h, tl)))) ->
+                    Format.fprintf ppf "%a %a" fa h iter tl
+                  | Value (Std.Wrapper.W (Var (idx, []))) | Var (idx, []) ->
+                    Format.fprintf ppf "_.%d" idx
+                  | Value (Std.Wrapper.W (Var (idx, _))) | Var (idx, _) -> assert false
+                in
+                Format.fprintf ppf "(%a)" iter xs
+
+          method gmap fa xs =
+            let _ : _ logic = xs in
+            [%gmap: 'a Std.List.logic] (GT.lift fa) () xs
+        end
+    }
+  ;;
+
+  type 'a injected = 'a Std.List.injected
+
+  let prj_exn = Std.List.prj_exn
+  let reify = Std.List.reify
 end

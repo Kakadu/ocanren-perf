@@ -9,7 +9,7 @@ open Tagged_stdlib
 
 let ( ===< ) = ( === )
 let ( ==== ) = ( === )
-(* let ( !! ) x = Std.Wrapper.w (inj x) *)
+let ( !! ) x : string ilogic Std.Wrapper.injected = Std.Wrapper.w (inj x)
 
 module Gterm = struct
   type nonrec ('s, 'n, 'ts) t =
@@ -41,11 +41,13 @@ module Gterm = struct
     }
   ;;
 
-  type ground = (GT.string, Std.Nat.ground, ground Std.List.ground) t Std.Wrapper.t
+  type ground =
+    (GT.string Std.Wrapper.t, Std.Nat.ground, ground ListLo.ground) t Std.Wrapper.t
   [@@deriving gt ~options:{ fmt }]
 
   type injected =
-    (GT.string ilogic, Std.Nat.injected, injected Std.List.injected) t ilogic
+    (GT.string ilogic Std.Wrapper.injected, Std.Nat.injected, injected ListLo.injected) t
+      ilogic
       Std.Wrapper.injected
 
   let fmapt fa fb fc s =
@@ -58,11 +60,16 @@ module Gterm = struct
     OCanren.Reifier.fix (fun self ->
       Std.Wrapper.prj_exn
         (OCanren.prj_exn
-         <..> chain (fmapt OCanren.prj_exn Std.Nat.prj_exn (Std.List.prj_exn self))))
+         <..> chain
+                (fmapt
+                   (Std.Wrapper.prj_exn OCanren.prj_exn)
+                   Std.Nat.prj_exn
+                   (ListLo.prj_exn self))))
   ;;
 
   type logic =
-    (GT.string OCanren.logic, Std.Nat.logic, logic Std.List.logic) t OCanren.logic
+    (GT.string OCanren.logic Std.Wrapper.logic, Std.Nat.logic, logic ListLo.logic) t
+      OCanren.logic
       Std.Wrapper.logic
   [@@deriving gt ~options:{ fmt }]
 
@@ -74,11 +81,13 @@ module Gterm = struct
          <..> chain
                 (OCanren.Reifier.zed
                    (OCanren.Reifier.rework
-                      ~fv:(fmapt OCanren.reify Std.Nat.reify (Std.List.reify self))))))
+                      ~fv:
+                        (fmapt
+                           (Std.Wrapper.reify OCanren.reify)
+                           Std.Nat.reify
+                           (ListLo.reify self))))))
   ;;
 
-  (* let rec pp_rterm f t =
-     GT.fmt X.t (GT.fmt GT.string) (GT.fmt Std.List.ground pp_rterm) f t *)
   let show_rterm : ground -> string = Format.asprintf "%a" (GT.fmt ground)
   let show_lterm : logic -> string = Format.asprintf "%a" (GT.fmt logic)
 
@@ -115,8 +124,6 @@ module Gterm = struct
   ;;
 end
 
-let ( !! ) = inj
-
 open Gterm
 
 let rec nat o =
@@ -152,6 +159,7 @@ module Gresult = struct
 
   type ground =
     ((Var.ground * ground) Std.Wrapper.ground Std.List.ground, Var.ground, Gterm.ground) t
+      Std.Wrapper.t
   [@@deriving gt ~options:{ fmt }]
 
   let fmapt fa fb fc s =
@@ -160,36 +168,41 @@ module Gresult = struct
   ;;
 
   type env_injected = (Var.injected, injected) Std.Pair.injected Std.List.injected
-  and injected = (env_injected, Var.injected, Gterm.injected) t OCanren.ilogic
+
+  and injected =
+    (env_injected, Var.injected, Gterm.injected) t OCanren.ilogic Std.Wrapper.injected
 
   let prj_exn : (injected, ground) OCanren.Reifier.t =
     let open OCanren.Env.Monad in
     OCanren.Reifier.fix (fun self ->
-      OCanren.prj_exn
-      <..> chain
-             (fmapt
-                (Std.List.prj_exn (Std.Pair.prj_exn Var.prj_exn self))
-                Var.prj_exn
-                Gterm.prj_exn))
+      Std.Wrapper.prj_exn
+        (OCanren.prj_exn
+         <..> chain
+                (fmapt
+                   (Std.List.prj_exn (Std.Pair.prj_exn Var.prj_exn self))
+                   Var.prj_exn
+                   Gterm.prj_exn)))
   ;;
 
   type logic =
     ((Var.logic, logic) Std.Pair.logic Std.List.logic, Var.logic, Gterm.logic) t
       OCanren.logic
+      Std.Wrapper.logic
   [@@deriving gt ~options:{ fmt }]
 
   let reify : (injected, logic) OCanren.Reifier.t =
     let open OCanren.Env.Monad in
     OCanren.Reifier.fix (fun self ->
-      OCanren.reify
-      <..> chain
-             (OCanren.Reifier.zed
-                (OCanren.Reifier.rework
-                   ~fv:
-                     (fmapt
-                        (Std.List.reify (Std.Pair.reify Var.reify self))
-                        Var.reify
-                        Gterm.reify))))
+      Std.Wrapper.reify
+        (OCanren.reify
+         <..> chain
+                (OCanren.Reifier.zed
+                   (OCanren.Reifier.rework
+                      ~fv:
+                        (fmapt
+                           (Std.List.reify (Std.Pair.reify Var.reify self))
+                           Var.reify
+                           Gterm.reify)))))
   ;;
 
   (* type rresult = (Var.ground * rresult) Std.List.ground ground
@@ -198,8 +211,8 @@ module Gresult = struct
      type lresult = lenv logic
      and lenv = (Var.logic * lresult) logic Std.List.logic [@@deriving gt ~options:{ fmt }] *)
 
-  let closure env v b : injected = inj @@ Closure (env, v, b)
-  let code x : injected = inj @@ Code x
+  let closure env v b : injected = Std.Wrapper.w (inj @@ Closure (env, v, b))
+  let code x : injected = Std.Wrapper.w (inj @@ Code x)
   let clo = closure
 
   let show_rresult r =
@@ -219,8 +232,7 @@ module Gresult = struct
      List.to_logic (pair_to_logic Nat.to_logic to_logic) e *)
 end
 
-let gresult_reifier = Gresult.reify
-(* let env_reifier = Gresult.reify_renv *)
+(* let gresult_reifier = Gresult.reify *)
 
 open Gresult
 
@@ -337,7 +349,7 @@ The idea to implement twines and thrines is to implement
    *)
 *)
 (* let wrap_term rr = rr#reify Gterm.reify |> show_lterm *)
-let wrap_result rr = rr#reify gresult_reifier |> show_lresult
+let wrap_result rr = rr#reify Gresult.reify |> show_lresult
 
 let find_quines ~verbose n =
   run q quineo (fun rr -> rr#reify Gterm.reify)
