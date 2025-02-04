@@ -1,6 +1,0 @@
-FINDLIB_PATH ../ocanren-master/_build/bundle
-PKG ocanren
-PKG GT
-S .
-B _build
-FLG -rectypes
