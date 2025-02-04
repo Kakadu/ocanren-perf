@@ -7,16 +7,16 @@ DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
 MEASURE_OC1   ?= y
 MEASURE_OC2   ?= y
-MEASURE_OC3   ?= y
-MEASURE_OC4   ?= y
-MEASURE_OC5   ?= y
+MEASURE_OC3   ?=
+MEASURE_OC4   ?=
+MEASURE_OC5   ?=
 
 MEASURE_OC9   ?=
 MEASURE_OC10  ?=
 MEASURE_OC11  ?=
 MEASURE_OC12  ?=
 MEASURE_OC13  ?=
-MEASURE_SCM   ?= y
+MEASURE_SCM   ?=
 MEASURE_RKT   ?=
 MEASURE_MUSCM ?=
 
@@ -84,7 +84,8 @@ measure$(1)_scm:
 MLOC1_NATIVE_$(1) := $$(wildcard src_ocanren01*/test$(1)*.native)
 
 measure$(1)_MLOC1:
-	DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC1_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
+	#DONT_RUN_CHEZ=y $(OCAML_GC_CFG) $$(MLOC1_NATIVE_$(1)) && cat /tmp/ocanren_time >> .$(1).data
+	cd $$(wildcard src_ocanren01*) && dune exec ./test$(1).exe
 
 MLOC2_NATIVE_$(1) := $$(wildcard src_ocanren2*/test$(1)*.native)
 
@@ -116,9 +117,6 @@ do_measure: measure$(1)
 measure$(1): measure$(1)_prepare \
 	measure$(1)_MLOC1  \
 	measure$(1)_MLOC2  \
-	measure$(1)_MLOC3  \
-	measure$(1)_MLOC4  \
-	measure$(1)_MLOC5  \
 	measure$(1)_scm
 
 	printf "$$(TEST$(1)_NAME) " >> $(DATAFILE)
@@ -131,7 +129,7 @@ $(foreach i,$(TESTS), $(eval $(call XXX,$(i)) ) )
 
 .PHONY: prepare_header do_measure
 prepare_header:
-	echo "x   1tagless  2tagful 3only-set-var-val 4only-fast-Diseq 5no-opts faster-miniKanren/Scheme" \
+	echo "x   1tagless  2tagful faster-miniKanren/Scheme" \
 		> $(DATAFILE)
 
 .PHONY: clean
@@ -147,14 +145,14 @@ compile: prepare_ocanren
 define DO_PREPARE
 .PHONY: prepare_ocanren$(1) compile_ocanren$(1)tests clean$(1)
 prepare_ocanren$(1):
-	$$(MAKE) -C $$(shell echo ocanren$(1)*) ppx all
+	cd $$(shell echo ocanren$(1)*) && dune b @install -p MiniKanren,MiniKanren-ppx --profile=release
 	#$$(MAKE) -C $$(shell echo ocanren$(1)*) bundle
 
 prepare_ocanren: prepare_ocanren$(1)
 
 compile: compile_ocanren$(1)tests
 compile_ocanren$(1)tests:
-	$$(MAKE) -C $$(shell echo src_ocanren$(1)*) all
+	cd $$(shell echo src_ocanren$(1)*) && dune b --profile=release
 
 clean$(1):
 	$$(MAKE) -C $$(shell echo     ocanren$(1)*) clean
@@ -164,9 +162,6 @@ endef
 
 $(eval $(call DO_PREPARE,01))
 $(eval $(call DO_PREPARE,2))
-$(eval $(call DO_PREPARE,3))
-$(eval $(call DO_PREPARE,4))
-$(eval $(call DO_PREPARE,5))
 
 compile: compile_scm
 
