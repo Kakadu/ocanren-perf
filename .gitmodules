@@ -13,3 +13,11 @@
 	path = ocanren01tagless
 	url = https://github.com/Kakadu/OCanren.git
 	branch = bench-main1
+[submodule "src_ocanren01tagless/OCanren"]
+	path = src_ocanren01tagless/OCanren
+	url = https://github.com/Kakadu/OCanren.git
+	branch = tagless-resurrection
+[submodule "src_ocanren2tagful/OCanren"]
+	path = src_ocanren2tagful/OCanren
+	url = https://github.com/Kakadu/OCanren.git
+	branch = tagful-resurrection

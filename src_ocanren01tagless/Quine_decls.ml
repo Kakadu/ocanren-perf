@@ -28,7 +28,7 @@ module Gterm = struct
   module X = struct
     type ('s, 'xs) t =
       | Symb  of 's
-      | Seq   of 'xs [@@deriving gt {show}]
+      | Seq   of 'xs [@@deriving gt ~plugins:{show}]
 
     let fmap f g = function
     | Symb s -> Symb (f s)
@@ -40,12 +40,12 @@ module Gterm = struct
         method gmap = fmap (* t.plugins#gmap *)
         method show fa fb bx =
            GT.transform(t)
-              (GT.lift fa) (GT.lift fb)
-              (object inherit ['a,'b] show_t
-                method c_Symb _ s str =
-                  sprintf "(symb '%s)" (str.GT.fx ())
-                method c_Seq  _ _ xs =
-                  sprintf "(seq %s)" (xs.GT.fx ())
+              (fun fself -> object
+                inherit ['a,'b, _] show_t_t (GT.lift fa) (GT.lift fb) fself
+                method! c_Symb _ _s str =
+                  sprintf "(symb '%s)" (fa str)
+                method! c_Seq  _ _ xs =
+                  sprintf "(seq %s)" (fb xs)
                end)
               ()
               bx
@@ -79,7 +79,7 @@ module Gresult = struct
     type ('s, 't, 'xs) t =
     | Closure of 's * 't * 'xs
     | Val     of 't
-    [@@deriving gt {show}]
+    [@@deriving gt ~plugins:{show}]
 
     let fmap f g h = function
     | Closure (a,b,c) -> Closure (f a, g b, h c)
@@ -116,9 +116,9 @@ module Gresult = struct
   let show_stringl = GT.(show logic) show_string
 
   let rec show_rresult r = GT.(show X.t show_string Gterm.show_rterm
-      @@ show List.ground (show pair show_string show_rresult)) r
+      @@ show List.ground (show MiniKanrenStd.Pair.t show_string show_rresult)) r
   let rec show_lresult r = GT.(show logic @@ show X.t show_stringl Gterm.show_lterm
-    @@ show List.logic (show logic @@ show pair show_stringl show_lresult)) r
+    @@ show List.logic (show logic @@ show MiniKanrenStd.Pair.t show_stringl show_lresult)) r
 
   let rec to_logic : rresult -> lresult = fun res ->
     let arg3 xs = List.to_logic (fun (a,b) -> Value (Value a, to_logic b)) xs in
@@ -143,7 +143,7 @@ type fenv = ( (string * rresult) List.ground,
 
 let show_reif_env h e =
   GT.(show List.logic @@ show logic @@
-        show pair  (show logic (fun s -> s)) show_lresult) @@
+        show MiniKanrenStd.Pair.t  (show logic (fun s -> s)) show_lresult) @@
   (List.reify ManualReifiers.(pair string gresult_reifier))
   h e
 let unienv ?loc = unitrace ?loc @@ show_reif_env
@@ -323,7 +323,7 @@ let wrap3terms t =
   t#refine
     (ManualReifiers.triple gterm_reifier gterm_reifier gterm_reifier)
     ~inj:(fun (a,b,c) ->
-        Value (Gterm.to_logic a,Gterm.to_logic b,Gterm.to_logic a) )
+        Value (Gterm.to_logic a,Gterm.to_logic b,Gterm.to_logic c) )
   |> (function
       | Var _ -> assert false
       | Value (a,b,c) ->

@@ -7,9 +7,22 @@
  (name numero_decls)
  (modules numero_decls)
  (libraries MiniKanren MiniKanren.Tester)
- ;
  (preprocess
   (pps MiniKanren-ppx.ppx_fresh)))
+
+(library
+ (name Quine_decls)
+ (modules Quine_decls)
+ (libraries MiniKanren MiniKanren.Tester)
+ (preprocess
+  (pps MiniKanren-ppx.ppx_fresh GT.ppx_all)))
+
+(library
+ (name Quines_NoDiseq)
+ (modules Quines_NoDiseq)
+ (libraries MiniKanren MiniKanren.Tester)
+ (preprocess
+  (pps MiniKanren-ppx.ppx_fresh GT.ppx_all)))
 
 (library
  (name TimeHelper)
@@ -19,6 +32,30 @@
 
 (executable
  (name test001_expo1)
- ;(public_name -)
  (modules test001_expo1)
  (libraries numero_decls TimeHelper))
+
+(executable
+ (name test002_logo1)
+ (modules test002_logo1)
+ (libraries numero_decls TimeHelper))
+
+(executable
+ (name test005_thrines)
+ (modules test005_thrines)
+ (libraries Quine_decls TimeHelper))
+
+(executable
+ (name test006_twines)
+ (modules test006_twines)
+ (libraries Quine_decls TimeHelper))
+
+(executable
+ (name test007_quines)
+ (modules test007_quines)
+ (libraries Quine_decls TimeHelper))
+
+(executable
+ (name test011_quinesNoDiseq)
+ (modules test011_quinesNoDiseq)
+ (libraries Quines_NoDiseq TimeHelper))

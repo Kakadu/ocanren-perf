@@ -17,7 +17,7 @@ module Gterm = struct
       | Symb  of 's
       | VR    of 'n   (* variable indexed by peano numbers *)
       | Tuple of 'ts
-    [@@deriving gt {show}]
+    [@@deriving gt ~plugins:{show}]
 
     let fmap f g h = function
     | Symb s   -> Symb (f s)
@@ -25,17 +25,18 @@ module Gterm = struct
     | Tuple xs -> Tuple (h xs)
 
     let t = {
-      gcata = ();
+      GT.gcata = ();
+      fix = ();
       plugins = object
         (* method gmap = t.plugins#gmap *)
         method show fa fb fc bx =
           GT.transform(t)
-            (GT.lift fa) (GT.lift fb) (GT.lift fc)
-            (object inherit ['a,'b,'c] show_t
-              method c_VR _ _ peano =
-                sprintf "(vr %s)" (peano.GT.fx ())
-              method c_Symb  _ _  s = "'" ^ (s.GT.fx ())
-              method c_Tuple _ _ xs = sprintf "(%s)" (xs.GT.fx ())
+            (fun fself -> object
+              inherit ['a,'b,'c, _] show_t_t (GT.lift fa) (GT.lift fb) (GT.lift fc) fself
+              method! c_Symb  _ _  s = "'" ^ (fa s)
+              method! c_VR _ _ peano =
+                sprintf "(vr %s)" (fb peano)
+              method! c_Tuple _ _ xs = sprintf "(%s)" (fc xs)
             end)
             ()
             bx
@@ -125,7 +126,7 @@ module Gresult = struct
     type ('env, 'v, 't) t =
     | Closure of 'env * 'v * 't
     | Code    of 't
-     [@@deriving gt {show}]
+     [@@deriving gt ~plugins:{show}]
 
     let fmap f g h = function
     | Closure (a,b,c) -> Closure (f a, g b, h c)
@@ -153,7 +154,7 @@ module Gresult = struct
   let show_stringl = GT.(show logic) show_string
 
   let rec show_rresult r = GT.(show X.t
-    (show List.ground (show pair show_rvar show_rresult))
+    (show List.ground (show MiniKanrenStd.Pair.t show_rvar show_rresult))
     show_rvar
     Gterm.show_rterm) r
   let rec show_lresult r = GT.(show logic @@ show X.t
@@ -161,7 +162,7 @@ module Gresult = struct
     show_lvar
     Gterm.show_lterm) r
   and show_lenv e =
-    GT.(show List.logic (show logic @@ show pair show_lvar show_lresult)) e
+    GT.(show List.logic (show logic @@ show MiniKanrenStd.Pair.t show_lvar show_lresult)) e
 
   let pair_to_logic f g = fun (a,b) -> Value (f a, g b)
   let rec to_logic : rresult -> lresult = fun res ->
@@ -173,7 +174,6 @@ end
 let var_reifier = Nat.reify
 
 let rec gresult_reifier c : Gresult.fresult -> Gresult.lresult =
-  let open ManualReifiers in
   Gresult.reify env_reifier var_reifier gterm_reifier c
 and env_reifier e =
   List.reify ManualReifiers.(pair var_reifier gresult_reifier) e
