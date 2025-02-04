@@ -1,0 +1,24 @@
+(env
+ (_
+  (flags
+   (:standard -rectypes))))
+
+(library
+ (name numero_decls)
+ (modules numero_decls)
+ (libraries MiniKanren MiniKanren.Tester)
+ ;
+ (preprocess
+  (pps MiniKanren-ppx.ppx_fresh)))
+
+(library
+ (name TimeHelper)
+ (modules TimeHelper)
+ (wrapped false)
+ (libraries MiniKanren mtime.clock))
+
+(executable
+ (name test001_expo1)
+ ;(public_name -)
+ (modules test001_expo1)
+ (libraries numero_decls TimeHelper))

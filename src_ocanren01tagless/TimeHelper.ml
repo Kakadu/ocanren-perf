@@ -13,9 +13,13 @@ let wrap_run num rel ?(n= -1) ~reifier ~inj ~verbose onVerbose =
       )
 
 let time f =
-  let t = Mtime_clock.counter () in
+  let start = Mtime_clock.elapsed () in
   let _res = f () in
-  (Mtime_clock.count t |> Mtime.Span.to_s)
+  let fin = Mtime_clock.elapsed() in
+  let span = Mtime.Span.abs_diff start fin in
+  let ns = Mtime.Span.to_float_ns span in
+  let s = ns /. 1e9 in
+  s
 ;;
 
 let wrap (do_measure : verbose:bool -> unit) =
@@ -26,7 +30,7 @@ let wrap (do_measure : verbose:bool -> unit) =
       (* do benchmarking *)
       let n = 10 in
       let acc = ref 0. in
-      for i=1 to n do
+      for _=1 to n do
         let () = Gc.compact () in
         let () = Gc.full_major () in
         acc := !acc +. (time @@ fun () -> do_measure ~verbose:false);

@@ -1,5 +1,4 @@
 (* Relational arithmentics using binary numbers *)
-open Printf
 open MiniKanren
 open MiniKanrenStd
 open Tester
@@ -44,8 +43,8 @@ let rec addero d n m r =
   conde [
     (!0 === d) &&& (nil() === m) &&& (n === r);
     (!0 === d) &&& (nil() === n) &&& (m === r) &&& (poso m);
-    (!1 === d) &&& (nil() === m) &&& ((addero !0 n (!< !1) r));
-    (!1 === d) &&& (nil() === n) &&& (poso m) &&& ((addero !0 m (!< !1) r));
+    (!1 === d) &&& (nil() === m) &&& (delay (fun () -> (addero !0 n (!< !1) r)));
+    (!1 === d) &&& (nil() === n) &&& (poso m) &&& (delay (fun () -> (addero !0 m (!< !1) r)));
     ?& [
       ((!< !1) === n);
       ((!< !1) === m);
@@ -54,7 +53,7 @@ let rec addero d n m r =
         (full_addero d !1 !1 a c)
     ];
     ((!< !1) === n) &&& (gen_addero d n m r);
-    ((!< !1) === m) &&& (gt1o n) &&& (gt1o r) &&& ( (addero d (!< !1) n r));
+    ((!< !1) === m) &&& (gt1o n) &&& (gt1o r) &&& (delay (fun () -> addero d (!< !1) n r));
     (gt1o n) &&& (gen_addero d n m r)
   ]
 and gen_addero d n m r =
@@ -146,7 +145,7 @@ let lelo n m =
     (ltlo n m)
   ]
 
-let rec lto n m =
+let lto n m =
   conde [
     (ltlo n m);
     ?& [
@@ -256,7 +255,7 @@ let rec exp2 n b q =
       (exp2 nh b2 q1)
   ]
 
-let rec logo n b q r =
+let logo n b q r =
   conde [
     ((!< !1) === n) &&& (poso b) &&& (nil() === q) &&& (nil() === r);
     (nil() === q) &&& (lto n b) &&& (pluso r (!< !1) n);
