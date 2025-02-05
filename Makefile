@@ -1,7 +1,8 @@
 print-%: ; @echo $*=$($*)
 
 DATAFILE=data.gnuplot
-TESTS=001 002 005 006 007 011
+#TESTS=001 002 005 006 007 011
+TESTS=005 006 007
 MEASURE=/usr/bin/time -f "%U"
 DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
@@ -118,16 +119,16 @@ endef
 
 define ADD_OCANREN # dir OCanren_name
 ALL_GNUPLOT_HEADERS += " $(2)"
-MLOC_$(1)_DIR := $(2)
+MLOC_$(1)_DIR := $(1)
 
 measure_MLOC_$(1)_targets :=
-$(foreach i, $(TESTS), $(eval $(call ADD_OCANREN_TEST,$(i),$(2)) ) )
-#$$(info ==== OCanren tests targets $(measure_MLOC_$(2)_targets) )
+$(foreach i, $(TESTS), $(eval $(call ADD_OCANREN_TEST,$(i),$(1)) ) )
+#$$(info ==== OCanren tests targets $(measure_MLOC_$(1)_targets) )
 
 .PHONY: measure_ocanren_$(1) measure_ocanren_$(1)_prepare do_measure
 measure_ocanren_$(1)_prepare:
 	@$(RM) .$(1).data .$(1).name
-measure_ocanren_$(1): $(measure_MLOC_$(2)_targets)
+measure_ocanren_$(1): $(measure_MLOC_$(1)_targets)
 	@#echo "measure_ocanren_$(1) finished"
 do_measure: measure_ocanren_$(1)
 
@@ -173,13 +174,13 @@ clean_scheme_$(1):
 	$(MAKE) -C $(1) clean
 endef
 
-$(eval $(call ADD_OCANREN,ocanren01,ocanren01))
+$(eval $(call ADD_OCANREN,ocanren01,ocanren-master))
 #$(eval $(call ADD_OCANREN,ocanren02,ocanren02))
-$(eval $(call ADD_OCANREN,ocanren03,ocanren03))
+$(eval $(call ADD_OCANREN,ocanren03,ocanren-art-tagged))
 
 #$(eval $(call ADD_RACKET,src_lisps,faster-miniKanren))
 
-$(eval $(call DO_PREPARE_OCANREN,ocanren01))
+$(eval $(call DO_PREPARE_OCANREN,ocanren01)) # accepts dirname
 #$(eval $(call DO_PREPARE_OCANREN,ocanren02))
 $(eval $(call DO_PREPARE_OCANREN,ocanren03))
 
