@@ -12,3 +12,11 @@
 	path = ocanren02/OCanren
 	url = https://github.com/PLTools/OCanren.git
 	branch = disequality-issue1
+[submodule "MiniKanren04tagful/MiniKanren"]
+	path = MiniKanren04tagful/MiniKanren
+	url = https://github.com/Kakadu/OCanren.git
+	branch = tagful-resurrection
+[submodule "MiniKanren05tagless/MiniKanren"]
+	path = MiniKanren05tagless/MiniKanren
+	url = https://github.com/Kakadu/OCanren.git
+	branch = tagless-resurrection
