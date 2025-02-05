@@ -1,19 +1,19 @@
 print-%: ; @echo $*=$($*)
 
 DATAFILE=data.gnuplot
-#TESTS=001 002 005 006 007 011
-TESTS=005 006 007
+TESTS=001 002 005 006 007 011
+#TESTS=005 006
 MEASURE=/usr/bin/time -f "%U"
 DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
+MEASURE_RKT   ?= y
 MEASURE_OC1   ?= y
 MEASURE_OC2   ?=
-MEASURE_OC3   ?=
-MEASURE_OC4   ?=
-MEASURE_OC5   ?=
+MEASURE_OC3   ?= y
+MEASURE_OC4   ?= y
+MEASURE_OC5   ?= y
 MEASURE_OC9   ?=
-MEASURE_SCM   ?= y
-MEASURE_RKT   ?=
+MEASURE_SCM   ?=
 MEASURE_MUSCM ?=
 
 .DEFAULT_GOAL := all
@@ -174,21 +174,35 @@ clean_scheme_$(1):
 	$(MAKE) -C $(1) clean
 endef
 
-$(eval $(call ADD_OCANREN,ocanren01,ocanren-master))
-#$(eval $(call ADD_OCANREN,ocanren02,ocanren02))
-$(eval $(call ADD_OCANREN,ocanren03,ocanren-art-tagged))
-
-#$(eval $(call ADD_RACKET,src_lisps,faster-miniKanren))
-
-$(eval $(call DO_PREPARE_OCANREN,ocanren01)) # accepts dirname
-#$(eval $(call DO_PREPARE_OCANREN,ocanren02))
-$(eval $(call DO_PREPARE_OCANREN,ocanren03))
-
+ifneq "$(MEASURE_RKT)" ""
 $(eval $(call DO_PREPARE_SCHEME,src_lisps))
-#$(eval $(call DO_PREPARE,02))
-#$(eval $(call DO_PREPARE,03))
-#$(eval $(call DO_PREPARE,04))
-#$(eval $(call DO_PREPARE,5))
+$(eval $(call ADD_RACKET,src_lisps,faster-miniKanren))
+endif
+
+ifneq "$(MEASURE_OC1)" ""
+$(eval $(call ADD_OCANREN,ocanren01,OCanren-master))
+$(eval $(call DO_PREPARE_OCANREN,ocanren01)) # accepts dirname
+endif
+
+#$(eval $(call ADD_OCANREN,ocanren02,ocanren02))
+#$(eval $(call DO_PREPARE_OCANREN,ocanren02))
+
+ifneq "$(MEASURE_OC3)" ""
+$(eval $(call ADD_OCANREN,ocanren03,OCanren-art-tagged))
+$(eval $(call DO_PREPARE_OCANREN,ocanren03))
+endif
+
+ifneq "$(MEASURE_OC4)" ""
+$(eval $(call ADD_OCANREN,MiniKanren04tagful,MiniKanren04tagful))
+$(eval $(call DO_PREPARE_OCANREN,MiniKanren04tagful))
+endif
+
+ifneq "$(MEASURE_OC5)" ""
+$(eval $(call ADD_OCANREN,MiniKanren05tagless,MiniKanren05tagless))
+$(eval $(call DO_PREPARE_OCANREN,MiniKanren05tagless))
+endif
+
+
 
 compile: compile_scm
 
