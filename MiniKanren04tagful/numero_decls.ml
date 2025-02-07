@@ -3,6 +3,47 @@ open MiniKanren
 open MiniKanrenStd
 open Tester
 
+include Counters.Make ()
+type ioleg = (int, int logic) MiniKanrenStd.List.groundi
+
+
+
+IFDEF TRACE THEN
+
+include struct
+  let are_unifications_silent =
+    match Sys.getenv "SILENT_UNIFICATIONS" with
+    | exception Not_found -> false
+    | _ -> true
+
+  (* let pp st x =
+    (GT.show MiniKanren.logic @@ GT.show GT.int) @@
+    reify_in_state st OCanren.reify x *)
+
+  let ( ==== ) : (int, int logic) injected -> (int, int logic) injected -> goal =
+   fun x y st ->
+    incr_counter ();
+    (* if not are_unifications_silent then
+      Printf.printf "%s %s\n" (pp st x) (pp st y); *)
+    MiniKanren.( === ) x y st
+   [@@inline]
+
+  let ( === ) : ioleg -> ioleg -> goal =
+   fun x y st ->
+    incr_counter ();
+    (* if not are_unifications_silent then
+      Printf.printf "%s %s\n" (pp st x) (pp st y); *)
+    MiniKanren.( === ) x y st
+   [@@inline]
+
+
+end
+ELSE
+  let ( ==== ) : (int, int logic) injected -> (int, int logic) injected -> goal = MiniKanren.(===)
+  let ( === ) : ioleg -> ioleg -> goal = MiniKanren.(===)
+END
+
+
 let rec build_num =
   function
   | 0                   -> nil()
@@ -28,6 +69,7 @@ let gt1o q =
 
 let (!) = fun x -> inj@@lift x
 let full_addero b x y r c =
+  let (===) = (====) in
   conde [
     (!0 === b) &&& (!0 === x) &&& (!0 === y) &&& (!0 === r) &&& (!0 === c);
     (!1 === b) &&& (!0 === x) &&& (!0 === y) &&& (!1 === r) &&& (!0 === c);
@@ -41,10 +83,10 @@ let full_addero b x y r c =
 
 let rec addero d n m r =
   conde [
-    (!0 === d) &&& (nil() === m) &&& (n === r);
-    (!0 === d) &&& (nil() === n) &&& (m === r) &&& (poso m);
-    (!1 === d) &&& (nil() === m) &&& (delay (fun () -> (addero !0 n (!< !1) r)));
-    (!1 === d) &&& (nil() === n) &&& (poso m) &&& (delay (fun () -> (addero !0 m (!< !1) r)));
+    (!0 ==== d) &&& (nil() === m) &&& (n === r);
+    (!0 ==== d) &&& (nil() === n) &&& (m === r) &&& (poso m);
+    (!1 ==== d) &&& (nil() === m) &&& (delay (fun () -> (addero !0 n (!< !1) r)));
+    (!1 ==== d) &&& (nil() === n) &&& (poso m) &&& (delay (fun () -> (addero !0 m (!< !1) r)));
     ?& [
       ((!< !1) === n);
       ((!< !1) === m);
@@ -332,3 +374,4 @@ let show_num_logic = GT.(show List.logic @@ show logic @@ show int)
 
 let num_reifier h  = List.reify ManualReifiers.int h
 let runL n = runR num_reifier show_num show_num_logic n
+

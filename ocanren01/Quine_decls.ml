@@ -2,7 +2,7 @@
    Quines stuff by Dmitrii Rozplokhas. Adopted from
    https://raw.githubusercontent.com/rozplokhas/OCanren/master/regression/test015.ml
 *)
-
+include Counters.Make ()
 open Printf
 open OCanren
 
@@ -59,22 +59,10 @@ module ListLo = struct
   let reify = Std.List.reify
 end
 
-(* let (_ : int) = GT.gmap ListLo.logic *)
-
 module Std = struct
   include Std
 
   module Triple = struct
-    (*   [%%distrib
-      type nonrec ('a,'b,'c) t = 'a * 'b * 'c
-        [@@deriving gt ~options:{fmt;gmap}]
-      type nonrec ('a,'b,'c) ground = ('a,'b,'c) t (* Kind of abstract type *)
-    ] *)
-    (* module F = Fmap3(struct
-       type ('a,'b,'c) t = ('a,'b,'c) ground
-       let fmap eta = GT.gmap ground eta
-       end)
-    *)
     type nonrec ('a, 'b, 'c) t = 'a * 'b * 'c [@@deriving gt ~options:{ fmt; gmap }]
 
     let reify ra rb rc =
@@ -122,7 +110,7 @@ let list_iter3 f xs ys zs =
 module Gterm = struct
   [@@@ocaml.warnerror "-32-34"]
 
-  [%%distrib
+  [%%ocanren_inject
   type nonrec ('s, 'xs) t =
     | Symb of 's
     | Seq of 'xs
@@ -199,36 +187,74 @@ let reif_env : (_, lenv) Reifier.t =
 
 let show_reif_term h t = show_lterm @@ gterm_reifier h t
 let show_reif_result h t = show_lresult @@ gresult_reifier h t
+
+[@@@ocamlformat "disable"]
+
+IFDEF TRACE THEN
+
+ let ( === ) : Gterm.injected -> Gterm.injected -> goal =
+   fun x y st ->
+    incr_counter ();
+    (* if not are_unifications_silent then
+      Printf.printf "%s %s\n" (pp st x) (pp st y); *)
+    OCanren.( === ) x y st
+   [@@inline]
+ let ( ===! ) : Gresult.injected -> Gresult.injected -> goal =
+   fun x y st ->
+    incr_counter ();
+    (* if not are_unifications_silent then
+      Printf.printf "%s %s\n" (pp st x) (pp st y); *)
+    OCanren.( === ) x y st
+   [@@inline]
+ let ( ===!! ) : _ Std.List.injected -> _ Std.List.injected -> goal =
+   fun x y st ->
+    incr_counter ();
+    (* if not are_unifications_silent then
+      Printf.printf "%s %s\n" (pp st x) (pp st y); *)
+    OCanren.( === ) x y st
+   [@@inline]
+ let ( ==== ) : string ilogic -> string ilogic -> goal =
+   fun x y st ->
+    incr_counter ();
+    (* if not are_unifications_silent then
+      Printf.printf "%s %s\n" (pp st x) (pp st y); *)
+    OCanren.( === ) x y st
+   [@@inline]
+ELSE
+
+
 let ( =/= ) = OCanren.( =/= )
 let ( =//= ) = ( =/= )
 let ( === ) = OCanren.( === )
-let ( ===! ) = ( === )
-let ( ===!! ) = ( === )
-
-let rec lookupo x env t =
+let ( ===! ) = OCanren.( === )
+let ( ===!! ) = OCanren.( === )
+let ( ==== ) = OCanren.( === )
+END
+let rec lookupo : string ilogic -> (string ilogic, Gresult.injected) Std.Pair.injected Std.List.injected -> _
+  = fun x env t ->
   let open OCanren.Std in
   fresh
     (rest y v)
-    (Std.Pair.pair y v % rest === env)
-    (conde [ y ===! x &&& (v ===!! t); y =/= x &&& lookupo x rest t ])
+    (Std.Pair.pair y v % rest ===!! env)
+    (conde [ y ==== x &&& (v ===! t); y =/= x &&& lookupo x rest t ])
 ;;
 
 let rec not_in_envo x env =
   let open OCanren.Std in
   conde
-    [ fresh (y v rest) (env === Std.pair y v % rest) (y =/= x) (not_in_envo x rest)
-    ; nil () === env
+    [ fresh (y v rest) (env ===!! (Std.pair y v % rest)) (y =/= x) (not_in_envo x rest)
+    ; nil () ===!! env
     ]
 ;;
 
 let rec proper_listo es env rs =
   let open OCanren.Std in
   conde
-    [ Std.nil () === es &&& (Std.nil () === rs)
+    [ Std.nil () ===!! es &&& (Std.nil () ===!! rs)
     ; fresh
         (e d te td)
-        (es === e % d)
-        (rs === te % td)
+        (es ===!! e % d)
+        (rs ===!! te % td)
         (evalo e env (val_ te))
         (proper_listo d env td)
     ]
@@ -271,13 +297,13 @@ let thrineso x =
   (* let (=//=) = diseqtrace @@ show_reif_term in *)
   fresh
     (p q r)
-    (p =//= q)
-    (q =//= r)
-    (r =//= p)
+    (p =/= q)
+    (q =/= r)
+    (r =/= p)
     (evalo p nil (val_ q))
     (evalo q nil (val_ r))
     (evalo r nil (val_ p))
-    (Std.Triple.make p q r === x)
+    (OCanren.(===) (Std.Triple.make p q r) x)
 ;;
 
 let wrap_term rr = rr#reify gterm_reifier |> show_lterm

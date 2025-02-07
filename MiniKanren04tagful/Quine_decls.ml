@@ -7,6 +7,7 @@ open Printf
 open GT
 open MiniKanren
 open MiniKanrenStd
+include Counters.Make()
 
 let list_combine3 xs ys zs =
   let rec helper acc = function
@@ -164,9 +165,46 @@ let unistring ?loc = unitrace ?loc @@ show_reif_string
 
 let (=/=) = MiniKanren.(=/=)
 let (=//=) = (=/=)
-let (===) = MiniKanren.(===)
-let (===!) = (===)
-let (===!!) = (===)
+
+[@@@ocamlformat "disable"]
+
+IFDEF TRACE THEN
+
+ let ( === ) : Gterm.fterm -> Gterm.fterm -> goal =
+   fun x y st ->
+    incr_counter ();
+    (* if not are_unifications_silent then
+      Printf.printf "%s %s\n" (pp st x) (pp st y); *)
+    MiniKanren.( === ) x y st
+   [@@inline]
+ let ( ===! ) : Gresult.fresult -> Gresult.fresult -> goal =
+   fun x y st ->
+    incr_counter ();
+    (* if not are_unifications_silent then
+      Printf.printf "%s %s\n" (pp st x) (pp st y); *)
+    MiniKanren.( === ) x y st
+   [@@inline]
+ let ( ===!! ) : _ MiniKanrenStd.List.groundi -> _ MiniKanrenStd.List.groundi -> goal =
+   fun x y st ->
+    incr_counter ();
+    (* if not are_unifications_silent then
+      Printf.printf "%s %s\n" (pp st x) (pp st y); *)
+    MiniKanren.( === ) x y st
+   [@@inline]
+ let ( ==== ) : (string, string logic) injected -> (string, string logic) injected -> goal =
+   fun x y st ->
+    incr_counter ();
+    (* if not are_unifications_silent then
+      Printf.printf "%s %s\n" (pp st x) (pp st y); *)
+    MiniKanren.( === ) x y st
+   [@@inline]
+ELSE
+
+let ( === ) = MiniKanren.( === )
+let ( ===! ) = ( === )
+let ( ===!! ) = ( === )
+let ( ==== ) = ( === )
+END
 
 let rec lookupo x env t =
   (* let (=/=) = diseqtrace show_reif_string in
@@ -174,9 +212,9 @@ let rec lookupo x env t =
   let (===!) ?loc = unistring ?loc in
   let (===!!) ?loc = uniresult ?loc in *)
   fresh (rest y v)
-    ((inj_pair y v) % rest === env)
+    ((inj_pair y v) % rest ===!! env)
     (conde [
-        (y ===! x) &&& (v ===!! t);
+        (y ==== x) &&& (v ===! t);
         (y =/= x) &&& (lookupo x rest t)
       ])
 
@@ -187,19 +225,19 @@ let rec not_in_envo x env =
   (* printfn "entering not_in_envo"; *)
   conde
     [ fresh (y v rest)
-        (env === (inj_pair y v) % rest)
+        (env ===!! (inj_pair y v) % rest)
         (y =/= x)
         (not_in_envo x rest)
-    ; (nil () === env)
+    ; (nil () ===!! env)
     ]
 
 let rec proper_listo es env rs =
   (* let (===) ?loc = uni_term_list ?loc in *)
   conde
-    [ ((nil ()) === es) &&& ((nil ()) === rs)
+    [ ((nil ()) ===!! es) &&& ((nil ()) ===!! rs)
     ; fresh (e d te td)
-        (es === e  % d)
-        (rs === te % td)
+        (es ===!! e  % d)
+        (rs ===!! te % td)
         (evalo e env (val_ te))
         (proper_listo d env td)
     ]
@@ -295,7 +333,7 @@ let thrineso x =
     (evalo p nil (val_ q))
     (evalo q nil (val_ r))
     (evalo r nil (val_ p))
-    ((inj_triple p q r) === x)
+    (MiniKanren.(===) (inj_triple p q r) x)
 
 let wrap_term rr = rr#refine gterm_reifier ~inj:Gterm.to_logic |> show_lterm
 let wrap_result rr = rr#refine gresult_reifier ~inj:Gresult.to_logic |> show_lresult

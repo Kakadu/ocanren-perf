@@ -6,12 +6,14 @@ TESTS=001 002 005 006 007 011
 MEASURE=/usr/bin/time -f "%U"
 DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
-MEASURE_RKT   ?= y
-MEASURE_OC1   ?= y
+MEASURE_RKT   ?=
+MEASURE_OC1   ?=
 MEASURE_OC2   ?=
-MEASURE_OC3   ?= y
-MEASURE_OC4   ?= y
+MEASURE_OC3   ?=
+MEASURE_OC4   ?=
 MEASURE_OC5   ?= y
+MEASURE_OC6   ?=
+MEASURE_OC7   ?= y
 MEASURE_OC9   ?=
 MEASURE_SCM   ?=
 MEASURE_MUSCM ?=
@@ -200,6 +202,16 @@ endif
 ifneq "$(MEASURE_OC5)" ""
 $(eval $(call ADD_OCANREN,MiniKanren05tagless,MiniKanren05tagless))
 $(eval $(call DO_PREPARE_OCANREN,MiniKanren05tagless))
+endif
+
+ifneq "$(MEASURE_OC6)" ""
+#$(eval $(call ADD_OCANREN,MiniKanren05tagless,MiniKanren05tagless))
+#$(eval $(call DO_PREPARE_OCANREN,MiniKanren05tagless))
+endif
+
+ifneq "$(MEASURE_OC7)" ""
+$(eval $(call ADD_OCANREN,MiniKanren07tagless,MiniKanren07tagless))
+$(eval $(call DO_PREPARE_OCANREN,MiniKanren07tagless))
 endif
 
 

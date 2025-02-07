@@ -14,16 +14,20 @@
 (library
  (name Quine_decls)
  (modules Quine_decls)
- (libraries OCanren)
+ (libraries OCanren counters)
  (wrapped false)
  (flags
   (:standard -rectypes))
+ (preprocessor_deps %{project_root}/unif_count/pp5+dump.exe)
  (preprocess
   (pps
    OCanren-ppx.ppx_distrib
    OCanren-ppx.ppx_repr
    OCanren-ppx.ppx_fresh
-   GTtogether)))
+   GTtogether
+   --
+   -pp
+   "%{project_root}/unif_count/pp5+dump.exe")))
 
 (library
  (name Quines_NoDiseq)
@@ -40,12 +44,19 @@
 (library
  (name Numero_decls)
  (modules Numero_decls)
- (libraries OCanren OCanren.tester)
+ (libraries OCanren OCanren.tester counters)
  (wrapped false)
  (flags
   (:standard -rectypes -w -27-39))
+ (preprocessor_deps %{project_root}/unif_count/pp5+dump.exe)
  (preprocess
-  (pps OCanren-ppx.ppx_repr OCanren-ppx.ppx_fresh GTtogether)))
+  (pps
+   OCanren-ppx.ppx_repr
+   OCanren-ppx.ppx_fresh
+   GTtogether
+   --
+   -pp
+   "%{project_root}/unif_count/pp5+dump.exe")))
 
 (executables
  (names
