@@ -6,16 +6,27 @@
 (library
  (name numero_decls)
  (modules numero_decls)
- (libraries MiniKanren MiniKanren.Tester)
+ (libraries MiniKanren MiniKanren.Tester counters)
+ (preprocessor_deps %{project_root}/unif_count/pp5+dump.exe)
  (preprocess
-  (pps MiniKanren-ppx.ppx_fresh)))
+  (pps
+   MiniKanren-ppx.ppx_fresh
+   --
+   -pp
+   "%{project_root}/unif_count/pp5+dump.exe")))
 
 (library
  (name Quine_decls)
  (modules Quine_decls)
- (libraries MiniKanren MiniKanren.Tester)
+ (libraries MiniKanren MiniKanren.Tester counters)
+ (preprocessor_deps %{project_root}/unif_count/pp5+dump.exe)
  (preprocess
-  (pps MiniKanren-ppx.ppx_fresh GT.ppx_all)))
+  (pps
+   MiniKanren-ppx.ppx_fresh
+   GT.ppx_all
+   --
+   -pp
+   "%{project_root}/unif_count/pp5+dump.exe")))
 
 (library
  (name Quines_NoDiseq)

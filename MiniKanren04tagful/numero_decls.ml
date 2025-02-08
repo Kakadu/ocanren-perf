@@ -5,7 +5,13 @@ open Tester
 
 include Counters.Make ()
 type ioleg = (int, int logic) MiniKanrenStd.List.groundi
+module Oleg = struct
+  type injected = ioleg
+  type ground = int MiniKanrenStd.List.ground
+  type logic  = int MiniKanren.logic MiniKanrenStd.List.logic
 
+  let to_logic : ground -> logic = List.to_logic (fun x -> Value x)
+end
 
 
 IFDEF TRACE THEN

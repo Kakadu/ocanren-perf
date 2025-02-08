@@ -7,10 +7,10 @@ MEASURE=/usr/bin/time -f "%U"
 DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
 MEASURE_RKT   ?=
-MEASURE_OC1   ?=
+MEASURE_OC1   ?= y
 MEASURE_OC2   ?=
 MEASURE_OC3   ?=
-MEASURE_OC4   ?=
+MEASURE_OC4   ?= y
 MEASURE_OC5   ?= y
 MEASURE_OC6   ?=
 MEASURE_OC7   ?= y
