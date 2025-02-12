@@ -1,10 +1,9 @@
 (* Relational arithmentics using binary numbers *)
-open MiniKanren
-open MiniKanrenStd
+open OCanren
 open Tester
 
 include Counters.Make ()
-type ioleg = (int, int logic) MiniKanrenStd.List.groundi
+type ioleg = (int, int logic) Std.List.injected
 module Oleg = struct
   type injected = ioleg
   type ground = int MiniKanrenStd.List.ground

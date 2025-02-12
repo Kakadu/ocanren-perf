@@ -6,12 +6,12 @@
 (library
  (name numero_decls)
  (modules numero_decls)
- (libraries MiniKanren MiniKanren.Tester counters)
+ (libraries OCanren OCanren.tester counters)
  (preprocessor_deps %{project_root}/unif_count/pp5+dump.exe)
  ;
  (preprocess
   (pps
-   MiniKanren-ppx.ppx_fresh
+   OCanren-ppx.ppx_fresh
    --
    -pp
    "%{project_root}/unif_count/pp5+dump.exe")))
@@ -19,11 +19,11 @@
 (library
  (name Quine_decls)
  (modules Quine_decls)
- (libraries MiniKanren MiniKanren.Tester counters)
+ (libraries OCanren OCanren.Tester counters)
  (preprocessor_deps %{project_root}/unif_count/pp5+dump.exe)
  (preprocess
   (pps
-   MiniKanren-ppx.ppx_fresh
+   OCanren-ppx.ppx_fresh
    GT.ppx_all
    --
    -pp
@@ -32,11 +32,11 @@
 (library
  (name Quines_NoDiseq)
  (modules Quines_NoDiseq)
- (libraries MiniKanren MiniKanren.Tester)
+ (libraries OCanren OCanren.tester)
  (preprocessor_deps %{project_root}/unif_count/pp5+dump.exe)
  (preprocess
   (pps
-   MiniKanren-ppx.ppx_fresh
+   MiniKaOCanrennren-ppx.ppx_fresh
    GT.ppx_all
    --
    -pp
@@ -46,7 +46,7 @@
  (name TimeHelper)
  (modules TimeHelper)
  (wrapped false)
- (libraries MiniKanren mtime.clock))
+ (libraries OCanren mtime.clock))
 
 (executable
  (name test001_expo1)

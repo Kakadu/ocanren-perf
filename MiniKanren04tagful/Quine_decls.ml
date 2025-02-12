@@ -5,8 +5,7 @@
 
 open Printf
 open GT
-open MiniKanren
-open MiniKanrenStd
+open OCanren
 include Counters.Make()
 
 let list_combine3 xs ys zs =

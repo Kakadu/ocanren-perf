@@ -15,7 +15,7 @@
 [submodule "MiniKanren04tagful/MiniKanren"]
 	path = MiniKanren04tagful/MiniKanren
 	url = https://github.com/Kakadu/OCanren.git
-	branch = tagful-resurrection
+	branch = master+tagged
 [submodule "MiniKanren05tagless/MiniKanren"]
 	path = MiniKanren05tagless/MiniKanren
 	url = https://github.com/Kakadu/OCanren.git
