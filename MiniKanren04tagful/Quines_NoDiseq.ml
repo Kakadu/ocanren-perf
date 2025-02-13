@@ -5,11 +5,12 @@
 
 open Printf
 open GT
-open MiniKanren
-open MiniKanrenStd
+open OCanren
+open Std
 
 let (===<) = (===)
 let (====) = (===)
+let(!!) x = inj (lift x)
 
 module Gterm = struct
   module X = struct
@@ -17,18 +18,15 @@ module Gterm = struct
       | Symb  of 's
       | VR    of 'n   (* variable indexed by peano numbers *)
       | Tuple of 'ts
-    [@@deriving gt ~plugins:{show}]
+    [@@deriving gt ~plugins:{show; gmap}]
 
-    let fmap f g h = function
-    | Symb s   -> Symb (f s)
-    | VR n     -> VR (g n)
-    | Tuple xs -> Tuple (h xs)
+    let fmap eta =  GT.gmap t eta
 
     let t = {
       GT.gcata = ();
       fix = ();
       plugins = object
-        (* method gmap = t.plugins#gmap *)
+        method gmap = t.plugins#gmap
         method show fa fb fc bx =
           GT.transform(t)
             (fun fself -> object
@@ -47,28 +45,38 @@ module Gterm = struct
   include X
   include Fmap3(X)
 
-  type rterm = (string, Nat.ground, rterm List.ground) X.t
-  type lterm = (string logic, Nat.logic,  lterm List.logic) X.t logic
-  type fterm = (rterm, lterm) injected
+  type ground = (string, Nat.ground, ground List.ground) X.t
+  type logic = (string OCanren.logic, Nat.logic,  logic List.logic) X.t OCanren.logic
+  type fterm = (ground, logic) injected
 
-  let rec show_rterm : rterm -> string = fun term ->
+  let fmapt fa fb fc subj =
+    let open Env.Monad in
+    Env.Monad.return (GT.gmap X.t) <*> fa <*> fb <*> fc <*> subj
+
+  let reify: (ground, logic) Reifier.t =
+    let open Env.Monad in
+    Reifier.fix (fun self ->
+      Reifier.reify <..>
+        chain (Reifier.zed (Reifier.rework ~fv:(fmapt OCanren.reify Std.Nat.reify (Std.List.reify self)))))
+
+  let prj_exn : (ground, ground) Reifier.t =
+    let open Env.Monad in
+    Reifier.fix (fun self ->
+      OCanren.prj_exn <..> chain (fmapt OCanren.prj_exn Std.Nat.prj_exn (Std.List.prj_exn self)))
+
+  let rec show_rterm : ground -> string = fun term ->
     GT.(show t (show string)
                (show Nat.ground)
                (show List.ground show_rterm)) term
 
-  let rec show_lterm : lterm -> string = fun x ->
+  let rec show_lterm : logic -> string = fun x ->
     GT.(show logic @@ show t (show logic @@ (fun s -> s))
                               (show Nat.logic)
                               (show List.logic show_lterm)) x
 
-  let rec to_logic : rterm -> lterm = fun term ->
-    Value (fmap (fun s -> Value s)
-                Nat.to_logic
-                (List.to_logic to_logic) term)
-
   let vr  n   : fterm = inj @@ distrib @@ VR n
   let symb s  : fterm = inj @@ distrib @@ Symb s
-  let tuple xs: fterm = inj @@ distrib @@ Tuple (inj_listi xs)
+  let tuple xs: fterm = inj @@ distrib @@ Tuple (Std.list Fun.id xs)
   let quote xs  = inj @@ distrib @@ Tuple ((symb !!"quote") % xs)
   let quotequote : fterm = quote (!< (symb !!"quote"))
 
@@ -85,17 +93,12 @@ module Gterm = struct
 
 end
 
-let rec gterm_reifier c : Gterm.fterm -> Gterm.lterm =
-  Gterm.reify ManualReifiers.string
-              Nat.reify
-              (List.reify gterm_reifier) c
-
-let (!!) x = inj @@ lift x
+let gterm_reifier = Gterm.reify
 
 open Gterm
 
 let rec nat o =
-  let (===) ?loc = unitrace ?loc (fun h t -> GT.show Nat.logic @@   Nat.reify h t) in
+  (* let (===) ?loc = unitrace ?loc (fun h t -> GT.show Nat.logic @@   Nat.reify h t) in *)
   conde
     [ o === Nat.zero
     ; fresh (n)
@@ -104,7 +107,7 @@ let rec nat o =
     ]
 
 let rec tm o =
-  let (===) ?loc = unitrace ?loc (fun h t -> show_lterm @@ gterm_reifier h t) in
+  (* let (===) ?loc = unitrace ?loc (fun h t -> show_lterm @@ gterm_reifier h t) in *)
   conde
     [ fresh (n)
         (o === (vr n))
@@ -126,7 +129,7 @@ module Gresult = struct
     type ('env, 'v, 't) t =
     | Closure of 'env * 'v * 't
     | Code    of 't
-     [@@deriving gt ~plugins:{show}]
+     [@@deriving gt ~plugins:{show; gmap}]
 
     let fmap f g h = function
     | Closure (a,b,c) -> Closure (f a, g b, h c)
@@ -139,22 +142,40 @@ module Gresult = struct
   let show_rvar = GT.show Nat.ground
   let show_lvar = GT.show Nat.logic
 
-  type rresult = (renv, rvar, Gterm.rterm) X.t
-  and renv = (rvar * rresult) List.ground
-  type lresult = (lenv, lvar, Gterm.lterm) X.t logic
-  and lenv = (lvar * lresult) logic List.logic
+  type ground = (renv, rvar, Gterm.ground) X.t
+  and renv = (rvar * ground) List.ground
 
-  type fresult = (rresult, lresult) injected
+  type logic = (lenv, lvar, Gterm.logic) X.t OCanren.logic
+  and lenv = (lvar * logic) OCanren.logic List.logic
+
+  type injected = (ground, logic) OCanren.injected
 
   let closure env v b = inj @@ distrib @@ X.Closure (env,v,b)
   let clo   = closure
   let code    c       = inj @@ distrib @@ X.Code c
+  let fmapt fa fb fc subj =
+    let open Env.Monad in
+    Env.Monad.return (GT.gmap X.t) <*> fa <*> fb <*> fc <*> subj
+
+  let prj_exn : (ground, ground) Reifier.t =
+    let open Env.Monad in
+    Reifier.fix (fun self ->
+      OCanren.prj_exn <..> chain
+        (fmapt (Std.List.prj_exn (Std.Pair.prj_exn Std.Nat.prj_exn self)) Std.Nat.prj_exn Gterm.prj_exn))
+
+  let reify: (ground, logic) Reifier.t =
+    let open Env.Monad in
+    Reifier.fix (fun self ->
+      Reifier.reify <..>
+        chain (Reifier.zed (Reifier.rework ~fv:
+          (fmapt (Std.List.reify (Std.Pair.reify Std.Nat.reify self)) Std.Nat.reify Gterm.reify))))
+
 
   let show_string = GT.(show string)
   let show_stringl = GT.(show logic) show_string
 
   let rec show_rresult r = GT.(show X.t
-    (show List.ground (show MiniKanrenStd.Pair.t show_rvar show_rresult))
+    (show List.ground (show Std.Pair.t show_rvar show_rresult))
     show_rvar
     Gterm.show_rterm) r
   let rec show_lresult r = GT.(show logic @@ show X.t
@@ -162,21 +183,20 @@ module Gresult = struct
     show_lvar
     Gterm.show_lterm) r
   and show_lenv e =
-    GT.(show List.logic (show logic @@ show MiniKanrenStd.Pair.t show_lvar show_lresult)) e
+    GT.(show List.logic (show logic @@ show Std.Pair.t show_lvar show_lresult)) e
 
   let pair_to_logic f g = fun (a,b) -> Value (f a, g b)
-  let rec to_logic : rresult -> lresult = fun res ->
+  (* let rec to_logic : rresult -> lresult = fun res ->
     Value (fmap env_to_logic Nat.to_logic Gterm.to_logic res)
   and env_to_logic: renv -> lenv = fun e ->
-    List.to_logic (pair_to_logic Nat.to_logic to_logic) e
+    List.to_logic (pair_to_logic Nat.to_logic to_logic) e *)
 end
 
 let var_reifier = Nat.reify
 
-let rec gresult_reifier c : Gresult.fresult -> Gresult.lresult =
-  Gresult.reify env_reifier var_reifier gterm_reifier c
-and env_reifier e =
-  List.reify ManualReifiers.(pair var_reifier gresult_reifier) e
+let gresult_reifier = Gresult.reify
+(* and env_reifier e =
+  List.reify ManualReifiers.(pair var_reifier gresult_reifier) e *)
 
 open Gresult
 
@@ -210,7 +230,7 @@ and venv o =
   conde
     [ (o === nil ())
     ; fresh (n v e)
-        (o === ((inj_pair n v) % e))
+        (o === ((Std.pair n v) % e))
         (nat n)
         (vl v)
         (venv e)
@@ -223,9 +243,9 @@ let rec vlookup env x v =
   (* trace "vlookup" @@ *)
   conde
     [ fresh (er)
-        (env ===< (inj_pair x v) % er)
+        (env ===< (Std.pair x v) % er)
     ; fresh (y vy er)
-        (env ===< (inj_pair y vy) % er)
+        (env ===< (Std.pair y vy) % er)
         (neq x y)
         (vlookup er x v)
     ]
@@ -247,7 +267,7 @@ let rec ev e t v =
         (t === (app t1 t2))
         (ev e t1 (clo e0 x0 t0))
         (ev e t2 v2)
-        (ev ((inj_pair x0 v2)%e0) t0 v)
+        (ev ((Std.pair x0 v2)%e0) t0 v)
     ; fresh (t1 t2 c1 c2)
         (t ===  (list2 t1 t2))
         (v ==== (code (tuple [c1; c2])))
@@ -256,7 +276,7 @@ let rec ev e t v =
     ]
 
 let nil = nil ()
-let quineo q =
+let quineso q =
   (ev nil q (code q))
 
 (*
@@ -312,18 +332,14 @@ let gen_terms n r = printf "> %s\n" (show_term r);
   Printf.printf "\n"
 *)
 *)
-let wrap_term rr =
-  rr#refine gterm_reifier ~inj:Gterm.to_logic |> show_lterm
 
-let wrap_result rr =
-  rr#refine gresult_reifier ~inj:Gresult.to_logic |> show_lresult
+let find_quines ~verbose n =
+  run q quineso (fun r -> r#reify gterm_reifier)
+  |> OCanren.Stream.take ~n
+  |> Stdlib.List.iter (fun q -> if verbose then printf "%s\n\n" (show_lterm q) else ())
+;;
 
-let find_quines ~verbose n = run q quineo @@ fun qs ->
-  Stream.take ~n qs |> List.iter (fun q ->
-    if verbose
-    then printf "%s\n\n" (wrap_term q)
-    else ()
-  )
+
 
 (*
 let find_twines n =

@@ -1,15 +1,12 @@
 open Numero_decls_trace
 
-let wrap : ?n:int -> string * (Numero_decls_trace.Oleg.injected -> MiniKanren.goal) -> unit =
+let wrap : ?n:int -> string * (Numero_decls_trace.Oleg.injected -> OCanren.goal) -> unit =
   fun ?(n = 1) (msg, goal) ->
   print_endline msg;
-  MiniKanren.(run q) goal
-  (fun xs ->
-    MiniKanren.Stream.take ~n xs
-    |>  List.iteri (fun i n ->
-      let n = n#refine Numero_decls_trace.num_reifier ~inj:Numero_decls_trace.Oleg.to_logic in
+  OCanren.(run q) goal (fun rr -> rr#reify Numero_decls_trace.num_reifier)
+  |> OCanren.Stream.take ~n
+  |> Stdlib.List.iteri (fun i n ->
       Format.printf "%3d:\t%s\n%!" i (Numero_decls_trace.show_num_logic n)
-    )
     )
 ;;
 

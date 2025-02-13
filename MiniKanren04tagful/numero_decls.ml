@@ -9,7 +9,7 @@ module Oleg = struct
   type ground = int Std.List.ground
   type logic  = int OCanren.logic Std.List.logic
 
-  let to_logic : ground -> logic = Std.List.to_logic (fun x -> Value x)
+  (* let to_logic : ground -> logic = Std.List.to_logic (fun x -> Value x) *)
   let reify: (ground, logic) Reifier.t = Std.List.reify OCanren.reify
 end
 
@@ -49,7 +49,7 @@ ELSE
   let ( === ) : ioleg -> ioleg -> goal = OCanren.(===)
 END
 
-open OCanren.Std 
+open OCanren.Std
 
 let rec build_num =
   function
