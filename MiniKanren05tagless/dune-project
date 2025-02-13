@@ -1,5 +1,0 @@
-(lang dune 3.16)
-
-(generate_opam_files true)
-
-(name tagful)

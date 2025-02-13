@@ -1,1 +1,0 @@
-../MiniKanren04tagful/test004_logo2.ml
