@@ -2,15 +2,14 @@ open Printf
 
 let the_time_file = "/tmp/ocanren_time"
 
-let wrap_run num rel ?(n= -1) ~reifier ~inj ~verbose onVerbose =
-  OCanren.run num rel
-    (fun s ->
-      OCanren.Stream.take ~n s |>
-      List.iter (fun r ->
-        let term = r#refine reifier ~inj in
-        if verbose then onVerbose term else ()
-        )
+let _: int OCanren.logic OCanren.Stream.t = OCanren.(run one (fun q -> q===q)) (fun rr -> rr#reify OCanren.reify)
+let wrap_run rel ?(n= -1) ~reifier ~verbose onVerbose =
+  OCanren.(run q) rel (fun rr -> rr#reify reifier)
+  |>OCanren.Stream.take ~n  |>
+    List.iter (fun term ->
+      if verbose then onVerbose term else ()
       )
+    
 
 let time f =
   let start = Mtime_clock.elapsed () in

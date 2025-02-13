@@ -6,10 +6,11 @@ include Counters.Make ()
 type ioleg = (int, int logic) Std.List.injected
 module Oleg = struct
   type injected = ioleg
-  type ground = int MiniKanrenStd.List.ground
-  type logic  = int MiniKanren.logic MiniKanrenStd.List.logic
+  type ground = int Std.List.ground
+  type logic  = int OCanren.logic Std.List.logic
 
-  let to_logic : ground -> logic = List.to_logic (fun x -> Value x)
+  let to_logic : ground -> logic = Std.List.to_logic (fun x -> Value x)
+  let reify: (ground, logic) Reifier.t = Std.List.reify OCanren.reify
 end
 
 
@@ -22,7 +23,7 @@ include struct
     | _ -> true
 
   (* let pp st x =
-    (GT.show MiniKanren.logic @@ GT.show GT.int) @@
+    (GT.show OCanren.logic @@ GT.show GT.int) @@
     reify_in_state st OCanren.reify x *)
 
   let ( ==== ) : (int, int logic) injected -> (int, int logic) injected -> goal =
@@ -30,7 +31,7 @@ include struct
     incr_counter ();
     (* if not are_unifications_silent then
       Printf.printf "%s %s\n" (pp st x) (pp st y); *)
-    MiniKanren.( === ) x y st
+    OCanren.( === ) x y st
    [@@inline]
 
   let ( === ) : ioleg -> ioleg -> goal =
@@ -38,20 +39,21 @@ include struct
     incr_counter ();
     (* if not are_unifications_silent then
       Printf.printf "%s %s\n" (pp st x) (pp st y); *)
-    MiniKanren.( === ) x y st
+    OCanren.( === ) x y st
    [@@inline]
 
 
 end
 ELSE
-  let ( ==== ) : (int, int logic) injected -> (int, int logic) injected -> goal = MiniKanren.(===)
-  let ( === ) : ioleg -> ioleg -> goal = MiniKanren.(===)
+  let ( ==== ) : (int, int logic) injected -> (int, int logic) injected -> goal = OCanren.(===)
+  let ( === ) : ioleg -> ioleg -> goal = OCanren.(===)
 END
 
+open OCanren.Std 
 
 let rec build_num =
   function
-  | 0                   -> nil()
+  | 0                   -> Std.nil()
   | n when n mod 2 == 0 -> (inj@@lift 0) % build_num (n / 2)
   | n                   -> (inj@@lift 1) % build_num (n / 2)
 
@@ -377,6 +379,6 @@ let show_num_logic = GT.(show List.logic @@ show logic @@ show int)
   run_exn show_num (-1)   q  qh (REPR (fun q       -> expo (build_num 3) (build_num 5) q               ));
   () *)
 
-let num_reifier h  = List.reify ManualReifiers.int h
-let runL n = runR num_reifier show_num show_num_logic n
+let num_reifier  = Oleg.reify
+let runL n = run_r num_reifier show_num_logic n
 

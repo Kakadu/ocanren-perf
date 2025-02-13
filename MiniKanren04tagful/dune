@@ -19,7 +19,7 @@
 (library
  (name Quine_decls)
  (modules Quine_decls)
- (libraries OCanren OCanren.Tester counters)
+ (libraries OCanren OCanren.tester counters)
  (preprocessor_deps %{project_root}/unif_count/pp5+dump.exe)
  (preprocess
   (pps
@@ -36,7 +36,7 @@
  (preprocessor_deps %{project_root}/unif_count/pp5+dump.exe)
  (preprocess
   (pps
-   MiniKaOCanrennren-ppx.ppx_fresh
+   OCanren-ppx.ppx_fresh
    GT.ppx_all
    --
    -pp

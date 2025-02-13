@@ -56,23 +56,37 @@ module Gterm = struct
   include X
   include Fmap2(X)
 
-  type rterm = (string, rterm List.ground) X.t
-  type lterm = (string logic, lterm List.logic) X.t logic
-  type fterm = (rterm, lterm) injected
+  type ground = (string, ground Std.List.ground) X.t
+  type logic = (string OCanren.logic, logic Std.List.logic) X.t OCanren.logic
+  type fterm = (ground, logic) injected
 
-  let rec show_rterm : rterm -> string = fun t -> GT.(show X.t (fun s -> s) (show List.ground show_rterm)) t
+  let fmapt fa fb subj =
+    let open Env.Monad in
+    Env.Monad.return (GT.gmap t) <*> fa <*> fb <*> subj
+
+  let reify: (ground, logic) Reifier.t =
+    let open Env.Monad in
+    Reifier.fix (fun self ->
+      Reifier.reify <..>
+        chain (Reifier.zed (Reifier.rework ~fv:(fmapt OCanren.reify (Std.List.reify self)))))
+
+  let prj_exn : (ground, ground) Reifier.t =
+    let open Env.Monad in
+    Reifier.fix (fun self ->
+      Reifier.prj_exn <..> chain (fmapt OCanren.prj_exn self))
+  let rec show_rterm : rterm -> string = fun t -> GT.(show X.t (fun s -> s) (show Std.List.ground show_rterm)) t
   let rec show_lterm : lterm -> string =
-    fun x -> GT.(show logic @@ show X.t (show logic (fun s -> s)) (show List.logic show_lterm) ) x
+    fun x -> GT.(show logic @@ show X.t (show logic (fun s -> s)) (show Std.List.logic show_lterm) ) x
 
   let rec to_logic : rterm -> lterm = fun term ->
-    Value (GT.(gmap X.t) (fun s -> Value s) (List.to_logic to_logic) term)
+    Value (GT.(gmap X.t) (fun s -> Value s) (Std.List.to_logic to_logic) term)
 
   let symb s : fterm = inj @@ distrib @@ Symb s
   let seq xs : fterm = inj @@ distrib @@ Seq xs
 end
 
-let rec gterm_reifier c : Gterm.fterm -> Gterm.lterm =
-  Gterm.reify ManualReifiers.string (List.reify gterm_reifier) c
+let gterm_reifier: (Gterm.rterm, Gterm.lterm) Reifier.t =
+  Gterm.reify OCanren.reify (Std.List.reify gterm_reifier) 
 
 module Gresult = struct
   module X = struct
