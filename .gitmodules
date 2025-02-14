@@ -20,3 +20,7 @@
 	path = MiniKanren07tagless/MiniKanren
 	url = https://github.com/Kakadu/OCanren.git
 	branch = tagless-resurrection-streams
+[submodule "MiniKanren05tagless/MiniKanren"]
+	path = MiniKanren05tagless/MiniKanren
+	url = https://github.com/Kakadu/OCanren.git
+	branch = master+oldInj
