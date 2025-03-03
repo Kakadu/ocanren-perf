@@ -6,12 +6,12 @@ TESTS=001 002 005 006 007 011
 MEASURE=/usr/bin/time -f "%U"
 DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
-MEASURE_RKT   ?=
+MEASURE_RKT   ?= y
 MEASURE_OC1   ?= y
 MEASURE_OC2   ?=
 MEASURE_OC3   ?=
 MEASURE_OC4   ?= y
-MEASURE_OC5   ?= y 
+MEASURE_OC5   ?=  
 MEASURE_OC6   ?=
 MEASURE_OC7   ?= 
 MEASURE_OC9   ?=
@@ -186,8 +186,10 @@ $(eval $(call ADD_OCANREN,ocanren01,OCanren-master))
 $(eval $(call DO_PREPARE_OCANREN,ocanren01)) # accepts dirname
 endif
 
-#$(eval $(call ADD_OCANREN,ocanren02,ocanren02))
-#$(eval $(call DO_PREPARE_OCANREN,ocanren02))
+ifneq "$(MEASURE_OC2)" ""
+$(eval $(call ADD_OCANREN,ocanren02,ocanren02))
+$(eval $(call DO_PREPARE_OCANREN,ocanren02))
+endif
 
 ifneq "$(MEASURE_OC3)" ""
 $(eval $(call ADD_OCANREN,ocanren03,OCanren-art-tagged))
