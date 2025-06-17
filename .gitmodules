@@ -8,10 +8,6 @@
 	url = https://github.com/PLTools/OCanren.git
 	branch = master
 
-[submodule "OCanren_disequality_issue1"]
-	path = ocanren02/OCanren
-	url = https://github.com/PLTools/OCanren.git
-	branch = disequality-issue1
 [submodule "MiniKanren04tagful/MiniKanren"]
 	path = MiniKanren04tagful/MiniKanren
 	url = https://github.com/Kakadu/OCanren.git
