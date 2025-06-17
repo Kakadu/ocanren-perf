@@ -151,7 +151,7 @@ define DO_PREPARE_OCANREN # dirname
 .PHONY: prepare_ocanren$(1) compile_$(1)tests clean$(1)
 prepare_ocanren$(1):
 	cd $$(shell echo $(1)*) && \
-		dune build @all_tests --profile=release -j2
+		OCANREN_NON_ABSTRACT_GOAL=1 dune build @all_tests --profile=release -j2
 
 prepare_ocanren: prepare_ocanren$(1)
 
