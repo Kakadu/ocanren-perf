@@ -20,3 +20,7 @@
 	path = MiniKanren05tagless/MiniKanren
 	url = https://github.com/Kakadu/OCanren.git
 	branch = master+oldInj
+[submodule "ocanren08/OCanren"]
+	path = ocanren08/OCanren
+	url = https://github.com/ProgMiner/OCanren.git
+	branch = rt-unify
