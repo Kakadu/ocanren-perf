@@ -20,3 +20,7 @@
 	path = MiniKanren05tagless/MiniKanren
 	url = https://github.com/Kakadu/OCanren.git
 	branch = master+oldInj
+[submodule "ocanren02unity/OCanren"]
+	path = ocanren02unity/OCanren
+	url = https://github.com/Kakadu/OCanren.git
+	branch = master+unityBuild
