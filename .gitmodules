@@ -24,3 +24,11 @@
 	path = ocanren08/OCanren
 	url = https://github.com/ProgMiner/OCanren.git
 	branch = rt-unify
+[submodule "ocanren09/OCanren"]
+	path = ocanren09/OCanren
+	url = https://github.com/ProgMiner/OCanren.git
+	branch = path-compression
+[submodule "ocanren10/OCanren"]
+	path = ocanren10/OCanren
+	url = https://github.com/ProgMiner/OCanren.git
+	branch = union-find

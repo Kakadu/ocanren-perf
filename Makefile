@@ -10,11 +10,14 @@ MEASURE_RKT   ?= y
 MEASURE_OC1   ?= y
 MEASURE_OC2   ?=
 MEASURE_OC3   ?=
-MEASURE_OC4   ?= y
+MEASURE_OC4   ?= 
 MEASURE_OC5   ?=  
 MEASURE_OC6   ?=
 MEASURE_OC7   ?= 
-MEASURE_OC9   ?=
+MEASURE_OC8   ?= y
+MEASURE_OC9   ?= y
+MEASURE_OC9   ?= y
+MEASURE_OC10  ?= y
 MEASURE_SCM   ?=
 MEASURE_MUSCM ?=
 
@@ -214,6 +217,23 @@ endif
 ifneq "$(MEASURE_OC7)" ""
 $(eval $(call ADD_OCANREN,MiniKanren07tagless,MiniKanren07tagless))
 $(eval $(call DO_PREPARE_OCANREN,MiniKanren07tagless))
+endif
+
+ifneq "$(MEASURE_OC8)" ""
+$(eval $(call ADD_OCANREN,ocanren08,ocanren08))
+$(eval $(call DO_PREPARE_OCANREN,ocanren08))
+endif
+
+
+ifneq "$(MEASURE_OC9)" ""
+$(eval $(call ADD_OCANREN,ocanren09,ocanren09))
+$(eval $(call DO_PREPARE_OCANREN,ocanren09))
+endif
+
+
+ifneq "$(MEASURE_OC10)" ""
+$(eval $(call ADD_OCANREN,ocanren10,ocanren10))
+$(eval $(call DO_PREPARE_OCANREN,ocanren10))
 endif
 
 
