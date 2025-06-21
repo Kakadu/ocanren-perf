@@ -9,8 +9,8 @@ DUMMY_MEASURE=printf "%10.3f\t" 0.0
 MEASURE_RKT   ?= y
 MEASURE_OC1   ?= y
 MEASURE_OC2   ?=
-MEASURE_OC3   ?=
-MEASURE_OC4   ?= y
+MEASURE_OC3   ?= y
+MEASURE_OC4   ?= 
 MEASURE_OC5   ?=  
 MEASURE_OC6   ?=
 MEASURE_OC7   ?= 
@@ -192,7 +192,7 @@ $(eval $(call DO_PREPARE_OCANREN,ocanren02))
 endif
 
 ifneq "$(MEASURE_OC3)" ""
-$(eval $(call ADD_OCANREN,ocanren03,OCanren-art-tagged))
+$(eval $(call ADD_OCANREN,ocanren03,OCanrenUnity))
 $(eval $(call DO_PREPARE_OCANREN,ocanren03))
 endif
 
