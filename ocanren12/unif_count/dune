@@ -1,0 +1,61 @@
+(library
+ (name counters)
+ (modules counters))
+
+(library
+ (name numero_decls_trace)
+ (libraries OCanren OCanren.tester counters)
+ (modules numero_decls_trace)
+ (wrapped false)
+ (preprocessor_deps %{project_root}/unif_count/pp5+dump.exe ./pp5+dump.exe)
+ (preprocess
+  (pps
+   OCanren-ppx.ppx_fresh
+   OCanren-ppx.ppx_repr
+   GT.ppx_all
+   --
+   -pp
+   "unif_count/pp5+dump.exe -D TRACE")))
+
+(library
+ (name Quine_decls_trace)
+ (libraries OCanren OCanren.tester counters)
+ (modules Quine_decls_trace)
+ (wrapped false)
+ (preprocessor_deps %{project_root}/unif_count/pp5+dump.exe ./pp5+dump.exe)
+ (preprocess
+  (pps
+   OCanren-ppx.ppx_fresh
+   OCanren-ppx.ppx_repr
+   OCanren-ppx.ppx_distrib
+   GT.ppx_all
+   --
+   -pp
+   "unif_count/pp5+dump.exe -D TRACE")))
+
+(executable
+ (name numero)
+ (modules numero)
+ (libraries numero_decls_trace)
+ (preprocess
+  (pps OCanren-ppx.ppx_repr)))
+
+(executable
+ (name run_scheme)
+ (modules run_scheme)
+ (libraries Quine_decls_trace)
+ (preprocess
+  (pps OCanren-ppx.ppx_repr)))
+
+(cram
+ (deps ./numero.exe ./run_scheme.exe))
+
+(rule
+ (targets pp5+dump.exe)
+ (action
+  (run
+   mkcamlp5.opt
+   -package
+   camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_dump
+   -o
+   %{targets})))

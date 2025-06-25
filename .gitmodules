@@ -32,3 +32,15 @@
 	path = ocanren10/OCanren
 	url = https://github.com/ProgMiner/OCanren.git
 	branch = union-find
+[submodule "ocanren11/OCanren"]
+	path = ocanren11/OCanren
+	url = https://github.com/ProgMiner/OCanren.git
+	branch = no-attr-var
+[submodule "ocanren12/OCanren"]
+	path = ocanren12/OCanren
+	url = https://github.com/ProgMiner/OCanren.git
+	branch = path-compression+no-attr-var
+[submodule "ocanren13/OCanren"]
+	path = ocanren13/OCanren
+	url = https://github.com/ProgMiner/OCanren.git
+	branch = union-find+no-attr-var
