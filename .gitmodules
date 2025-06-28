@@ -27,8 +27,12 @@
 [submodule "ocanren09/OCanren"]
 	path = ocanren09/OCanren
 	url = https://github.com/ProgMiner/OCanren.git
-	branch = path-compression
+	branch = less-var
 [submodule "ocanren10/OCanren"]
 	path = ocanren10/OCanren
 	url = https://github.com/ProgMiner/OCanren.git
-	branch = union-find
+	branch = path-compression
+[submodule "ocanren11/OCanren"]
+	path = ocanren11/OCanren
+	url = https://github.com/ProgMiner/OCanren.git
+	branch = path-compression+less-var
