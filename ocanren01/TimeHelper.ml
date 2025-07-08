@@ -40,7 +40,7 @@ let wrap (do_measure : verbose:bool -> unit) =
     (* warmup *)
     let () = do_measure ~verbose:false in
     (* do benchmarking *)
-    let n = 10 in
+    let n = 50 in
     let acc = ref 0. in
     for _i = 1 to n do
       let () = Gc.compact () in
