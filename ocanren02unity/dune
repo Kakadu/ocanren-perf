@@ -18,6 +18,8 @@
  (wrapped false)
  (flags
   (:standard -rectypes))
+ (ocamlopt_flags
+  (:standard -S))
  (preprocessor_deps %{project_root}/unif_count/pp5+dump.exe)
  (preprocess
   (pps
@@ -111,6 +113,7 @@
   TimeHelper
   Quine_decls
   ;OCanren.install_timer
+  memtrace
   ;
   )
  (flags

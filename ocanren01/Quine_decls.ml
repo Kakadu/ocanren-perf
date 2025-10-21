@@ -90,7 +90,7 @@ end
 let list_combine3 xs ys zs =
   let rec helper acc = function
     | x :: xs, y :: ys, z :: zs -> helper ((x, y, z) :: acc) (xs, ys, zs)
-    | [], [], [] -> List.rev acc
+    | [], [], [] -> Stdlib.List.rev acc
     | _ -> failwith "bad argument of list_combine3"
   in
   helper [] (xs, ys, zs)
@@ -312,13 +312,13 @@ let wrap_result rr = rr#reify gresult_reifier |> show_lresult
 let find_quines ~verbose n =
   run q quineso (fun r -> r#reify gterm_reifier)
   |> OCanren.Stream.take ~n
-  |> List.iter (fun q -> if verbose then printf "%s\n\n" (show_lterm q) else ())
+  |> Stdlib.List.iter (fun q -> if verbose then printf "%s\n\n" (show_lterm q) else ())
 ;;
 
 let find_twines ~verbose n =
   run qr twineso (fun q r -> q#reify Gterm.reify, r#reify Gterm.reify)
   |> OCanren.Stream.take ~n
-  |> List.iter (fun (q, r) ->
+  |> Stdlib.List.iter (fun (q, r) ->
     if verbose then printf "%s,\n%s\n\n" (show_lterm q) (show_lterm r) else ())
 ;;
 
@@ -336,7 +336,7 @@ let find_thrines ~verbose n =
   run q thrineso (fun r ->
     r#reify (Std.Triple.reify gterm_reifier gterm_reifier gterm_reifier))
   |> Stream.take ~n
-  |> List.iter (fun a ->
+  |> Stdlib.List.iter (fun a ->
     if verbose
     then (
       let () = wrap3terms a in

@@ -31,6 +31,8 @@
  (inline_tests)
  (flags
   (:standard -rectypes))
+ (ocamlopt_flags
+  (:standard -S))
  (preprocess
   (pps
    ppx_expect
@@ -114,10 +116,13 @@
   TimeHelper
   Quine_decls
   ;OCanren.install_timer
+  memtrace
   ;
   )
  (flags
   (:standard -rectypes -w -27-39))
+ (ocamlopt_flags
+  (:standard -S))
  (preprocess
   (pps OCanren-ppx.ppx_repr OCanren-ppx.ppx_fresh GTtogether)))
 
