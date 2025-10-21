@@ -4,3 +4,7 @@ perf.hist*
 /data.gnuplot
 /graph.pdf
 /graph.png
+
+# memtrace file
+*.ctf
+
