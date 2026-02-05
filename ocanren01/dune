@@ -146,3 +146,7 @@
  (alias all_tests)
  (action
   (run echo)))
+
+(cram
+ (deps ./test007_quines.exe)
+ (applies_to quines_answers))

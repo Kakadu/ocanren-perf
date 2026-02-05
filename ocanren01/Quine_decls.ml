@@ -57,6 +57,9 @@ module ListLo = struct
 
   let prj_exn = Std.List.prj_exn
   let reify = Std.List.reify
+
+  let rec project f xs =
+    Std.List.logic_to_ground_exn f xs
 end
 
 module Std = struct
@@ -147,6 +150,13 @@ module Gterm = struct
 
   let show_rterm = Format.asprintf "%a" (GT.fmt ground)
   let show_lterm = Format.asprintf "%a" (GT.fmt logic)
+
+  let rec project_exn : logic -> ground =
+    function
+    | Var _ -> raise OCanren.Not_a_value
+    | Value (Seq xs ) -> Seq (ListLo.project project_exn xs )
+    | Value (Symb (Var _)) -> raise Not_a_value
+    | Value (Symb (Value s )) -> Symb s
 end
 
 let gterm_reifier = Gterm.reify
@@ -309,10 +319,10 @@ let thrineso x =
 let wrap_term rr = rr#reify gterm_reifier |> show_lterm
 let wrap_result rr = rr#reify gresult_reifier |> show_lresult
 
-let find_quines ~verbose n =
+let find_quines ~verbose ?(pp=show_lterm) n =
   run q quineso (fun r -> r#reify gterm_reifier)
   |> OCanren.Stream.take ~n
-  |> List.iter (fun q -> if verbose then printf "%s\n\n" (show_lterm q) else ())
+  |> List.iter (fun q -> if verbose then printf "%s\n\n" (pp q) else ())
 ;;
 
 let find_twines ~verbose n =
