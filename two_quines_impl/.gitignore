@@ -1,0 +1,3 @@
+*.exe
+/quines_bench_racket.sexp-*
+*.log
