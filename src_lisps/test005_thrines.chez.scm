@@ -1,6 +1,10 @@
 (include "../faster-miniKanren/mk-vicare.scm")
 (include "../faster-miniKanren/mk.scm")
 
+(define === ==)
+(define =//= =/=)
+
+(include "list-display.scm")
 (include "q.scm")
 
 (define do_measure (lambda ()

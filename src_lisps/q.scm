@@ -1,14 +1,3 @@
-(include "list-display.scm")
-
-(define === (lambda (x y) (lambda (s)
-  ((== x y) s)
-  ; ((==count x y) s)
-)))
-
-(define =//= (lambda (x y) (lambda (s)
-  ((=/= x y) s)
-)))
-
 (define lookupo
   (lambda (x env t)
     (fresh (rest y v)
