@@ -33,12 +33,15 @@
        (pretty-printf "  ~a\n" (cdr (car lis)))
        (helper (+ n 1) (cdr lis))])))
 
+(define unif-counter 0)
 (define ===
   (lambda (x y)
     (lambda (s)
-      ((== x y) s)
-      ; ((==count x y) s)
-      )))
+      (begin
+        (set! unif-counter (add1 unif-counter))
+        ((== x y) s)
+        ; ((==count x y) s)
+        ))))
 
 (define =//= (lambda (x y) (lambda (s) ((=/= x y) s))))
 
@@ -51,3 +54,4 @@
       [s (string->number data)])))
 
 (list-display (run count (p) (eval-expo p '() `(val_ ,p))))
+(pretty-printf "~a unifications\n" unif-counter)

@@ -4,7 +4,7 @@ RACO_FLAGS ?=
 all: new-quines.log old-quines.log
 	grc diff -u old-quines.log new-quines.log
 
-new-quines.log: mk.rkt q_ocanren.scm
+new-quines.log: mk.rkt q_ocanren.scm q.rkt
 	racket q.rkt > $@
 
 old-quines.log: mk.rkt q_vanilla.scm vanilla.rkt
