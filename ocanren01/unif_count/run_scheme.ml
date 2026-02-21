@@ -33,7 +33,7 @@ let () =
   clear_unifications ();
   let () =
     (match config.mode with
-     | Quines -> find_quines ~verbose:(config.n = 1)
+     | Quines -> fun n -> find_quines ~verbose:(config.n = 1) n
      | Twines -> find_twines ~verbose:(config.n = 1)
      | Thrines -> find_thrines ~verbose:(config.n = 1))
       config.n

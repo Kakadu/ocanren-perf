@@ -4,7 +4,7 @@ open OCanren.Std
 let do_measure rel ~verbose =
   let open Numero_decls in
   TimeHelper.wrap_run
-    one
+    OCanren.one
     rel
     ~reifier:(fun r -> r#reify num_reifier) (* ~inj:(List.to_logic (fun x -> Value x) ) *)
     ~verbose

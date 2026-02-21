@@ -5,7 +5,7 @@ open TimeHelper
 let do_measure rel ~verbose =
   let open Numero_decls in
   TimeHelper.wrap_run
-    one
+    OCanren.one
     rel
     ~reifier:(fun r -> r#reify Oleg.reify)
     ~verbose
