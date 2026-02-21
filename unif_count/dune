@@ -1,0 +1,24 @@
+(cram
+ (applies_to test006_out all)
+ (deps
+  src_lisps/test006_twines.chez.scm
+  src_lisps/q.scm
+  src_lisps/list-display.scm
+  ;
+  ))
+
+(cram
+ (applies_to test001_out all)
+ (deps src_lisps/numbers.scm src_lisps/test001_pow.chez.scm))
+
+(cram
+ ;(applies_to all)
+ (deps
+  src_lisps/list-display.scm
+  faster-miniKanren/mk-vicare.scm
+  faster-miniKanren/mk.scm
+  faster-miniKanren/private-unstable.rkt
+  run.rkt
+  mk.rkt
+  ;
+  ))
