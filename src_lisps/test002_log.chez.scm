@@ -7,6 +7,10 @@
     (fresh (a d)
       (== `(,a . ,d) n))))
 
+(define === ==)
+(define =//= =/=)
+
+(include "list-display.scm")
 (include "numbers.scm")
 
 ; without display REPL prints the result but compiled code doesn't
