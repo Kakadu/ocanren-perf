@@ -17,7 +17,7 @@
 (if (not (getenv "BENCH_MODE"))
   (begin
     (list-display (do_measure))
-    (report_counters) ; 274068 unification for first 200 quines
+      ; 274068 unification for first 200 quines
       ; 2085 for first quine
       ; 6920
       ; 8480

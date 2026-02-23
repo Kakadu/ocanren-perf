@@ -22,7 +22,5 @@
 (if (not (getenv "BENCH_MODE"))
   (begin
     (list-display (do_measure))
-    (report_counters)
-    ; Should give 224671 unifications
     (exit)
   ))

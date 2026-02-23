@@ -1,11 +1,5 @@
 open Quine_decls_trace
 
-(* let () =
-   match Sys.getenv "SILENT_UNIFICATIONS" with
-   | _ -> set_trace false
-   | exception Not_found -> set_trace true
-   ;; *)
-
 type mode =
   | Quines
   | Twines

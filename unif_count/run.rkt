@@ -33,20 +33,47 @@
 ; TODO: Implement a simplifier for weird quines
 
 ;(myrunN 2 (lambda (q) (eval-expo q '() `(val_ ,q))))
+(define quiet (box #f))
 
 (define wrap
   (lambda (n f)
     (begin
-      (list-display (myrunN n f))
-      (report_counters))))
+      (let* ([results (myrunN n f)])
+        (when (not (unbox quiet))
+          (list-display results))
+        (report_counters)))))
 
-(command-line #:once-each [("--app1")
-                           ""
-                           (begin
-                             (run 1 (q) (eval-expo '('asdf) '() q))
-                             (report_counters))]
+(command-line #:once-each [("-q") "" (set-box! quiet #t)]
+              [("--app1")
+               ""
+               (begin
+                 (run 1 (q) (eval-expo '('asdf) '() q))
+                 (report_counters))]
               ; quines
-              [("--firstQ") n "" (wrap (string->number n) (lambda (q) (eval-expo q '() `(val_ ,q))))]
+              [("--quines") n "" (wrap (string->number n) (lambda (q) (eval-expo q '() `(val_ ,q))))]
+              [("--twines")
+               n
+               ""
+               (wrap (string->number n)
+                     (lambda (x)
+                       (fresh (p q)
+                              (=/= p q)
+                              (eval-expo p '() `(val_ ,q))
+                              (eval-expo q '() `(val_ ,p))
+                              (== `(,p ,q) x))))]
+              [("--thrines")
+               n
+               ""
+               (wrap (string->number n)
+                     (lambda (x)
+                       (fresh (p q r)
+                              (=//= p q)
+                              (=//= q r)
+                              (=//= r p)
+                              (eval-expo p '() `(val_ ,q))
+                              (eval-expo q '() `(val_ ,r))
+                              (eval-expo r '() `(val_ ,p))
+                              (== `(,p ,q ,r) x))))]
               ; Oleg numbers
               [("--mul1x1") "" (wrap 1 (lambda (q) (*o (build-num 1) (build-num 1) q)))]
               [("--mul1x2") "" (wrap 1 (lambda (q) (*o (build-num 1) (build-num 2) q)))]

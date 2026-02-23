@@ -1,33 +1,41 @@
 
   $ cd src_lisps
-  $ racket ../run.rkt --firstQ 1
-  ((seq ((seq ((symb (quote lambda)) (seq ((symb _.0))) (seq ((symb (quote list)) (symb _.0) (seq ((symb (quote list)) (seq ((symb (quote quote)) (symb (quote quote)))) (symb _.0))))))) (seq ((symb (quote quote)) (seq ((symb (quote lambda)) (seq ((symb _.0))) (seq ((symb (quote list)) (symb _.0) (seq ((symb (quote list)) (seq ((symb (quote quote)) (symb (quote quote)))) (symb _.0))))))))))) (=/= ((_.0 list)) ((_.0 quote))))
+  $ racket ../run.rkt -q --quines 1
   2085 unifications.
-  $ racket ../run.rkt --firstQ 2
-  ((seq ((seq ((symb (quote lambda)) (seq ((symb _.0))) (seq ((symb (quote list)) (symb _.0) (seq ((symb (quote list)) (seq ((symb (quote quote)) (symb (quote quote)))) (symb _.0))))))) (seq ((symb (quote quote)) (seq ((symb (quote lambda)) (seq ((symb _.0))) (seq ((symb (quote list)) (symb _.0) (seq ((symb (quote list)) (seq ((symb (quote quote)) (symb (quote quote)))) (symb _.0))))))))))) (=/= ((_.0 list)) ((_.0 quote))))
-  ((seq ((seq ((symb (quote lambda)) (seq ((symb _.0))) (seq ((symb (quote list)) (seq ((seq ((symb (quote lambda)) (seq ((symb _.1))) (symb _.0))) (seq ((symb (quote quote)) _.2)))) (seq ((symb (quote list)) (seq ((symb (quote quote)) (symb (quote quote)))) (symb _.0))))))) (seq ((symb (quote quote)) (seq ((symb (quote lambda)) (seq ((symb _.0))) (seq ((symb (quote list)) (seq ((seq ((symb (quote lambda)) (seq ((symb _.1))) (symb _.0))) (seq ((symb (quote quote)) _.2)))) (seq ((symb (quote list)) (seq ((symb (quote quote)) (symb (quote quote)))) (symb _.0))))))))))) (=/= ((_.0 _.1)) ((_.0 lambda)) ((_.0 list)) ((_.0 quote))))
+  $ racket ../run.rkt -q --quines 2
   6920 unifications.
-  $ racket ../run.rkt --mul2x2
-  (0 0 1)
+  $ racket ../run.rkt -q --quines 10
+  18798 unifications.
+
+  $ racket ../run.rkt -q --twines 1
+  16583 unifications.
+  $ racket ../run.rkt -q --twines 2
+  55724 unifications.
+  $ racket ../run.rkt -q --twines 10
+  97072 unifications.
+
+  $ racket ../run.rkt -q --thrines 1
+  66826 unifications.
+  $ racket ../run.rkt -q --thrines 2
+  224669 unifications.
+
+  $ racket ../run.rkt -q --mul2x2
   19 unifications.
-  $ racket ../run.rkt --mul2x3
-  (0 1 1)
+  $ racket ../run.rkt -q --mul2x3
   19 unifications.
-  $ racket ../run.rkt --mul3x2
-  (0 1 1)
+  $ racket ../run.rkt -q --mul3x2
   33 unifications.
-  $ racket ../run.rkt --mul3x3
-  (1 0 0 1)
+  $ racket ../run.rkt -q --mul3x3
   219 unifications.
-  $ racket ../run.rkt --mul7x7
-  (1 0 0 0 1 1)
+  $ racket ../run.rkt -q --mul7x7
   1196 unifications.
-  $ racket ../run.rkt --exp3x5
-  (1 1 0 0 1 1 1 1)
+  $ racket ../run.rkt -q --exp3x5
   433854 unifications.
-  $ racket ../run.rkt --exp2x3
-  (0 0 0 1)
+  $ racket ../run.rkt -q --exp2x3
   128 unifications.
-  $ racket ../run.rkt --logo243base3
-  (1 0 1)
+  $ racket ../run.rkt -q --exp7x2
+  368311 unifications.
+  $ racket ../run.rkt -q --logo8base2
+  204 unifications.
+  $ racket ../run.rkt -q --logo243base3
   56264 unifications.
