@@ -1,7 +1,7 @@
 [submodule "faster-miniKanren"]
 	path = faster-miniKanren
 	url = https://github.com/Kakadu/faster-miniKanren.git
-	branch = master-new
+	branch = ispras-paper2025
 
 [submodule "OCanren_master"]
 	path = ocanren01/OCanren
