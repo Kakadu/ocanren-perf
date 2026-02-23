@@ -11,9 +11,9 @@ MEASURE_OC1   ?= y
 MEASURE_OC2   ?=
 MEASURE_OC3   ?=
 MEASURE_OC4   ?= y
-MEASURE_OC5   ?=  
+MEASURE_OC5   ?=
 MEASURE_OC6   ?=
-MEASURE_OC7   ?= 
+MEASURE_OC7   ?=
 MEASURE_OC9   ?=
 MEASURE_SCM   ?=
 MEASURE_MUSCM ?=
@@ -223,7 +223,7 @@ compile: compile_scm
 define PREPARE_DATAFILE # testname
 .PHONY: process_datafile_$(1) clean_datafile_$(1)
 process_datafile_$(1): .$(1).data
-	@printf "$(1)\t" >> $(DATAFILE)
+	@printf "desc$(1)\t" >> $(DATAFILE)
 	@tr '\n' ' ' < .$(1).data >> $(DATAFILE)
 	@printf "\n" >> $(DATAFILE)
 $$(DATAFILE): process_datafile_$(1)
@@ -240,8 +240,13 @@ clean_datafiles:
 	$(RM) $(DATAFILE)
 
 format_as_column: $(DATAFILE)
-	@column -t $(DATAFILE) > .datafile.temp
-	@mv .datafile.temp $(DATAFILE)
+	sed -i 's/desc001/3\^5/' $(DATAFILE)
+	sed -i 's/desc002/log_3{243}/' $(DATAFILE)
+	sed -i 's/desc005/thrines/' $(DATAFILE)
+	sed -i 's/desc006/twines/' $(DATAFILE)
+	sed -i 's/desc007/quines/' $(DATAFILE)
+	sed -i 's/desc011/"w\/o diseq"/' $(DATAFILE)
+	@column -t $(DATAFILE) > .datafile.temp && mv .datafile.temp $(DATAFILE)
 	@cat $(DATAFILE)
 
 measure: clean_datafiles prepare_header do_measure format_as_column
