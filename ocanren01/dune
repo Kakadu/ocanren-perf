@@ -4,6 +4,14 @@
    (:standard -w -33-27-39 -rectypes))))
 
 (library
+ (name PrintHelpers)
+ (modules PrintHelpers)
+ (wrapped false)
+ (libraries OCanren)
+ (preprocess
+  (pps GTtogether)))
+
+(library
  (name TimeHelper)
  (modules TimeHelper)
  (libraries mtime.clock.os OCanren)
@@ -14,7 +22,7 @@
 (library
  (name Quine_decls)
  (modules Quine_decls)
- (libraries OCanren counters)
+ (libraries OCanren counters PrintHelpers)
  (wrapped false)
  (flags
   (:standard -rectypes))
@@ -32,14 +40,18 @@
 (library
  (name Quines_NoDiseq)
  (modules Quines_NoDiseq)
- (libraries OCanren)
+ (libraries OCanren counters PrintHelpers)
  (wrapped false)
+ (preprocessor_deps %{project_root}/unif_count/pp5+dump.exe)
  (preprocess
   (pps
    OCanren-ppx.ppx_distrib
    OCanren-ppx.ppx_repr
    OCanren-ppx.ppx_fresh
-   GTtogether)))
+   GTtogether
+   --
+   -pp
+   "%{project_root}/unif_count/pp5+dump.exe")))
 
 (library
  (name Numero_decls)

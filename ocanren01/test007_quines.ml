@@ -10,7 +10,7 @@ let show : Quine_decls.Gterm.logic -> string =
     | exception OCanren.Not_a_value ->
       (match repr with
        | OCanren.Var (n, _) -> fprintf ppf "_.%d" n
-       | Value (Seq xs) -> GT.fmt Quine_decls.ListLo.logic helper ppf xs
+       | Value (Seq xs) -> GT.fmt PrintHelpers.ListLo.logic helper ppf xs
        | Value (Symb (OCanren.Value s)) -> fprintf ppf "%s" s
        | Value (Symb (Var (idx, _))) -> fprintf ppf "_.%d" idx)
   and helper_ground ppf = function

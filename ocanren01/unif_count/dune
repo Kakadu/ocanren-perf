@@ -33,6 +33,22 @@
    -pp
    "unif_count/pp5+dump.exe -D TRACE")))
 
+(library
+ (name Quines_NoDiseq_trace)
+ (libraries OCanren OCanren.tester counters Quine_decls)
+ (modules Quines_NoDiseq_trace)
+ (wrapped false)
+ (preprocessor_deps %{project_root}/unif_count/pp5+dump.exe ./pp5+dump.exe)
+ (preprocess
+  (pps
+   OCanren-ppx.ppx_fresh
+   OCanren-ppx.ppx_repr
+   OCanren-ppx.ppx_distrib
+   GT.ppx_all
+   --
+   -pp
+   "unif_count/pp5+dump.exe -D TRACE")))
+
 (executable
  (name numero)
  (modules numero)
@@ -43,7 +59,7 @@
 (executable
  (name run_scheme)
  (modules run_scheme)
- (libraries Quine_decls_trace)
+ (libraries Quine_decls_trace Quines_NoDiseq_trace)
  (preprocess
   (pps OCanren-ppx.ppx_repr)))
 

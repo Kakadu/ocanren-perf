@@ -6,7 +6,7 @@
   quote ]) )) (seq ((symb 'list) (symb '_.2032 =/= [ list
   quote ]) (seq ((symb 'list) (seq ((symb 'quote) (symb 'quote) )) (symb '_.2032 =/= [ list
   quote ]) )) )) )) )) ))
-  
+
   unifications: 2085
 
   $ ./run_scheme.exe -quines -n 2
@@ -27,7 +27,7 @@
   quote ]) )) (seq ((symb 'list) (seq ((symb 'quote) (symb 'quote) )) (seq ((symb 'list) (symb '_.16072 =/= [ list
   quote ]) (seq ((symb 'list) (seq ((symb 'quote) (symb 'quote) )) (symb '_.16072 =/= [ list
   quote ]) )) )) )) )) )) ))
-  
+
   unifications: 16583
 
   $ ./run_scheme.exe -twines -n 2
@@ -57,11 +57,14 @@
   quote ]) )) (seq ((symb 'list) (seq ((symb 'quote) (symb 'quote) )) (seq ((symb 'list) (seq ((symb 'quote) (symb 'quote) )) (seq ((symb 'list) (symb '_.63737 =/= [ list
   quote ]) (seq ((symb 'list) (seq ((symb 'quote) (symb 'quote) )) (symb '_.63737 =/= [ list
   quote ]) )) )) )) )) )) )) ))
-  
-  
+
+
   unifications: 66826
   $ ./run_scheme.exe -thrines -n 2
   unifications: 224658
+
+
+  $ ./run_scheme.exe -quines-nodiseq -n 1
 
   $ ./numero.exe --mul2x2
   2x2=?
