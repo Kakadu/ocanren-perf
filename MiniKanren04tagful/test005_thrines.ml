@@ -1,1 +1,1 @@
-let () = TimeHelper.wrap (Quine_decls.find_thrines 2)
+../ocanren01/test005_thrines.ml

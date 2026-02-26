@@ -6,8 +6,7 @@ let wrap : ?n:int -> string * (Numero_decls_trace.Oleg.injected -> OCanren.goal)
   OCanren.(run q) goal (fun rr -> rr#reify Numero_decls_trace.num_reifier)
   |> OCanren.Stream.take ~n
   |> Stdlib.List.iteri (fun i n ->
-      Format.printf "%3d:\t%s\n%!" i (Numero_decls_trace.show_num_logic n)
-    )
+    Format.printf "%3d:\t%s\n%!" i (Numero_decls_trace.show_num_logic n))
 ;;
 
 let expo1 () = wrap (REPR (fun q -> expo (build_num 3) (build_num 5) q))
@@ -15,9 +14,11 @@ let expo2 () = wrap (REPR (fun q -> expo (build_num 1) (build_num 2) q))
 let expo3 () = wrap (REPR (fun q -> expo (build_num 2) (build_num 2) q))
 let expo4 () = wrap (REPR (expo (build_num 2) (build_num 1)))
 let expo5 () = wrap (REPR (expo (build_num 3) (build_num 2)))
+let gen_mul a b () = wrap (Printf.sprintf "%dx%d=?" a b, multo (build_num a) (build_num b))
 let mul1x1 () = wrap (REPR (multo (build_num 1) (build_num 1)))
 let mul1x2 () = wrap (REPR (multo (build_num 1) (build_num 2)))
 let mul2x3 () = wrap (REPR (multo (build_num 2) (build_num 3)))
+let mul3x2 () = gen_mul 3 2 ()
 let mul3x3 () = wrap (REPR (multo (build_num 3) (build_num 3)))
 let mul3x3all () = wrap ~n:(-1) (REPR (multo (build_num 3) (build_num 3)))
 let mul3x5 () = wrap (REPR (multo (build_num 3) (build_num 5)))
@@ -64,7 +65,9 @@ let () =
     ; wrap "--ex5" expo5
     ; wrap "--mul1x1" mul1x1
     ; wrap "--mul1x2" mul1x2
+    ; wrap "--mul2x2" (gen_mul 2 2)
     ; wrap "--mul2x3" mul2x3
+    ; wrap "--mul3x2" mul3x2
     ; wrap "--mul3x3" mul3x3
     ; wrap "--mul3x3-all" mul3x3all
     ; wrap "--mul3x5" mul3x5
