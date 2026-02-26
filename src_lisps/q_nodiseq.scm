@@ -14,15 +14,13 @@
 
 ;;; Syntax
 
-(include "list-display.scm")
-
 ;; Peano numbers
 (define nat
   (lambda (o)
     (conde
-      ((== o 'z))
+      ((=== o 'z))
       ((fresh (n)
-         (== o `(s ,n))
+         (=== o `(s ,n))
          (nat n))))))
 
 ;; Terms
@@ -30,19 +28,19 @@
   (lambda (o)
     (conde
       ((fresh (n)
-         (== o `(vr ,n))
+         (=== o `(vr ,n))
          (nat n)))
-      ((== o 'quote))
+      ((=== o 'quote))
       ((fresh (n t)
-         (== o `(lambda (vr ,n) ,t))
+         (=== o `(lambda (vr ,n) ,t))
          (nat n)
          (tm t)))
       ((fresh (t1 t2)
-         (== o `(,t1 ,t2))
+         (=== o `(,t1 ,t2))
          (tm t1)
          (tm t2)))
       ((fresh (t1 t2)
-         (== o `(list ,t1 ,t2))
+         (=== o `(list ,t1 ,t2))
          (tm t1)
          (tm t2))))))
 
@@ -51,21 +49,21 @@
   (lambda (o)
     (conde
       ((fresh (e n t)
-         (== o `(clo ,e ,n ,t))
+         (=== o `(clo ,e ,n ,t))
          (venv e)
          (nat n)
          (tm t)))
       ((fresh (t)
-         (== o `(code ,t))
+         (=== o `(code ,t))
          (tm t))))))
 
 ;; Environment
 (define venv
   (lambda (o)
     (conde
-      ((== o '()))
+      ((=== o '()))
       ((fresh (n v e)
-         (== o (cons `(,n ,v) e))
+         (=== o (cons `(,n ,v) e))
          (nat n)
          (vl v)
          (venv e))))))
@@ -77,29 +75,29 @@
 (define neq
   (lambda (n1 n2)
     (conde
-      ((== n1 'z)
+      ((=== n1 'z)
        (fresh (n2-1)
-         (== n2 `(s ,n2-1))))
-      ((== n2 'z)
+         (=== n2 `(s ,n2-1))))
+      ((=== n2 'z)
        (fresh (n1-1)
-         (== n1 `(s ,n1-1))))
+         (=== n1 `(s ,n1-1))))
       ((fresh (n1-1 n2-1)
-         (== n1 `(s ,n1-1))
-         (== n2 `(s ,n2-1)))))))
+         (=== n1 `(s ,n1-1))
+         (=== n2 `(s ,n2-1)))))))
 |#
 
 (define neq
   (lambda (n1 n2)
     (conde
-      ((== n1 'z)
+      ((=== n1 'z)
        (fresh (n2-1)
-         (== n2 `(s ,n2-1))))
-      ((== n2 'z)
+         (=== n2 `(s ,n2-1))))
+      ((=== n2 'z)
        (fresh (n1-1)
-         (== n1 `(s ,n1-1))))
+         (=== n1 `(s ,n1-1))))
       ((fresh (n1-1 n2-1)
-         (== n1 `(s ,n1-1))
-         (== n2 `(s ,n2-1))
+         (=== n1 `(s ,n1-1))
+         (=== n2 `(s ,n2-1))
          (neq n1-1 n2-1))))))
 
 ;; Environment Lookup (where keys are peano numbers)
@@ -212,7 +210,7 @@
 ;  (normalize
 ;   (run 1 (q)
 ;     (fresh (a b)
-;       (== q `(,a ,b))
+;       (=== q `(,a ,b))
 ;       (ev '() a `(code ,b))
 ;       (ev '() b `(code ,a)))))))
 
@@ -229,7 +227,7 @@
 ;          (normalize
 ;           (run 50 (q)
 ;             (fresh (a b)
-;               (== q `(,a ,b))
+;               (=== q `(,a ,b))
 ;               (ev '() a `(code ,b))
 ;               (ev '() b `(code ,a))))))))
 
