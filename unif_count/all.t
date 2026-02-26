@@ -39,3 +39,5 @@
   204 unifications.
   $ racket ../run.rkt -q --logo243base3
   56264 unifications.
+
+  $ racket ../run.rkt   --quines-nodiseq 1

@@ -1,7 +1,6 @@
 #lang racket
 
 (require pretty-format)
-
 (require "mk.rkt")
 
 (define unif-counter 0)
@@ -17,8 +16,14 @@
 (define =//= (lambda (x y) (lambda (s) ((=/= x y) s))))
 (define (takeMK n f)
   (take n f))
+
+(define (assert condition message)
+  (unless condition
+    (error 'assert message)))
+
 (include "src_lisps/list-display.scm")
 (include "src_lisps/q.scm")
+(include "src_lisps/q_nodiseq.scm")
 (include "src_lisps/numbers.scm")
 
 (define myrunN
@@ -49,6 +54,7 @@
                (begin
                  (run 1 (q) (eval-expo '('asdf) '() q))
                  (report_counters))]
+              [("--quines-nodiseq") n "" (wrap (string->number n) (lambda (q) (ev '() q `(code ,q))))]
               ; quines
               [("--quines") n "" (wrap (string->number n) (lambda (q) (eval-expo q '() `(val_ ,q))))]
               [("--twines")

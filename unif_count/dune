@@ -14,6 +14,7 @@
 (cram
  ;(applies_to all)
  (deps
+  src_lisps/q_nodiseq.scm
   src_lisps/list-display.scm
   faster-miniKanren/mk-vicare.scm
   faster-miniKanren/mk.scm
