@@ -113,32 +113,32 @@
   $ ./numero.exe --logo2base2
   fun q -> logo (build_num 2) (build_num 2) q (build_num 0)
     0:	[1]
-  unifications: 78
+  unifications: 52
   $ ./numero.exe --logo3base2
   fun q -> logo (build_num 3) (build_num 2) q (build_num 0)
-  unifications: 181
+  unifications: 168
   $ ./numero.exe --logo4base2
   fun q -> logo (build_num 4) (build_num 2) q (build_num 0)
     0:	[0; 1]
-  unifications: 177
+  unifications: 164
   $ ./numero.exe --logo3base3
   fun q -> logo (build_num 3) (build_num 3) q (build_num 0)
     0:	[1]
-  unifications: 84
+  unifications: 75
   $ ./numero.exe --logo4base3
   fun q -> logo (build_num 4) (build_num 3) q (build_num 0)
-  unifications: 7790
+  unifications: 7777
   $ ./numero.exe --logo5base2
   fun q -> logo (build_num 5) (build_num 2) q (build_num 0)
-  unifications: 613
+  unifications: 600
   $ ./numero.exe --logo8base2
   fun q -> logo (build_num 8) (build_num 2) q (build_num 0)
     0:	[1; 1]
-  unifications: 217
+  unifications: 204
   $ ./numero.exe --logo243base3
   fun q -> logo (build_num 243) (build_num 3) q (build_num 0)
     0:	[1; 0; 1]
-  unifications: 56277
+  unifications: 56264
   $ ./numero.exe --appendo1234
   fun q -> appendo (inj2 1 2) (inj2 3 4) q
     0:	[1; 2; 3; 4]

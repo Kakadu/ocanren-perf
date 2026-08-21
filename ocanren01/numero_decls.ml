@@ -302,7 +302,7 @@ let logo n b q r =
     [ n === one &&& poso b &&& (q === zero) &&& (r === zero)
     ; q === zero &&& lto n b &&& pluso r one n
     ; ((===) q one) &&& gt1o b &&& eqlo n b &&& pluso r b n
-    ; q === one &&& poso q &&& pluso r one n
+    ; b === one &&& poso q &&& pluso r one n
     ; b === zero &&& poso q &&& (r === n)
     ; (b === (!0 %< !1)) &&&
       (fresh

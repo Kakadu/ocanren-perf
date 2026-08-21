@@ -389,7 +389,7 @@ func Logo(n, b, q, r mk.Term) mk.Goal {
 		conjAll(mk.UnifyGoal(n, one), Poso(b), mk.UnifyGoal(q, Nil()), mk.UnifyGoal(r, Nil())),
 		conjAll(mk.UnifyGoal(q, Nil()), Lto(n, b), Pluso(r, one, n)),
 		conjAll(mk.UnifyGoal(q, one), Gt1o(b), Eqlo(n, b), Pluso(r, b, n)),
-		conjAll(mk.UnifyGoal(q, one), Poso(q), Pluso(r, one, n)),
+		conjAll(mk.UnifyGoal(b, one), Poso(q), Pluso(r, one, n)),
 		conjAll(mk.UnifyGoal(b, Nil()), Poso(q), mk.UnifyGoal(r, n)),
 		mk.Conj(
 			mk.UnifyGoal(b, cons2(bit0, bit1)), // [0; 1] = 2
