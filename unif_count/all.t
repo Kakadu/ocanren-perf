@@ -39,6 +39,16 @@
   128 unifications.
   $ racket ../run.rkt -q --exp7x2
   368311 unifications.
+  $ racket ../run.rkt -q --logo2base2
+  52 unifications.
+  $ racket ../run.rkt -q --logo3base2
+  168 unifications.
+  $ racket ../run.rkt -q --logo4base2
+  164 unifications.
+  $ racket ../run.rkt -q --logo3base3
+  75 unifications.
+  $ racket ../run.rkt -q --logo4base3
+  7777 unifications.
   $ racket ../run.rkt -q --logo5base2
   600 unifications.
   $ racket ../run.rkt -q --logo8base2

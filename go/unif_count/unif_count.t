@@ -9,6 +9,11 @@ $ ./unif_count.exe
   exp2x3                128 unifications (ocanren 128)
   exp3x5             433854 unifications (ocanren 433854)
   exp7x2             368311 unifications (ocanren 368311)
+  logo2base2             78 unifications (ocanren 78)
+  logo3base2            181 unifications (ocanren 181)
+  logo4base2            177 unifications (ocanren 177)
+  logo3base3             84 unifications (ocanren 84)
+  logo4base3           7790 unifications (ocanren 7790)
   logo5base2            613 unifications (ocanren 613)
   logo8base2            217 unifications (ocanren 217)
   logo243base3        56277 unifications (ocanren 56277)
@@ -19,7 +24,7 @@ $ ./unif_count.exe
   twines10           117797 unifications (ocanren 97075, delta +20722)
   thrines1            66885 unifications (ocanren 66826, delta +59)
   thrines2           225036 unifications (ocanren 224658, delta +378)
-ok: 20 case(s) match expected counts
+ok: 25 case(s) match expected counts
 
 $ ./unif_count.exe -short
   mul1x1                  6 unifications (ocanren 6)
@@ -32,6 +37,11 @@ $ ./unif_count.exe -short
   exp2x3                128 unifications (ocanren 128)
   exp3x5         skipped (heavy, -short)
   exp7x2         skipped (heavy, -short)
+  logo2base2             78 unifications (ocanren 78)
+  logo3base2            181 unifications (ocanren 181)
+  logo4base2            177 unifications (ocanren 177)
+  logo3base3             84 unifications (ocanren 84)
+  logo4base3           7790 unifications (ocanren 7790)
   logo5base2            613 unifications (ocanren 613)
   logo8base2            217 unifications (ocanren 217)
   logo243base3   skipped (heavy, -short)
@@ -42,4 +52,4 @@ $ ./unif_count.exe -short
   twines10       skipped (heavy, -short)
   thrines1            66885 unifications (ocanren 66826, delta +59)
   thrines2       skipped (heavy, -short)
-ok: 13 case(s) match expected counts
+ok: 18 case(s) match expected counts

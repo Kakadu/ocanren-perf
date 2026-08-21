@@ -38,6 +38,26 @@ let exp2in3 () = wrap (REPR (expo (build_num 2) (build_num 3)))
 let exp3in5 () = wrap (REPR (expo (build_num 3) (build_num 5)))
 let exp7in2 () = wrap (REPR (expo (build_num 7) (build_num 2)))
 
+let logo2base2 () =
+  wrap (REPR (fun q -> logo (build_num 2) (build_num 2) q (build_num 0)))
+;;
+
+let logo3base2 () =
+  wrap (REPR (fun q -> logo (build_num 3) (build_num 2) q (build_num 0)))
+;;
+
+let logo4base2 () =
+  wrap (REPR (fun q -> logo (build_num 4) (build_num 2) q (build_num 0)))
+;;
+
+let logo3base3 () =
+  wrap (REPR (fun q -> logo (build_num 3) (build_num 3) q (build_num 0)))
+;;
+
+let logo4base3 () =
+  wrap (REPR (fun q -> logo (build_num 4) (build_num 3) q (build_num 0)))
+;;
+
 let logo5base2 () =
   wrap (REPR (fun q -> logo (build_num 5) (build_num 2) q (build_num 0)))
 ;;
@@ -88,6 +108,11 @@ let () =
     ; wrap "--exp7x2" exp7in2
     ; wrap "--repeatedMul1" repeatedMul1
     ; wrap "--odd_mul1" odd_multo1
+    ; wrap "--logo2base2" logo2base2
+    ; wrap "--logo3base2" logo3base2
+    ; wrap "--logo4base2" logo4base2
+    ; wrap "--logo3base3" logo3base3
+    ; wrap "--logo4base3" logo4base3
     ; wrap "--logo5base2" logo5base2
     ; wrap "--logo8base2" logo8base2
     ; wrap "--logo243base3" logo243base3
