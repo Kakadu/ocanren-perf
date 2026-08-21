@@ -19,6 +19,10 @@
   $ racket ../run.rkt -q --thrines 2
   224669 unifications.
 
+  $ racket ../run.rkt -q --mul1x1
+  6 unifications.
+  $ racket ../run.rkt -q --mul1x2
+  6 unifications.
   $ racket ../run.rkt -q --mul2x2
   19 unifications.
   $ racket ../run.rkt -q --mul2x3
@@ -35,6 +39,8 @@
   128 unifications.
   $ racket ../run.rkt -q --exp7x2
   368311 unifications.
+  $ racket ../run.rkt -q --logo5base2
+  600 unifications.
   $ racket ../run.rkt -q --logo8base2
   204 unifications.
   $ racket ../run.rkt -q --logo243base3
