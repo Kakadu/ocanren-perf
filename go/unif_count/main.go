@@ -45,6 +45,7 @@ var cases = []countCase{
 	{"exp2x3", 128, 128, false, func() int64 { c, _ := bench.Expo(2, 3, 1); return c }},
 	{"exp3x5", 433854, 433854, true, func() int64 { c, _ := bench.Expo(3, 5, 1); return c }},
 	{"exp7x2", 368311, 368311, true, func() int64 { c, _ := bench.Expo(7, 2, 1); return c }},
+	{"logo5base2", 613, 613, false, func() int64 { c, _ := bench.Logo(5, 2, 1); return c }},
 	{"logo8base2", 217, 217, false, func() int64 { c, _ := bench.Logo(8, 2, 1); return c }},
 	{"logo243base3", 56277, 56277, true, func() int64 { c, _ := bench.Logo(243, 3, 1); return c }},
 

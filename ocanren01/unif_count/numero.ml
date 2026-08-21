@@ -17,7 +17,6 @@ let expo5 () = wrap (REPR (expo (build_num 3) (build_num 2)))
 let gen_mul a b () = wrap (Printf.sprintf "%dx%d=?" a b, multo (build_num a) (build_num b))
 let mul1x1 () = wrap (REPR (multo (build_num 1) (build_num 1)))
 let mul1x2 () = wrap (REPR (multo (build_num 1) (build_num 2)))
-let mul1x2 () = wrap (REPR (multo (build_num 1) (build_num 2)))
 let mul2x3 () = wrap (REPR (multo (build_num 2) (build_num 3)))
 let mul3x3 () = wrap (REPR (multo (build_num 3) (build_num 3)))
 let mul3x3all () = wrap ~n:(-1) (REPR (multo (build_num 3) (build_num 3)))
@@ -38,6 +37,10 @@ let odd_multo1 () = wrap (REPR (odd_multo (build_num 1) (build_num 3) (build_num
 let exp2in3 () = wrap (REPR (expo (build_num 2) (build_num 3)))
 let exp3in5 () = wrap (REPR (expo (build_num 3) (build_num 5)))
 let exp7in2 () = wrap (REPR (expo (build_num 7) (build_num 2)))
+
+let logo5base2 () =
+  wrap (REPR (fun q -> logo (build_num 5) (build_num 2) q (build_num 0)))
+;;
 
 let logo8base2 () =
   wrap (REPR (fun q -> logo (build_num 8) (build_num 2) q (build_num 0)))
@@ -85,6 +88,7 @@ let () =
     ; wrap "--exp7x2" exp7in2
     ; wrap "--repeatedMul1" repeatedMul1
     ; wrap "--odd_mul1" odd_multo1
+    ; wrap "--logo5base2" logo5base2
     ; wrap "--logo8base2" logo8base2
     ; wrap "--logo243base3" logo243base3
     ]

@@ -108,6 +108,7 @@
               [("--exp3x2") "" (wrap 1 (lambda (q) (expo (build-num 3) (build-num 2) q)))]
               [("--exp3x5") "" (wrap 1 (lambda (q) (expo (build-num 3) (build-num 5) q)))]
               [("--exp7x2") "" (wrap 1 (lambda (q) (expo (build-num 7) (build-num 2) q)))]
+              [("--logo5base2") "" (wrap 1 (lambda (q) (expo (build-num 2) q (build-num 5))))]
               [("--logo8base2") "" (wrap 1 (lambda (q) (expo (build-num 2) q (build-num 8))))]
               [("--logo243base3") "" (wrap 1 (lambda (q) (expo (build-num 3) q (build-num 243))))]
               ; other

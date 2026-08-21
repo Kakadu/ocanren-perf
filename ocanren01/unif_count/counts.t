@@ -66,6 +66,14 @@
 
   $ ./run_scheme.exe -quines-nodiseq -n 1
 
+  $ ./numero.exe --mul1x1
+  multo (build_num 1) (build_num 1)
+    0:	[1]
+  unifications: 6
+  $ ./numero.exe --mul1x2
+  multo (build_num 1) (build_num 2)
+    0:	[0; 1]
+  unifications: 6
   $ ./numero.exe --mul2x2
   2x2=?
     0:	[0; 0; 1]
@@ -98,6 +106,9 @@
   expo (build_num 7) (build_num 2)
     0:	[1; 0; 0; 0; 1; 1]
   unifications: 368311
+  $ ./numero.exe --logo5base2
+  fun q -> logo (build_num 5) (build_num 2) q (build_num 0)
+  unifications: 613
   $ ./numero.exe --logo8base2
   fun q -> logo (build_num 8) (build_num 2) q (build_num 0)
     0:	[1; 1]
