@@ -66,6 +66,19 @@ let rec appendo l s out =
     ]
 ;;
 
+(* OCanren.Std.reverso, with the counting ===. Uses the `fresh` macro (not
+   raw Fresh.three): the macro's delay changes the unification count by +1 on
+   non-trivial inputs, and the Go/Racket ports reproduce that form. *)
+let rec reverso a b =
+  conde
+    [ a === Std.nil() &&& (b === Std.nil())
+    ; fresh (h t a1)
+        (a === h % t)
+        (appendo a1 (h % Std.nil ()) b)
+        (reverso t a1)
+    ]
+;;
+
 let ( ! ) = inj
 
 type injected = int ilogic Std.List.injected

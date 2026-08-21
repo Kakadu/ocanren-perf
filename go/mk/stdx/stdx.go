@@ -31,8 +31,10 @@ func Appendo(a, b, ab mk.Term) mk.Goal {
 	})
 }
 
-// Reverso is OCanren's reverso a b. The Defer in the recursion is essential:
-// it makes the recursion lazy so that reverso is productive in both directions.
+// Reverso is OCanren's reverso a b, ported from the `fresh`-macro form
+// (Fresh.three + one delay around the whole conjunction, like Appendo above).
+// An extra Defer around just the recursive call adds 2 unifications on
+// non-trivial inputs and breaks the count agreement with OCanren.
 func Reverso(a, b mk.Term) mk.Goal {
 	return mk.Conde([]mk.Goal{
 		mk.Conj(mk.UnifyGoal(a, Nil()), mk.UnifyGoal(b, Nil())),
@@ -40,7 +42,7 @@ func Reverso(a, b mk.Term) mk.Goal {
 			return mk.Defer(func() mk.Goal {
 				return mk.Conj(
 					mk.Conj(mk.UnifyGoal(a, Cons(h, t)), Appendo(a1, Cons(h, Nil()), b)),
-					mk.Defer(func() mk.Goal { return Reverso(t, a1) }))
+					Reverso(t, a1))
 			})
 		}),
 	})

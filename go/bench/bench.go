@@ -11,6 +11,7 @@ import (
 
 	"ocanren-go/mk"
 	"ocanren-go/mk/numero"
+	"ocanren-go/mk/stdx"
 	"ocanren-go/mk/thr"
 )
 
@@ -56,6 +57,20 @@ func Logo(n, b int64, take int) (int64, []mk.Term) {
 func Multo(a, b int64, take int) (int64, []mk.Term) {
 	return run1(take, func(q mk.Term) mk.Goal {
 		return numero.Multo(numero.BuildNum(a), numero.BuildNum(b), q)
+	})
+}
+
+// Appendo runs `appendo [xs] [ys] q`, taking n answers.
+func Appendo(xs, ys []int64, take int) (int64, []mk.Term) {
+	return run1(take, func(q mk.Term) mk.Goal {
+		return stdx.Appendo(stdx.List(xs...), stdx.List(ys...), q)
+	})
+}
+
+// Reverso runs `reverso [xs] q`, taking n answers.
+func Reverso(xs []int64, take int) (int64, []mk.Term) {
+	return run1(take, func(q mk.Term) mk.Goal {
+		return stdx.Reverso(stdx.List(xs...), q)
 	})
 }
 

@@ -106,6 +106,10 @@
   expo (build_num 7) (build_num 2)
     0:	[1; 0; 0; 0; 1; 1]
   unifications: 368311
+  $ ./numero.exe --logo1base1
+  fun q -> logo (build_num 1) (build_num 1) q (build_num 0)
+    0:	[]
+  unifications: 5
   $ ./numero.exe --logo2base2
   fun q -> logo (build_num 2) (build_num 2) q (build_num 0)
     0:	[1]
@@ -135,3 +139,11 @@
   fun q -> logo (build_num 243) (build_num 3) q (build_num 0)
     0:	[1; 0; 1]
   unifications: 56277
+  $ ./numero.exe --appendo1234
+  fun q -> appendo (inj2 1 2) (inj2 3 4) q
+    0:	[1; 2; 3; 4]
+  unifications: 8
+  $ ./numero.exe --reverso123
+  fun q -> reverso (inj3 1 2 3) q
+    0:	[3; 2; 1]
+  unifications: 71

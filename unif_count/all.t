@@ -39,6 +39,8 @@
   128 unifications.
   $ racket ../run.rkt -q --exp7x2
   368311 unifications.
+  $ racket ../run.rkt -q --logo1base1
+  5 unifications.
   $ racket ../run.rkt -q --logo2base2
   52 unifications.
   $ racket ../run.rkt -q --logo3base2
@@ -59,3 +61,9 @@
   $ racket ../run.rkt   --quines-nodiseq 1
   ((lambda (vr _.0) (list (vr _.0) (list (quote quote) (vr _.0)))) (quote (lambda (vr _.0) (list (vr _.0) (list (quote quote) (vr _.0))))))
   3490 unifications.
+
+  $ racket ../run.rkt -q --appendo1234
+  8 unifications.
+
+  $ racket ../run.rkt -q --reverso123
+  71 unifications.

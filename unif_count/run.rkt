@@ -26,6 +26,15 @@
 (include "src_lisps/q_nodiseq.scm")
 (include "src_lisps/numbers.scm")
 
+; OCanren's Std.reverso, with the counting ===
+(define (reverso a b)
+  (conde
+    ((=== '() a) (=== '() b))
+    ((fresh (h t a1)
+       (=== `(,h . ,t) a)
+       (appendo a1 `(,h) b)
+       (reverso t a1)))))
+
 (define myrunN
   (lambda (n rel)
     (let* ([st empty-state]
@@ -108,6 +117,7 @@
               [("--exp3x2") "" (wrap 1 (lambda (q) (expo (build-num 3) (build-num 2) q)))]
               [("--exp3x5") "" (wrap 1 (lambda (q) (expo (build-num 3) (build-num 5) q)))]
               [("--exp7x2") "" (wrap 1 (lambda (q) (expo (build-num 7) (build-num 2) q)))]
+              [("--logo1base1") "" (wrap 1 (lambda (q) (expo (build-num 1) q (build-num 1))))]
               [("--logo2base2") "" (wrap 1 (lambda (q) (expo (build-num 2) q (build-num 2))))]
               [("--logo3base2") "" (wrap 1 (lambda (q) (expo (build-num 2) q (build-num 3))))]
               [("--logo4base2") "" (wrap 1 (lambda (q) (expo (build-num 2) q (build-num 4))))]
@@ -116,5 +126,7 @@
               [("--logo5base2") "" (wrap 1 (lambda (q) (expo (build-num 2) q (build-num 5))))]
               [("--logo8base2") "" (wrap 1 (lambda (q) (expo (build-num 2) q (build-num 8))))]
               [("--logo243base3") "" (wrap 1 (lambda (q) (expo (build-num 3) q (build-num 243))))]
+              [("--appendo1234") "" (wrap 1 (lambda (q) (appendo '(1 2) '(3 4) q)))]
+              [("--reverso123") "" (wrap 1 (lambda (q) (reverso '(1 2 3) q)))]
               ; other
               )

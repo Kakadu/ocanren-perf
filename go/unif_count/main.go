@@ -45,6 +45,7 @@ var cases = []countCase{
 	{"exp2x3", 128, 128, false, func() int64 { c, _ := bench.Expo(2, 3, 1); return c }},
 	{"exp3x5", 433854, 433854, true, func() int64 { c, _ := bench.Expo(3, 5, 1); return c }},
 	{"exp7x2", 368311, 368311, true, func() int64 { c, _ := bench.Expo(7, 2, 1); return c }},
+	{"logo1base1", 5, 5, false, func() int64 { c, _ := bench.Logo(1, 1, 1); return c }},
 	{"logo2base2", 78, 78, false, func() int64 { c, _ := bench.Logo(2, 2, 1); return c }},
 	{"logo3base2", 181, 181, false, func() int64 { c, _ := bench.Logo(3, 2, 1); return c }},
 	{"logo4base2", 177, 177, false, func() int64 { c, _ := bench.Logo(4, 2, 1); return c }},
@@ -53,6 +54,8 @@ var cases = []countCase{
 	{"logo5base2", 613, 613, false, func() int64 { c, _ := bench.Logo(5, 2, 1); return c }},
 	{"logo8base2", 217, 217, false, func() int64 { c, _ := bench.Logo(8, 2, 1); return c }},
 	{"logo243base3", 56277, 56277, true, func() int64 { c, _ := bench.Logo(243, 3, 1); return c }},
+	{"appendo1234", 8, 8, false, func() int64 { c, _ := bench.Appendo([]int64{1, 2}, []int64{3, 4}, 1); return c }},
+	{"reverso123", 71, 71, false, func() int64 { c, _ := bench.Reverso([]int64{1, 2, 3}, 1); return c }},
 
 	// --- quines / twines / thrines: small documented residual vs OCanren -----
 	{"quines1", 2085, 2092, false, func() int64 { c, _ := bench.Quines(1); return c }},
