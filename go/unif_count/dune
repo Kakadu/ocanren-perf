@@ -1,0 +1,23 @@
+; unif_count is the unification-count test as a standalone executable: it runs
+; every benchmark case and checks the count against ocanren01/unif_count/counts.t.
+; The cram test (unif_count.t) runs it. Like the benchmark .exe files in ../dune,
+; the binary is built by the Go toolchain and promoted into the source tree.
+
+(rule
+ (targets unif_count.exe)
+ (deps
+  ../go.mod
+  ../bench/bench.go
+  ../mk/core.go
+  ../mk/numero/numero.go
+  ../mk/state.go
+  ../mk/stream.go
+  ../mk/subst.go
+  ../mk/term.go
+  ../mk/thr/thr.go
+  main.go)
+ (action (run go build -o %{targets} .))
+ (mode promote))
+
+(cram
+ (deps ./unif_count.exe))

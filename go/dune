@@ -1,0 +1,187 @@
+; The Go port is compiled by the Go toolchain, not dune. These rules wrap the
+; `go` commands so the go/ tree plugs into the repo's dune workflow.
+;
+; Dune runs each action in its sandbox (go/_build/default) and forbids chdir out
+; of it, so instead of shelling out with `cd`, every rule lists the Go sources as
+; (deps ...); dune stages them into _build/default preserving their relative
+; paths, and the go command then runs there against the staged tree.
+;
+; NOTE: the deps list below must stay in sync with the .go files in this tree.
+; Regenerate it with:  find . -name '*.go' -not -path './_build/*' | sed 's|^\./||'
+;
+;   dune build                    ; build all .exe targets + run the cram count test
+;   dune build @go-build          ; compile every Go package        (go build ./...)
+;   dune build @go-vet            ; vet all packages                (go vet ./...)
+;   dune build @go-bench          ; run all five benchmark executables
+;   dune build test001_expo1.exe  ; build one benchmark executable
+;
+; The .exe targets are promoted into the source tree, so after `dune build` they
+; can be run directly from go/ (REPEAT=N to repeat, like OCanren's TimeHelper):
+;   ./test001_expo1.exe    expo (build_num 3) (build_num 5) q
+;   ./test002_logo1.exe    logo (build_num 243) (build_num 3) q (build_num 0)
+;   ./test005_thrines.exe  find_thrines 2
+;   ./test006_twines.exe   find_twines 30
+;   ./test007_quines.exe   find_quines 200
+; The unification-count test lives in unif_count/ (see unif_count/dune):
+;   dune build runs its cram test; ./unif_count/unif_count.exe runs it directly.
+
+; --- whole-module checks ------------------------------------------------------
+
+(rule
+ (alias go-build)
+ (deps
+  go.mod
+  bench/bench.go
+  cmd/test001_expo1/main.go
+  cmd/test002_logo1/main.go
+  cmd/test005_thrines/main.go
+  cmd/test006_twines/main.go
+  cmd/test007_quines/main.go
+  mk/core.go
+  mk/numero/numero.go
+  mk/state.go
+  mk/stdx/stdx.go
+  mk/stlc/stlc.go
+  mk/stream.go
+  mk/subst.go
+  mk/t5/t5.go
+  mk/t6/t6.go
+  mk/t7/t7.go
+  mk/term.go
+  mk/thr/thr.go
+  test/main.go
+  test/t_core.go
+  test/t_diseq.go
+  test/t_stlc5.go
+  test/t_stlc67.go
+  thrinesbench/main.go
+  unif_count/main.go)
+ (action (run go build ./...)))
+
+(rule
+ (alias go-vet)
+ (deps
+  go.mod
+  bench/bench.go
+  cmd/test001_expo1/main.go
+  cmd/test002_logo1/main.go
+  cmd/test005_thrines/main.go
+  cmd/test006_twines/main.go
+  cmd/test007_quines/main.go
+  mk/core.go
+  mk/numero/numero.go
+  mk/state.go
+  mk/stdx/stdx.go
+  mk/stlc/stlc.go
+  mk/stream.go
+  mk/subst.go
+  mk/t5/t5.go
+  mk/t6/t6.go
+  mk/t7/t7.go
+  mk/term.go
+  mk/thr/thr.go
+  test/main.go
+  test/t_core.go
+  test/t_diseq.go
+  test/t_stlc5.go
+  test/t_stlc67.go
+  thrinesbench/main.go
+  unif_count/main.go)
+ (action (run go vet ./...)))
+
+; --- benchmark executables ----------------------------------------------------
+; Each rule builds the native binary named after the OCanren test it ports and
+; promotes it into the source tree.
+
+(rule
+ (targets test001_expo1.exe)
+ (deps
+  go.mod
+  bench/bench.go
+  cmd/test001_expo1/main.go
+  mk/core.go
+  mk/numero/numero.go
+  mk/state.go
+  mk/stream.go
+  mk/subst.go
+  mk/term.go
+  mk/thr/thr.go)
+ (action (run go build -o %{targets} ./cmd/test001_expo1))
+ (mode promote))
+
+(rule
+ (targets test002_logo1.exe)
+ (deps
+  go.mod
+  bench/bench.go
+  cmd/test002_logo1/main.go
+  mk/core.go
+  mk/numero/numero.go
+  mk/state.go
+  mk/stream.go
+  mk/subst.go
+  mk/term.go
+  mk/thr/thr.go)
+ (action (run go build -o %{targets} ./cmd/test002_logo1))
+ (mode promote))
+
+(rule
+ (targets test005_thrines.exe)
+ (deps
+  go.mod
+  bench/bench.go
+  cmd/test005_thrines/main.go
+  mk/core.go
+  mk/numero/numero.go
+  mk/state.go
+  mk/stream.go
+  mk/subst.go
+  mk/term.go
+  mk/thr/thr.go)
+ (action (run go build -o %{targets} ./cmd/test005_thrines))
+ (mode promote))
+
+(rule
+ (targets test006_twines.exe)
+ (deps
+  go.mod
+  bench/bench.go
+  cmd/test006_twines/main.go
+  mk/core.go
+  mk/numero/numero.go
+  mk/state.go
+  mk/stream.go
+  mk/subst.go
+  mk/term.go
+  mk/thr/thr.go)
+ (action (run go build -o %{targets} ./cmd/test006_twines))
+ (mode promote))
+
+(rule
+ (targets test007_quines.exe)
+ (deps
+  go.mod
+  bench/bench.go
+  cmd/test007_quines/main.go
+  mk/core.go
+  mk/numero/numero.go
+  mk/state.go
+  mk/stream.go
+  mk/subst.go
+  mk/term.go
+  mk/thr/thr.go)
+ (action (run go build -o %{targets} ./cmd/test007_quines))
+ (mode promote))
+
+; --- run all benchmarks -------------------------------------------------------
+
+(rule
+ (alias go-bench)
+ (deps
+  test001_expo1.exe
+  test002_logo1.exe
+  test005_thrines.exe
+  test006_twines.exe
+  test007_quines.exe)
+ (action
+  (run sh -c "./test001_expo1.exe && ./test002_logo1.exe && ./test005_thrines.exe && ./test006_twines.exe && ./test007_quines.exe")))

@@ -13,17 +13,37 @@ quine/thrine synthesizer.
 ## Requirements
 
 - Go **1.22+** (generics are used for the lazy `Stream[T]`).
+- Dune (the build is driven by `dune`; see `dune` and `unif_count/dune`).
 
 ## Build & run
 
 ```sh
-make build     # go build ./...
-make vet       # go vet ./...
-make run       # run the 146-check test suite
-make bench     # run the thrines benchmark (REPEAT=N to repeat)
+dune build                  # build all .exe targets + run the cram count test
+dune build @go-build        # go build ./...
+dune build @go-vet          # go vet ./...
+dune build @go-bench        # run all five benchmark executables
 ```
 
-Or directly:
+`dune build` promotes the benchmark executables into this directory, so they can
+be run directly (REPEAT=N to repeat, like OCanren's TimeHelper):
+
+```sh
+./test001_expo1.exe    # expo (build_num 3) (build_num 5) q
+./test002_logo1.exe    # logo (build_num 243) (build_num 3) q (build_num 0)
+./test005_thrines.exe  # find_thrines 2
+./test006_twines.exe   # find_twines 30
+./test007_quines.exe   # find_quines 200
+```
+
+The unification-count test is a standalone executable with a cram test
+(`unif_count/unif_count.t`):
+
+```sh
+./unif_count/unif_count.exe         # check all 19 cases against ocanren01 counts.t
+./unif_count/unif_count.exe -short  # skip the heavy cases
+```
+
+Or directly with the Go toolchain:
 
 ```sh
 go run ./test              # -> "OK: all 146 checks passed"
