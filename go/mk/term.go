@@ -60,6 +60,13 @@ const (
 	KGtSeq     // Seq of xs     -- car = list of Gterms
 	KGrVal     // Val_ of t     -- car = a Gterm
 	KGrClosure // Closure s t xs-- car = symbol, cdr = Pair(body, env)
+	// Nodiseq quines (peano-indexed variables, relational neq):
+	KNatZero   // peano zero (nullary)
+	KNatSucc   // peano succ of n -- car = predecessor
+	KGtVR      // VR of n (peano) -- car = peano number
+	KGtTuple   // Tuple of xs     -- car = list of Gterms
+	KGrClo3    // Closure e v t   -- car = env, cdr = Pair(var, term)
+	KGrCode    // Code of t       -- car = a Gterm
 )
 
 // Term is an index into the global SoA term arena.
@@ -219,6 +226,40 @@ func MkGClosure(s, body, env Term) Term {
 	theArena.car[int(t)] = int32(s) // symbol
 	theArena.cdr[int(t)] = int32(MkPair(body, env))
 	return t
+}
+
+func MkNatZero() Term { return theArena.make(KNatZero) }
+
+func MkNatSucc(n Term) Term {
+	t := theArena.make(KNatSucc)
+	theArena.car[int(t)] = int32(n)
+	return t
+}
+
+func MkGtVR(n Term) Term {
+	t := theArena.make(KGtVR)
+	theArena.car[int(t)] = int32(n)
+	return t
+}
+
+func MkGtTuple(xs Term) Term {
+	t := theArena.make(KGtTuple)
+	theArena.car[int(t)] = int32(xs)
+	return t
+}
+
+// MkGrClo3 builds a nodiseq Closure (env, var, term): car = env, cdr = Pair(var, term).
+func MkGrClo3(env, v, t Term) Term {
+	r := theArena.make(KGrClo3)
+	theArena.car[int(r)] = int32(env)
+	theArena.cdr[int(r)] = int32(MkPair(v, t))
+	return r
+}
+
+func MkGtCode(t Term) Term {
+	r := theArena.make(KGrCode)
+	theArena.car[int(r)] = int32(t)
+	return r
 }
 
 // Env is the anchor of a run plus the counter for fresh variables. It mirrors

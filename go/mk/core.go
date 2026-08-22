@@ -38,9 +38,9 @@ func occurs(s Subst, v Var, t Term) bool {
 	switch t.Kind() {
 	case KVar:
 		return t.VarVal().Equal(v)
-	case KCons, KLamApp, KLamAbs, KTypeArr, KPair, KGrClosure:
+	case KCons, KLamApp, KLamAbs, KTypeArr, KPair, KGrClosure, KGrClo3:
 		return occurs(s, v, t.Car()) || occurs(s, v, t.Cdr())
-	case KLamV, KTypeP, KGtSymb, KGtSeq, KGrVal:
+	case KLamV, KTypeP, KGtSymb, KGtSeq, KGrVal, KNatSucc, KGtVR, KGtTuple, KGrCode:
 		return occurs(s, v, t.Car())
 	default:
 		return false
@@ -96,9 +96,9 @@ func cmpTerms(s Subst, a, b Term) cmp {
 			return cmpSame
 		}
 		return cmpDifferent
-	case KNil:
+	case KNil, KNatZero:
 		return cmpSame
-	case KCons, KLamApp, KLamAbs, KTypeArr, KPair, KGrClosure:
+	case KCons, KLamApp, KLamAbs, KTypeArr, KPair, KGrClosure, KGrClo3:
 		c1 := cmpTerms(s, a.Car(), b.Car())
 		if c1 == cmpDifferent {
 			return cmpDifferent
@@ -111,7 +111,7 @@ func cmpTerms(s Subst, a, b Term) cmp {
 			return cmpSame
 		}
 		return cmpMaybe
-	case KLamV, KTypeP, KGtSymb, KGtSeq, KGrVal:
+	case KLamV, KTypeP, KGtSymb, KGtSeq, KGrVal, KNatSucc, KGtVR, KGtTuple, KGrCode:
 		return cmpTerms(s, a.Car(), b.Car())
 	}
 	return cmpDifferent
@@ -183,7 +183,7 @@ func unifyHelper(s Subst, x, y Term) (Subst, bool) {
 		return EmptySubst(), false
 	}
 	switch x.Kind() {
-	case KNil:
+	case KNil, KNatZero:
 		return s, true
 	case KInt:
 		if x.IntVal() == y.IntVal() {
@@ -195,13 +195,13 @@ func unifyHelper(s Subst, x, y Term) (Subst, bool) {
 			return s, true
 		}
 		return EmptySubst(), false
-	case KCons, KLamApp, KLamAbs, KTypeArr, KPair, KGrClosure:
+	case KCons, KLamApp, KLamAbs, KTypeArr, KPair, KGrClosure, KGrClo3:
 		s1, ok := unifyHelper(s, x.Car(), y.Car())
 		if !ok {
 			return EmptySubst(), false
 		}
 		return unifyHelper(s1, x.Cdr(), y.Cdr())
-	case KLamV, KTypeP, KGtSymb, KGtSeq, KGrVal:
+	case KLamV, KTypeP, KGtSymb, KGtSeq, KGrVal, KNatSucc, KGtVR, KGtTuple, KGrCode:
 		return unifyHelper(s, x.Car(), y.Car())
 	default:
 		return EmptySubst(), false
@@ -433,8 +433,18 @@ func Reify(s Subst, t Term) Term {
 		return MkGVal(Reify(s, t.Car()))
 	case KGrClosure:
 		return MkGClosure(Reify(s, t.Car()), Reify(s, t.Cdr()).Car(), Reify(s, t.Cdr()).Cdr())
+	case KNatSucc:
+		return MkNatSucc(Reify(s, t.Car()))
+	case KGtVR:
+		return MkGtVR(Reify(s, t.Car()))
+	case KGtTuple:
+		return MkGtTuple(Reify(s, t.Car()))
+	case KGrClo3:
+		return MkGrClo3(Reify(s, t.Car()), Reify(s, t.Cdr()).Car(), Reify(s, t.Cdr()).Cdr())
+	case KGrCode:
+		return MkGtCode(Reify(s, t.Car()))
 	default:
-		return t // Int, Str, Nil
+		return t // Int, Str, Nil, KNatZero
 	}
 }
 
@@ -474,6 +484,18 @@ func Show(t Term) string {
 		return "val (" + Show(t.Car()) + ")"
 	case KGrClosure:
 		return "closure (" + Show(t.Car()) + ", " + Show(t.Cdr()) + ")"
+	case KNatZero:
+		return "z"
+	case KNatSucc:
+		return "(s " + Show(t.Car()) + ")"
+	case KGtVR:
+		return "(vr " + Show(t.Car()) + ")"
+	case KGtTuple:
+		return "(" + Show(t.Car()) + ")"
+	case KGrClo3:
+		return "clo (" + Show(t.Car()) + ", " + Show(t.Cdr()) + ")"
+	case KGrCode:
+		return "code (" + Show(t.Car()) + ")"
 	case KCons:
 		out := "["
 		cur := t

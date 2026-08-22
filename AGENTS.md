@@ -40,6 +40,14 @@ terms: `quines` (no top-level diseq) matches exactly, while `twines`/`thrines` d
 by a few unifications only when continuing past the first answer. This residual is
 inherent to the differing diseq solvers, not a relation bug.
 
+Known exception (scheduling): the `quines-nodiseq` benchmark uses *only* pure
+unification (peano-indexed variables with a relational `neq`, no built-in disequality),
+so it isolates the goal **scheduler** difference. OCanren fairly interleaves each `conde`
+via `State.new_scope`; the Go port drives plain lazy streams and therefore explores more
+branches before the first answer. The quine it produces is structurally identical to
+OCanren's, but the count is larger: Go 6678 vs OCanren/Racket 3490 (~+91%). This residual
+is inherent to the scheduler (not a relation bug and not the diseq solver) and is recorded
+as-is in `go/unif_count` (`want` = Go count, `ocanren` = reference).
 
 ## Task 0 
 

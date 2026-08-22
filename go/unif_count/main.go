@@ -65,6 +65,14 @@ var cases = []countCase{
 	{"twines10", 97075, 117797, true, func() int64 { c, _ := bench.Twines(10); return c }},
 	{"thrines1", 66826, 66885, false, func() int64 { c, _ := bench.Thrines(1); return c }},
 	{"thrines2", 224658, 225036, true, func() int64 { c, _ := bench.Thrines(2); return c }},
+
+	// --- quines-nodiseq: pure unification (relational neq) --------------------
+	// No built-in disequality, so (unlike thr) this residual is PURELY from the
+	// goal scheduler: OCanren fairly interleaves each conde via State.new_scope,
+	// whereas the Go port drives plain lazy streams and explores more branches
+	// before the first answer. The quine produced is structurally identical to
+	// OCanren's; only the unification count differs.
+	{"nodiseq1", 3490, 6678, false, func() int64 { c, _ := bench.QuinesNoDiseq(1); return c }},
 }
 
 func main() {

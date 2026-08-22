@@ -27,7 +27,8 @@ $ ./unif_count.exe
   twines10           117797 unifications (ocanren 97075, delta +20722)
   thrines1            66885 unifications (ocanren 66826, delta +59)
   thrines2           225036 unifications (ocanren 224658, delta +378)
-ok: 28 case(s) match expected counts
+  nodiseq1             6678 unifications (ocanren 3490, delta +3188)
+ok: 29 case(s) match expected counts
 
 $ ./unif_count.exe -short
   mul1x1                  6 unifications (ocanren 6)
@@ -58,4 +59,5 @@ $ ./unif_count.exe -short
   twines10       skipped (heavy, -short)
   thrines1            66885 unifications (ocanren 66826, delta +59)
   thrines2       skipped (heavy, -short)
-ok: 21 case(s) match expected counts
+  nodiseq1             6678 unifications (ocanren 3490, delta +3188)
+ok: 22 case(s) match expected counts

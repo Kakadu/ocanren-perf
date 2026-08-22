@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"ocanren-go/mk"
+	"ocanren-go/mk/nodiseq"
 	"ocanren-go/mk/numero"
 	"ocanren-go/mk/stdx"
 	"ocanren-go/mk/thr"
@@ -91,6 +92,14 @@ func Addero(d, a, b int64, take int) (int64, []mk.Term) {
 // Quines runs `find_quines n`.
 func Quines(n int) (int64, []mk.Term) {
 	return run1(n, func(q mk.Term) mk.Goal { return thr.Quineso(q) })
+}
+
+// QuinesNoDiseq runs the nodiseq `find_quines n`: the same quine search but with
+// a peano-indexed interpreter whose only disequality is the relational `neq`, so
+// it uses pure unification (no built-in disequality). The produced quine matches
+// OCanren's; the count runs higher due to the scheduler difference (see AGENTS.md).
+func QuinesNoDiseq(n int) (int64, []mk.Term) {
+	return run1(n, func(q mk.Term) mk.Goal { return nodiseq.Quineo(q) })
 }
 
 // Thrines runs `find_thrines n`.

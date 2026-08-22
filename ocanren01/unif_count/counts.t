@@ -65,7 +65,9 @@
 
 
   $ ./run_scheme.exe -quines-nodiseq -n 1
+  (((('lambda (vr _.2472) (('list (vr _.2472) (('list (('quote 'quote )) (vr _.2472) )) )) )) (('quote (('lambda (vr _.2472) (('list (vr _.2472) (('list (('quote 'quote )) (vr _.2472) )) )) )) )) ))
 
+  unifications: 3490
   $ ./numero.exe --mul1x1
   multo (build_num 1) (build_num 1)
     0:	[1]

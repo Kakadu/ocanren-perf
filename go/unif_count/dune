@@ -14,6 +14,7 @@
   ../mk/stream.go
   ../mk/subst.go
   ../mk/term.go
+  ../mk/nodiseq/nodiseq.go
   ../mk/thr/thr.go
   main.go)
  (action (run go build -o %{targets} .))
