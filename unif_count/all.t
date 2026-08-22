@@ -4,6 +4,10 @@
   2085 unifications.
   $ racket ../run.rkt -q --quines 2
   6920 unifications.
+  $ racket ../run.rkt -q --quines 8
+  14491 unifications.
+  $ racket ../run.rkt -q --quines 9
+  18687 unifications.
   $ racket ../run.rkt -q --quines 10
   18798 unifications.
 

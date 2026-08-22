@@ -12,6 +12,15 @@
   $ ./run_scheme.exe -quines -n 2
   unifications: 6920
 
+  $ ./run_scheme.exe -quines -n 8 -q
+  unifications: 14491
+
+  $ ./run_scheme.exe -quines -n 9 -q
+  unifications: 18686
+
+  $ ./run_scheme.exe -quines -n 10 -q
+  unifications: 18797
+
   $ ./run_scheme.exe -twines -n 1
   (seq ((symb 'quote) (seq ((seq ((symb 'lambda) (seq ((symb '_.16072 =/= [ list
   quote ]) )) (seq ((symb 'list) (seq ((symb 'quote) (symb 'quote) )) (seq ((symb 'list) (symb '_.16072 =/= [ list

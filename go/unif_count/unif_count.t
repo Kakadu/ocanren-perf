@@ -22,13 +22,16 @@ $ ./unif_count.exe
   reverso123             71 unifications (ocanren 71)
   quines1              2092 unifications (ocanren 2085, delta +7)
   quines2              6956 unifications (ocanren 6920, delta +36)
+  quines8             18773 unifications (ocanren 14491, delta +4282)
+  quines9             18876 unifications (ocanren 18686, delta +190)
+  quines10            19156 unifications (ocanren 18797, delta +359)
   twines1             16609 unifications (ocanren 16583, delta +26)
   twines2             56026 unifications (ocanren 55721, delta +305)
   twines10           117797 unifications (ocanren 97075, delta +20722)
   thrines1            66885 unifications (ocanren 66826, delta +59)
   thrines2           225036 unifications (ocanren 224658, delta +378)
   nodiseq1             6678 unifications (ocanren 3490, delta +3188)
-ok: 29 case(s) match expected counts
+ok: 32 case(s) match expected counts
 
 $ ./unif_count.exe -short
   mul1x1                  6 unifications (ocanren 6)
@@ -54,6 +57,9 @@ $ ./unif_count.exe -short
   reverso123             71 unifications (ocanren 71)
   quines1              2092 unifications (ocanren 2085, delta +7)
   quines2        skipped (heavy, -short)
+  quines8        skipped (heavy, -short)
+  quines9        skipped (heavy, -short)
+  quines10       skipped (heavy, -short)
   twines1             16609 unifications (ocanren 16583, delta +26)
   twines2        skipped (heavy, -short)
   twines10       skipped (heavy, -short)

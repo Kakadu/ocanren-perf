@@ -60,6 +60,9 @@ var cases = []countCase{
 	// --- quines / twines / thrines: small documented residual vs OCanren -----
 	{"quines1", 2085, 2092, false, func() int64 { c, _ := bench.Quines(1); return c }},
 	{"quines2", 6920, 6956, true, func() int64 { c, _ := bench.Quines(2); return c }},
+	{"quines8", 14491, 18773, true, func() int64 { c, _ := bench.Quines(8); return c }},
+	{"quines9", 18686, 18876, true, func() int64 { c, _ := bench.Quines(9); return c }},
+	{"quines10", 18797, 19156, true, func() int64 { c, _ := bench.Quines(10); return c }},
 	{"twines1", 16583, 16609, false, func() int64 { c, _ := bench.Twines(1); return c }},
 	{"twines2", 55721, 56026, true, func() int64 { c, _ := bench.Twines(2); return c }},
 	{"twines10", 97075, 117797, true, func() int64 { c, _ := bench.Twines(10); return c }},
