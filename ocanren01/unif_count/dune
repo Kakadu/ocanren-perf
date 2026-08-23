@@ -19,7 +19,7 @@
 
 (library
  (name Quine_decls_trace)
- (libraries OCanren OCanren.tester counters)
+ (libraries OCanren OCanren.tester counters PrintHelpers)
  (modules Quine_decls_trace)
  (wrapped false)
  (preprocessor_deps %{project_root}/unif_count/pp5+dump.exe ./pp5+dump.exe)
@@ -75,3 +75,24 @@
    camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_dump
    -o
    %{targets})))
+
+(executable
+ (name probe_diseq)
+ (modules probe_diseq)
+ (libraries OCanren)
+ (preprocess
+  (pps OCanren-ppx.ppx_fresh OCanren-ppx.ppx_repr)))
+
+(executable
+ (name minex)
+ (modules minex)
+ (libraries OCanren)
+ (preprocess
+  (pps OCanren-ppx.ppx_fresh OCanren-ppx.ppx_repr)))
+
+(executable
+ (name minex2)
+ (modules minex2)
+ (libraries Quine_decls_trace OCanren)
+ (preprocess
+  (pps OCanren-ppx.ppx_fresh OCanren-ppx.ppx_repr)))
