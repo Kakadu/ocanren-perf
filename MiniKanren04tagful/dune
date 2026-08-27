@@ -56,7 +56,7 @@
  (modules TimeHelper)
  (wrapped false)
  (preprocess
-  (pps ppx_optcomp))
+  (pps ppx_optcomp_nobase))
  (libraries OCanren mtime.clock))
 
 (executable
