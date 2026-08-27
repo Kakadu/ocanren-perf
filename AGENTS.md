@@ -33,12 +33,24 @@ The count in all implementations should be the same for a fixed benchmark.
 
 Known exception: the quine benchmarks (`test005_thrines`, `test006_twines`,
 `test007_quines`) show small residuals (<0.01%) between implementations even though
-the relations are identical. The cause is the disequality solver, which differs per
-implementation (OCanren's CNF `Disequality` module vs faster-miniKanren's `=/=*` vs
-Go's raw-pair recheck). Only these benchmarks use top-level disequality between large
-terms: `quines` (no top-level diseq) matches exactly, while `twines`/`thrines` drift
-by a few unifications only when continuing past the first answer. This residual is
-inherent to the differing diseq solvers, not a relation bug.
+the relations are identical. Only these benchmarks use top-level disequality between
+large terms: `quines` (no top-level diseq) matches exactly, while `twines`/`thrines`
+drift by a few unifications only when continuing past the first answer (e.g. twines
+n=2: OCanren 55721 vs Racket 55724; thrines n=2: 224658 vs 224669).
+
+The OCanren disequality *logic* has been made faithful to faster-miniKanren's `=/=*`:
+var-var unification binds the larger-index variable to the smaller; each disjunct is
+stored as an ordered binding list in addition order (mimicking `added`); recheck
+triggers only on the lhs of each new binding, processed in addition order. Verified by
+trace: the recheck-trigger sequence matches Racket exactly (658 triggers for twines n=2).
+So the residual is NOT a diseq-logic difference. It comes from OCanren's variable-
+allocation architecture: OCanren allocates more fresh variables than Racket (eager
+allocation in `conde`/`fresh`/`run`), present even with no diseq (quines-nodiseq
+V=4996 vs 4304). The shifted indices and branch timing interact with the (faithful)
+diseq recheck to nudge search order past the first answer. The residual sign is
+non-monotonic in `n` (twines n=2 -3, n=10 +3), confirming a search-order artifact rather
+than a constant offset. Closing it would require making OCanren's core fresh/conde/scope
+allocation byte-identical to Racket's; not done.
 
 Known exception (scheduling): the `quines-nodiseq` benchmark uses *only* pure
 unification (peano-indexed variables with a relational `neq`, no built-in disequality),
