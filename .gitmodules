@@ -1,7 +1,7 @@
 [submodule "faster-miniKanren"]
 	path = faster-miniKanren
 	url = https://github.com/Kakadu/faster-miniKanren.git
-	branch = ispras-paper2025
+	branch = bench-2026
 
 [submodule "OCanren_master"]
 	path = ocanren01/OCanren
@@ -11,7 +11,8 @@
 [submodule "MiniKanren04tagful/MiniKanren"]
 	path = MiniKanren04tagful/MiniKanren
 	url = https://github.com/Kakadu/OCanren.git
-	branch = master+tagged
+	branch = bench-2026-tagged
+
 [submodule "MiniKanren07tagless/MiniKanren"]
 	path = MiniKanren07tagless/MiniKanren
 	url = https://github.com/Kakadu/OCanren.git
