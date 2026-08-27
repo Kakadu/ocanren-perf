@@ -34,6 +34,7 @@
          nonlocal-scope
          ;takeMK
          take
+         get_last_known_var
          ;
          )
 

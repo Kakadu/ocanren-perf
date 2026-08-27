@@ -4,7 +4,10 @@
 (require "mk.rkt")
 
 (define unif-counter 0)
-(define report_counters (lambda () (pretty-printf "~a unifications.\n" unif-counter)))
+(define report_counters (lambda ()
+    (pretty-printf "~a unifications.\n" unif-counter)
+    (pretty-printf "last known var: ~a.\n" (get_last_known_var))
+  ))
 
 (define ===
   (lambda (x y)
