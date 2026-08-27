@@ -155,31 +155,37 @@ IFDEF TRACE THEN
  let ( === ) : Gterm.injected -> Gterm.injected -> goal =
    fun x y st ->
     incr_counter ();
+    set_last_introduced_var (State.last_introduced_var st);
     OCanren.( === ) x y st
    [@@inline]
  let ( ===! ) : Gresult.injected -> Gresult.injected -> goal =
    fun x y st ->
     incr_counter ();
+    set_last_introduced_var (State.last_introduced_var st);
     OCanren.( === ) x y st
    [@@inline]
  let ( ===!! ) : _ Std.List.injected -> _ Std.List.injected -> goal =
    fun x y st ->
     incr_counter ();
+    set_last_introduced_var (State.last_introduced_var st);
     OCanren.( === ) x y st
    [@@inline]
  let ( ==== ) : string ilogic -> string ilogic -> goal =
    fun x y st ->
     incr_counter ();
+    set_last_introduced_var (State.last_introduced_var st);
     OCanren.( === ) x y st
    [@@inline]
  let ( ===^^ ) : Std.Nat.injected -> _ -> goal =
    fun x y st ->
     incr_counter ();
+    set_last_introduced_var (State.last_introduced_var st);
     OCanren.( === ) x y st
    [@@inline]
   let ( =**= ) : _ Std.Pair.injected  -> _ -> goal =
     fun x y st ->
     incr_counter ();
+    set_last_introduced_var (State.last_introduced_var st);
     OCanren.( === ) x y st
    [@@inline]
 ELSE

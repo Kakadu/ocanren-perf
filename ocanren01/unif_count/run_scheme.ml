@@ -31,14 +31,23 @@ let () =
   clear_unifications ();
   let () =
     (match config.mode with
-     | Quines -> fun n -> find_quines ~verbose:(not config.quiet) n
+     | Quines ->
+       fun n ->
+         find_quines ~verbose:(not config.quiet) n;
+         pp_config ()
      | Quines_nodiseq ->
        fun n ->
          Quines_NoDiseq_trace.find_quines ~verbose:(not config.quiet) n;
-         Quine_decls_trace.config.unifications <- Quines_NoDiseq_trace.config.unifications
-     | Twines -> find_twines ~verbose:(not config.quiet)
-     | Thrines -> find_thrines ~verbose:(not config.quiet))
+         Quines_NoDiseq_trace.pp_config ()
+     | Twines ->
+       fun n ->
+         find_twines ~verbose:(not config.quiet) n;
+         pp_config ()
+     | Thrines ->
+       fun n ->
+         find_thrines ~verbose:(not config.quiet) n;
+         pp_config ())
       config.n
   in
-  Printf.printf "unifications: %d\n" Quine_decls_trace.(config.unifications)
+  ()
 ;;

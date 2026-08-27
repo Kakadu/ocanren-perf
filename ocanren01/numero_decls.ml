@@ -35,6 +35,7 @@ include struct
   let ( ==== ) : int ilogic -> int ilogic -> goal =
    fun x y st ->
     incr_counter ();
+    set_last_introduced_var (State.last_introduced_var st);
     (* if not are_unifications_silent then
       Printf.printf "%s %s\n" (pp st x) (pp st y); *)
     OCanren.( === ) x y st
@@ -43,6 +44,8 @@ include struct
   let ( === ) : Oleg.injected -> Oleg.injected  -> goal =
    fun x y st ->
     incr_counter ();
+
+    set_last_introduced_var (State.last_introduced_var st);
     (* if not are_unifications_silent then
       Printf.printf "%s %s\n" (pp st x) (pp st y); *)
     OCanren.( === ) x y st

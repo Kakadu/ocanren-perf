@@ -16,7 +16,7 @@
  (modules TimeHelper)
  (libraries mtime.clock.os OCanren)
  (preprocess
-  (pps ppx_optcomp))
+  (pps ppx_optcomp_nobase))
  (wrapped false))
 
 (library

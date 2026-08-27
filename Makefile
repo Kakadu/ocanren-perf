@@ -224,7 +224,7 @@ define PREPARE_DATAFILE # testname
 .PHONY: process_datafile_$(1) clean_datafile_$(1)
 process_datafile_$(1): .$(1).data
 	@printf "desc$(1)\t" >> $(DATAFILE)
-	@tr '\n' ' ' < .$(1).data >> $(DATAFILE)
+	@cat .$(1).data | cut -f1 -d':' | tr '\n' ' ' >> $(DATAFILE)
 	@printf "\n" >> $(DATAFILE)
 $$(DATAFILE): process_datafile_$(1)
 clean_datafile_$(1):

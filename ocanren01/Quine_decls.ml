@@ -150,6 +150,7 @@ IFDEF TRACE THEN
  let ( === ) : Gterm.injected -> Gterm.injected -> goal =
    fun x y st ->
     incr_counter ();
+    set_last_introduced_var (State.last_introduced_var st);
     (* if not are_unifications_silent then
       Printf.printf "%s %s\n" (pp st x) (pp st y); *)
     OCanren.( === ) x y st
@@ -157,6 +158,7 @@ IFDEF TRACE THEN
  let ( ===! ) : Gresult.injected -> Gresult.injected -> goal =
    fun x y st ->
     incr_counter ();
+    set_last_introduced_var (State.last_introduced_var st);
     (* if not are_unifications_silent then
       Printf.printf "%s %s\n" (pp st x) (pp st y); *)
     OCanren.( === ) x y st
@@ -164,6 +166,7 @@ IFDEF TRACE THEN
  let ( ===!! ) : _ Std.List.injected -> _ Std.List.injected -> goal =
    fun x y st ->
     incr_counter ();
+    set_last_introduced_var (State.last_introduced_var st);
     (* if not are_unifications_silent then
       Printf.printf "%s %s\n" (pp st x) (pp st y); *)
     OCanren.( === ) x y st
@@ -171,6 +174,7 @@ IFDEF TRACE THEN
  let ( ==== ) : string ilogic -> string ilogic -> goal =
    fun x y st ->
     incr_counter ();
+    set_last_introduced_var (State.last_introduced_var st);
     (* if not are_unifications_silent then
       Printf.printf "%s %s\n" (pp st x) (pp st y); *)
     OCanren.( === ) x y st

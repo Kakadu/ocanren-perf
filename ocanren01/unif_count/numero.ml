@@ -37,18 +37,14 @@ let odd_multo1 () = wrap (REPR (odd_multo (build_num 1) (build_num 3) (build_num
 let exp2in3 () = wrap (REPR (expo (build_num 2) (build_num 3)))
 let exp3in5 () = wrap (REPR (expo (build_num 3) (build_num 5)))
 let exp7in2 () = wrap (REPR (expo (build_num 7) (build_num 2)))
-
 let inj2 a b = OCanren.Std.List.(OCanren.inj a % (OCanren.inj b % nil ()))
 
-let inj3 a b c = OCanren.Std.List.(OCanren.inj a % (OCanren.inj b % (OCanren.inj c % nil ())))
-
-let appendo1234 () =
-  wrap (REPR (fun q -> appendo (inj2 1 2) (inj2 3 4) q))
+let inj3 a b c =
+  OCanren.Std.List.(OCanren.inj a % (OCanren.inj b % (OCanren.inj c % nil ())))
 ;;
 
-let reverso123 () =
-  wrap (REPR (fun q -> reverso (inj3 1 2 3) q))
-;;
+let appendo1234 () = wrap (REPR (fun q -> appendo (inj2 1 2) (inj2 3 4) q))
+let reverso123 () = wrap (REPR (fun q -> reverso (inj3 1 2 3) q))
 
 let logo1base1 () =
   wrap (REPR (fun q -> logo (build_num 1) (build_num 1) q (build_num 0)))
@@ -93,7 +89,8 @@ let () =
         (fun () ->
           Numero_decls_trace.clear_unifications ();
           f ();
-          Printf.printf "unifications: %d\n" config.unifications)
+          pp_config ();
+          ())
     , "" )
   in
   Arg.parse

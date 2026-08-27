@@ -6,7 +6,7 @@
 [submodule "OCanren_master"]
 	path = ocanren01/OCanren
 	url = https://github.com/PLTools/OCanren.git
-	branch = master
+	branch = bench-2026
 
 [submodule "MiniKanren04tagful/MiniKanren"]
 	path = MiniKanren04tagful/MiniKanren
