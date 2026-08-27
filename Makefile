@@ -8,9 +8,9 @@ DUMMY_MEASURE=printf "%10.3f\t" 0.0
 
 MEASURE_RKT   ?= y
 MEASURE_OC1   ?= y
-MEASURE_OC2   ?=
+MEASURE_OC2   ?= y
 MEASURE_OC3   ?=
-MEASURE_OC4   ?= y
+MEASURE_OC4   ?=
 MEASURE_OC5   ?=
 MEASURE_OC6   ?=
 MEASURE_OC7   ?=
@@ -257,3 +257,16 @@ all:
 # TODO: autogenerate script.gnuplot
 graph:
 	gnuplot script.gnuplot && xdg-open graph.pdf
+
+.PHONY: new_benchmark
+new_benchmark:
+	mkdir -p $(DEST)/
+	@cp -v ocanren01/.envrc $(DEST)/
+	@cp -v ocanren01/dune $(DEST)/
+	@cp -v ocanren01/dune-project $(DEST)/
+	@cp -v ocanren01/dune-workspace $(DEST)/
+	(cd $(DEST) && find ../ocanren01 -maxdepth 1 -iname '*.ml' -exec ln -sf {} \;)
+	mkdir -p $(DEST)/unif_count
+	@cp -v ocanren01/unif_count/dune $(DEST)/unif_count
+	(cd $(DEST)/unif_count && ln -s ../numero_decls.ml numero_decls_trace.ml)
+	(cd $(DEST)/unif_count; find ../../ocanren01/unif_count  -maxdepth 1 -iname '*.t' -exec cp -v {} . \;)

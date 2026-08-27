@@ -1,0 +1,7 @@
+(library
+ (name ppx_fresh_another)
+ (kind ppx_rewriter)
+ (libraries ppxlib.stdppx ppxlib)
+ (modules ppx_fresh)
+ (preprocess
+  (pps ppxlib.metaquot)))
